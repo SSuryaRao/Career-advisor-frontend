@@ -11,7 +11,6 @@ import {
   X,
   ChevronDown,
   Sparkles,
-  Globe,
   User,
   LogIn,
   Brain,
@@ -46,19 +45,10 @@ const navigation = [
   { name: 'Pricing', href: '/pricing' },
 ]
 
-const languages = [
-  { code: 'en', name: 'English' },
-  { code: 'hi', name: 'हिंदी' },
-  { code: 'ta', name: 'தமிழ்' },
-  { code: 'te', name: 'తెలుగు' },
-  { code: 'bn', name: 'বাংলা' },
-]
-
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null)
-  const [selectedLanguage, setSelectedLanguage] = useState('en')
   const pathname = usePathname()
 
   useEffect(() => {
@@ -143,27 +133,6 @@ export default function Navbar() {
 
           {/* Right Section */}
           <div className="hidden md:flex items-center space-x-4">
-            {/* Language Selector */}
-            <div className="relative group">
-              <button className="flex items-center space-x-2 text-gray-300 hover:text-white transition-colors">
-                <Globe className="w-5 h-5" />
-                <span className="text-sm">
-                  {languages.find((l) => l.code === selectedLanguage)?.name}
-                </span>
-              </button>
-              <div className="absolute top-full right-0 mt-2 w-40 bg-gray-900/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
-                {languages.map((lang) => (
-                  <button
-                    key={lang.code}
-                    onClick={() => setSelectedLanguage(lang.code)}
-                    className="block w-full text-left px-4 py-2 text-gray-300 hover:bg-white/10 hover:text-white transition-colors"
-                  >
-                    {lang.name}
-                  </button>
-                ))}
-              </div>
-            </div>
-
             {/* Auth Buttons */}
             <Button
               variant="ghost"
