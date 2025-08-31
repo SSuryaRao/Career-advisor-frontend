@@ -1,437 +1,385 @@
 'use client'
 
 import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
+import Navbar from '@/components/layout/navbar'
+import Footer from '@/components/layout/footer'
 import {
-  Search, Filter, MapPin, TrendingUp, DollarSign, Users, 
-  Clock, Star, Briefcase, GraduationCap, Target, Brain,
-  ChevronDown, ChevronUp, Heart, Share2, Bookmark, Eye
+  Search, Filter, MapPin, Clock, DollarSign, TrendingUp, 
+  Users, Briefcase, Calendar, Star, ChevronRight, Heart,
+  Building, Award, BookOpen, Bell, Sparkles
 } from 'lucide-react'
 
-const careerCategories = [
-  'Technology', 'Healthcare', 'Finance', 'Education', 'Marketing', 
-  'Design', 'Engineering', 'Business', 'Science', 'Arts'
+const jobCategories = [
+  { name: 'Technology', count: 1247, icon: Briefcase, color: 'bg-blue-500' },
+  { name: 'Healthcare', count: 856, icon: Heart, color: 'bg-red-500' },
+  { name: 'Finance', count: 643, icon: DollarSign, color: 'bg-green-500' },
+  { name: 'Education', count: 532, icon: BookOpen, color: 'bg-purple-500' },
+  { name: 'Marketing', count: 421, icon: TrendingUp, color: 'bg-orange-500' },
+  { name: 'Design', count: 314, icon: Award, color: 'bg-pink-500' },
 ]
 
-const experienceLevels = ['Entry Level', 'Mid-Level', 'Senior Level', 'Executive']
-
-const locations = ['Mumbai', 'Delhi NCR', 'Bangalore', 'Chennai', 'Hyderabad', 'Pune', 'Remote']
-
-const careers = [
+const featuredJobs = [
   {
     id: 1,
-    title: 'Full Stack Developer',
-    company: 'Tech Innovations Pvt Ltd',
-    category: 'Technology',
-    match: 92,
-    salary: { min: 800000, max: 1500000 },
+    title: 'Senior Frontend Developer',
+    company: 'TechCorp India',
     location: 'Bangalore',
-    experience: 'Mid-Level',
-    growth: '+22%',
-    demand: 'High',
-    description: 'Build end-to-end web applications using modern technologies like React, Node.js, and cloud platforms.',
-    skills: ['React', 'Node.js', 'MongoDB', 'AWS', 'TypeScript'],
-    workLifeBalance: 4.2,
-    futureReadiness: 9.1,
+    salary: 'â‚¹15-25 LPA',
+    type: 'Full-time',
+    experience: '3-5 years',
+    skills: ['React', 'TypeScript', 'Node.js'],
     posted: '2 days ago',
-    applicants: 124,
-    views: 1456
+    applicants: 45,
+    matchScore: 95
   },
   {
     id: 2,
     title: 'Data Scientist',
-    company: 'Analytics Pro Solutions',
-    category: 'Technology',
-    match: 88,
-    salary: { min: 1200000, max: 2200000 },
+    company: 'AI Solutions',
     location: 'Mumbai',
-    experience: 'Mid-Level',
-    growth: '+35%',
-    demand: 'Very High',
-    description: 'Analyze complex datasets to derive actionable insights for business growth using ML and AI techniques.',
-    skills: ['Python', 'Machine Learning', 'SQL', 'Tableau', 'Statistics'],
-    workLifeBalance: 3.8,
-    futureReadiness: 9.5,
+    salary: 'â‚¹20-30 LPA',
+    type: 'Full-time',
+    experience: '2-4 years',
+    skills: ['Python', 'Machine Learning', 'SQL'],
     posted: '1 day ago',
-    applicants: 89,
-    views: 2134
+    applicants: 32,
+    matchScore: 88
   },
   {
     id: 3,
     title: 'Product Manager',
     company: 'StartupXYZ',
-    category: 'Business',
-    match: 85,
-    salary: { min: 1500000, max: 2800000 },
-    location: 'Delhi NCR',
-    experience: 'Senior Level',
-    growth: '+28%',
-    demand: 'High',
-    description: 'Lead product strategy and development lifecycle from conception to launch in a fast-paced startup environment.',
-    skills: ['Product Strategy', 'Agile', 'User Research', 'Analytics', 'Leadership'],
-    workLifeBalance: 3.5,
-    futureReadiness: 8.7,
-    posted: '3 days ago',
-    applicants: 67,
-    views: 987
+    location: 'Hyderabad',
+    salary: 'â‚¹18-28 LPA',
+    type: 'Full-time',
+    experience: '4-6 years',
+    skills: ['Strategy', 'Analytics', 'Leadership'],
+    posted: '3 hours ago',
+    applicants: 23,
+    matchScore: 92
   },
   {
     id: 4,
     title: 'UX Designer',
-    company: 'Design Studio Inc',
-    category: 'Design',
-    match: 78,
-    salary: { min: 600000, max: 1200000 },
-    location: 'Remote',
-    experience: 'Entry Level',
-    growth: '+18%',
-    demand: 'Medium',
-    description: 'Create intuitive and engaging user experiences for digital products through research, design, and testing.',
-    skills: ['Figma', 'User Research', 'Prototyping', 'Design Systems', 'Usability Testing'],
-    workLifeBalance: 4.5,
-    futureReadiness: 8.3,
-    posted: '1 week ago',
-    applicants: 234,
-    views: 1876
+    company: 'Design Studio',
+    location: 'Pune',
+    salary: 'â‚¹12-18 LPA',
+    type: 'Full-time',
+    experience: '2-3 years',
+    skills: ['Figma', 'User Research', 'Prototyping'],
+    posted: '5 days ago',
+    applicants: 67,
+    matchScore: 85
+  },
+]
+
+const careerInsights = [
+  {
+    title: 'Tech Hiring Trends 2024',
+    description: 'AI and ML roles seeing 40% growth in demand',
+    trend: '+40%',
+    color: 'text-green-500'
   },
   {
-    id: 5,
-    title: 'Digital Marketing Manager',
-    company: 'Growth Marketing Co',
-    category: 'Marketing',
-    match: 82,
-    salary: { min: 700000, max: 1400000 },
-    location: 'Chennai',
-    experience: 'Mid-Level',
-    growth: '+25%',
-    demand: 'High',
-    description: 'Drive digital marketing strategies across multiple channels to increase brand awareness and customer acquisition.',
-    skills: ['SEO/SEM', 'Social Media', 'Analytics', 'Content Strategy', 'PPC'],
-    workLifeBalance: 4.0,
-    futureReadiness: 7.9,
-    posted: '4 days ago',
-    applicants: 156,
-    views: 1234
-  }
+    title: 'Remote Work Adoption',
+    description: 'Hybrid roles increased by 65% this quarter',
+    trend: '+65%',
+    color: 'text-blue-500'
+  },
+  {
+    title: 'Salary Benchmarks',
+    description: 'Average tech salaries up by 15% YoY',
+    trend: '+15%',
+    color: 'text-purple-500'
+  },
 ]
 
 export default function CareersPage() {
-  const [searchQuery, setSearchQuery] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState('All')
-  const [selectedLocation, setSelectedLocation] = useState('All')
-  const [selectedExperience, setSelectedExperience] = useState('All')
-  const [sortBy, setSortBy] = useState('match')
-  const [showFilters, setShowFilters] = useState(false)
-  const [expandedCard, setExpandedCard] = useState<number | null>(null)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState('all')
+  const [savedJobs, setSavedJobs] = useState<number[]>([])
 
-  const formatSalary = (amount: number) => {
-    return (amount / 100000).toFixed(0) + ' LPA'
+  const toggleSaveJob = (jobId: number) => {
+    setSavedJobs(prev => 
+      prev.includes(jobId) 
+        ? prev.filter(id => id !== jobId)
+        : [...prev, jobId]
+    )
   }
-
-  const filteredCareers = careers.filter(career => {
-    const matchesSearch = career.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         career.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         career.skills.some(skill => skill.toLowerCase().includes(searchQuery.toLowerCase()))
-    const matchesCategory = selectedCategory === 'All' || career.category === selectedCategory
-    const matchesLocation = selectedLocation === 'All' || career.location === selectedLocation
-    const matchesExperience = selectedExperience === 'All' || career.experience === selectedExperience
-    
-    return matchesSearch && matchesCategory && matchesLocation && matchesExperience
-  })
-
-  const sortedCareers = [...filteredCareers].sort((a, b) => {
-    switch (sortBy) {
-      case 'match': return b.match - a.match
-      case 'salary': return b.salary.max - a.salary.max
-      case 'recent': return new Date(b.posted).getTime() - new Date(a.posted).getTime()
-      default: return 0
-    }
-  })
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-      {/* Header */}
-      <div className="bg-white/80 backdrop-blur-xl border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 py-6">
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">Explore Career Opportunities</h1>
-            <p className="text-xl text-gray-600">Discover your perfect career match from 5000+ opportunities</p>
-          </div>
-
-          {/* Search Bar */}
-          <div className="max-w-4xl mx-auto mb-6">
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <Input
-                type="text"
-                placeholder="Search by role, company, or skills..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-12 pr-4 py-4 text-lg border-2 border-gray-200 focus:border-blue-500 rounded-xl"
-              />
+      <Navbar />
+      
+      {/* Hero Section */}
+      <section className="pt-24 pb-12 bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 text-white">
+        <div className="max-w-7xl mx-auto px-4">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center mb-12"
+          >
+            <h1 className="text-4xl lg:text-6xl font-bold mb-6">
+              Find Your Dream
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400"> Career</span>
+            </h1>
+            <p className="text-xl text-gray-300 max-w-3xl mx-auto mb-8">
+              Discover opportunities that match your skills, interests, and career goals. 
+              Get AI-powered recommendations tailored just for you.
+            </p>
+            
+            {/* Search Bar */}
+            <div className="max-w-4xl mx-auto bg-white rounded-2xl p-2 shadow-2xl">
+              <div className="flex flex-col lg:flex-row gap-2">
+                <div className="relative flex-1">
+                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <Input
+                    type="text"
+                    placeholder="Search jobs, companies, or skills..."
+                    className="pl-12 border-0 text-gray-900 text-lg py-4 focus:ring-0"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="outline" className="text-gray-600 border-gray-300">
+                    <MapPin className="w-4 h-4 mr-2" />
+                    Location
+                  </Button>
+                  <Button className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8">
+                    Search Jobs
+                  </Button>
+                </div>
+              </div>
             </div>
-          </div>
 
-          {/* Quick Filters */}
-          <div className="flex flex-wrap gap-3 justify-center">
-            {['AI/ML', 'Remote', 'High Growth', 'Startups', 'Tech Giants'].map((filter) => (
-              <Button key={filter} variant="outline" size="sm" className="rounded-full">
-                {filter}
-              </Button>
+            {/* Quick Stats */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
+              {[
+                { label: 'Active Jobs', value: '4,500+' },
+                { label: 'Companies', value: '1,200+' },
+                { label: 'Successful Placements', value: '25,000+' },
+                { label: 'Average Salary Hike', value: '45%' },
+              ].map((stat, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 * index }}
+                  className="text-center"
+                >
+                  <div className="text-2xl lg:text-3xl font-bold text-blue-400">{stat.value}</div>
+                  <div className="text-gray-300 text-sm">{stat.label}</div>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      <div className="max-w-7xl mx-auto px-4 py-12">
+        {/* Job Categories */}
+        <section className="mb-12">
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-3xl font-bold text-gray-900">Browse by Category</h2>
+            <Button variant="outline">View All Categories</Button>
+          </div>
+          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+            {jobCategories.map((category, index) => (
+              <motion.div
+                key={category.name}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 * index }}
+                className="group cursor-pointer"
+                onClick={() => setSelectedCategory(category.name)}
+              >
+                <Card className="p-6 text-center hover:shadow-lg transition-all duration-300 group-hover:scale-105">
+                  <div className={`w-12 h-12 ${category.color} rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform`}>
+                    <category.icon className="w-6 h-6 text-white" />
+                  </div>
+                  <h3 className="font-semibold text-gray-900 mb-2">{category.name}</h3>
+                  <p className="text-gray-600 text-sm">{category.count.toLocaleString()} jobs</p>
+                </Card>
+              </motion.div>
             ))}
           </div>
-        </div>
-      </div>
+        </section>
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="flex flex-col lg:flex-row gap-8">
-          {/* Filters Sidebar */}
-          <div className="lg:w-80">
-            <Card className="p-6 sticky top-24">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-semibold">Filters</h2>
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={() => setShowFilters(!showFilters)}
-                  className="lg:hidden"
-                >
-                  <Filter className="w-4 h-4 mr-2" />
-                  {showFilters ? 'Hide' : 'Show'}
-                </Button>
-              </div>
-
-              <div className={`space-y-6 ${showFilters ? 'block' : 'hidden lg:block'}`}>
-                {/* Category Filter */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
-                  <select
-                    value={selectedCategory}
-                    onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="All">All Categories</option>
-                    {careerCategories.map(category => (
-                      <option key={category} value={category}>{category}</option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Location Filter */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
-                  <select
-                    value={selectedLocation}
-                    onChange={(e) => setSelectedLocation(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="All">All Locations</option>
-                    {locations.map(location => (
-                      <option key={location} value={location}>{location}</option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Experience Filter */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Experience Level</label>
-                  <select
-                    value={selectedExperience}
-                    onChange={(e) => setSelectedExperience(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="All">All Levels</option>
-                    {experienceLevels.map(level => (
-                      <option key={level} value={level}>{level}</option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Salary Range */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Salary Range (LPA)</label>
-                  <div className="space-y-2">
-                    <input
-                      type="range"
-                      min="3"
-                      max="50"
-                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                    />
-                    <div className="flex justify-between text-sm text-gray-500">
-                      <span>¹3L</span>
-                      <span>¹50L+</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </Card>
-          </div>
-
-          {/* Results */}
-          <div className="flex-1">
-            {/* Sort and Results Count */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Job Listings */}
+          <div className="lg:col-span-2">
             <div className="flex items-center justify-between mb-6">
-              <p className="text-gray-600">
-                Showing {sortedCareers.length} careers " {sortedCareers.filter(c => c.match > 80).length} great matches
-              </p>
+              <h2 className="text-2xl font-bold text-gray-900">Featured Opportunities</h2>
               <div className="flex items-center space-x-4">
-                <label className="text-sm text-gray-600">Sort by:</label>
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                  className="px-3 py-1 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="match">Best Match</option>
-                  <option value="salary">Highest Salary</option>
-                  <option value="recent">Most Recent</option>
+                <Button variant="outline" size="sm">
+                  <Filter className="w-4 h-4 mr-2" />
+                  Filter
+                </Button>
+                <select className="border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                  <option>Most Relevant</option>
+                  <option>Latest</option>
+                  <option>Salary: High to Low</option>
+                  <option>Salary: Low to High</option>
                 </select>
               </div>
             </div>
 
-            {/* Career Cards */}
             <div className="space-y-6">
-              {sortedCareers.map((career, index) => (
+              {featuredJobs.map((job, index) => (
                 <motion.div
-                  key={career.id}
+                  key={job.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
+                  transition={{ delay: 0.1 * index }}
                 >
-                  <Card className="p-6 hover:shadow-lg transition-all duration-300 border-l-4 border-l-blue-500">
-                    <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between">
-                      <div className="flex-1 mb-4 lg:mb-0">
-                        <div className="flex items-start justify-between mb-3">
-                          <div>
-                            <h3 className="text-xl font-semibold text-gray-900 mb-1">{career.title}</h3>
-                            <p className="text-gray-600 flex items-center">
-                              <Briefcase className="w-4 h-4 mr-1" />
-                              {career.company}
-                            </p>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <Badge 
-                              variant={career.match > 85 ? 'success' : career.match > 70 ? 'default' : 'secondary'}
-                              className="text-sm"
-                            >
-                              {career.match}% Match
-                            </Badge>
-                          </div>
+                  <Card className="p-6 hover:shadow-lg transition-shadow">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-3 mb-2">
+                          <h3 className="text-xl font-semibold text-gray-900">{job.title}</h3>
+                          <Badge 
+                            className={`text-xs ${job.matchScore >= 90 ? 'bg-green-100 text-green-800' : 
+                              job.matchScore >= 80 ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'}`}
+                          >
+                            {job.matchScore}% match
+                          </Badge>
                         </div>
-
-                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-                          <div className="flex items-center text-sm text-gray-600">
-                            <DollarSign className="w-4 h-4 mr-1" />
-                            ¹{formatSalary(career.salary.min)}-{formatSalary(career.salary.max)}
+                        <div className="flex items-center space-x-4 text-gray-600 mb-3">
+                          <div className="flex items-center">
+                            <Building className="w-4 h-4 mr-1" />
+                            {job.company}
                           </div>
-                          <div className="flex items-center text-sm text-gray-600">
+                          <div className="flex items-center">
                             <MapPin className="w-4 h-4 mr-1" />
-                            {career.location}
+                            {job.location}
                           </div>
-                          <div className="flex items-center text-sm text-gray-600">
-                            <GraduationCap className="w-4 h-4 mr-1" />
-                            {career.experience}
-                          </div>
-                          <div className="flex items-center text-sm text-gray-600">
-                            <TrendingUp className="w-4 h-4 mr-1" />
-                            Growth: {career.growth}
+                          <div className="flex items-center">
+                            <Clock className="w-4 h-4 mr-1" />
+                            {job.posted}
                           </div>
                         </div>
-
-                        <p className="text-gray-700 mb-4">{career.description}</p>
-
                         <div className="flex flex-wrap gap-2 mb-4">
-                          {career.skills.map((skill) => (
-                            <Badge key={skill} variant="outline" className="text-xs">
+                          {job.skills.map((skill) => (
+                            <Badge key={skill} variant="secondary" className="text-xs">
                               {skill}
                             </Badge>
                           ))}
                         </div>
-
-                        {/* Expandable Section */}
-                        <AnimatePresence>
-                          {expandedCard === career.id && (
-                            <motion.div
-                              initial={{ opacity: 0, height: 0 }}
-                              animate={{ opacity: 1, height: 'auto' }}
-                              exit={{ opacity: 0, height: 0 }}
-                              transition={{ duration: 0.3 }}
-                              className="border-t border-gray-200 pt-4 mt-4"
-                            >
-                              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                                <div className="text-center">
-                                  <div className="text-2xl font-bold text-blue-600">{career.workLifeBalance}</div>
-                                  <div className="text-sm text-gray-600">Work-Life Balance</div>
-                                </div>
-                                <div className="text-center">
-                                  <div className="text-2xl font-bold text-green-600">{career.futureReadiness}</div>
-                                  <div className="text-sm text-gray-600">Future Readiness</div>
-                                </div>
-                                <div className="text-center">
-                                  <div className="text-2xl font-bold text-orange-600">{career.demand}</div>
-                                  <div className="text-sm text-gray-600">Market Demand</div>
-                                </div>
-                              </div>
-                              <div className="flex items-center justify-between text-sm text-gray-600">
-                                <div className="flex items-center space-x-4">
-                                  <span className="flex items-center">
-                                    <Users className="w-4 h-4 mr-1" />
-                                    {career.applicants} applicants
-                                  </span>
-                                  <span className="flex items-center">
-                                    <Eye className="w-4 h-4 mr-1" />
-                                    {career.views} views
-                                  </span>
-                                  <span className="flex items-center">
-                                    <Clock className="w-4 h-4 mr-1" />
-                                    Posted {career.posted}
-                                  </span>
-                                </div>
-                              </div>
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
                       </div>
-
-                      {/* Action Buttons */}
-                      <div className="flex lg:flex-col space-x-2 lg:space-x-0 lg:space-y-2 lg:ml-4">
-                        <Button size="sm" className="flex-1 lg:flex-none">
-                          <Target className="w-4 h-4 mr-2" />
-                          Apply Now
-                        </Button>
-                        <Button variant="outline" size="sm">
-                          <Bookmark className="w-4 h-4 mr-2" />
-                          Save
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          onClick={() => setExpandedCard(expandedCard === career.id ? null : career.id)}
-                        >
-                          {expandedCard === career.id ? 
-                            <ChevronUp className="w-4 h-4" /> : 
-                            <ChevronDown className="w-4 h-4" />
-                          }
-                        </Button>
+                      <button
+                        onClick={() => toggleSaveJob(job.id)}
+                        className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                      >
+                        <Heart 
+                          className={`w-5 h-5 ${savedJobs.includes(job.id) ? 'fill-red-500 text-red-500' : 'text-gray-400'}`} 
+                        />
+                      </button>
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-6 text-sm text-gray-600">
+                        <div className="flex items-center">
+                          <DollarSign className="w-4 h-4 mr-1" />
+                          {job.salary}
+                        </div>
+                        <div className="flex items-center">
+                          <Users className="w-4 h-4 mr-1" />
+                          {job.applicants} applicants
+                        </div>
+                        <div className="flex items-center">
+                          <Award className="w-4 h-4 mr-1" />
+                          {job.experience}
+                        </div>
                       </div>
+                      <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+                        Apply Now
+                        <ChevronRight className="w-4 h-4 ml-2" />
+                      </Button>
                     </div>
                   </Card>
                 </motion.div>
               ))}
             </div>
 
-            {/* Load More */}
             <div className="text-center mt-8">
               <Button variant="outline" size="lg">
-                Load More Opportunities
+                Load More Jobs
               </Button>
             </div>
           </div>
+
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* Career Insights */}
+            <Card className="p-6">
+              <h3 className="text-lg font-semibold mb-4 flex items-center">
+                <TrendingUp className="w-5 h-5 mr-2 text-green-500" />
+                Career Insights
+              </h3>
+              <div className="space-y-4">
+                {careerInsights.map((insight, index) => (
+                  <div key={index} className="p-4 bg-gray-50 rounded-lg">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="font-medium text-gray-900">{insight.title}</h4>
+                      <span className={`text-sm font-semibold ${insight.color}`}>
+                        {insight.trend}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-600">{insight.description}</p>
+                  </div>
+                ))}
+              </div>
+            </Card>
+
+            {/* Quick Applications */}
+            <Card className="p-6">
+              <h3 className="text-lg font-semibold mb-4">Quick Apply</h3>
+              <p className="text-gray-600 mb-4 text-sm">
+                Upload your resume once and apply to multiple jobs with one click.
+              </p>
+              <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600">
+                Upload Resume
+              </Button>
+            </Card>
+
+            {/* Job Alerts */}
+            <Card className="p-6">
+              <h3 className="text-lg font-semibold mb-4 flex items-center">
+                <Bell className="w-5 h-5 mr-2 text-blue-500" />
+                Job Alerts
+              </h3>
+              <p className="text-gray-600 mb-4 text-sm">
+                Get notified when new jobs matching your preferences are posted.
+              </p>
+              <Button variant="outline" className="w-full">
+                Create Alert
+              </Button>
+            </Card>
+
+            {/* AI Career Coach */}
+            <Card className="p-6 bg-gradient-to-br from-purple-50 to-blue-50 border-purple-200">
+              <h3 className="text-lg font-semibold mb-4 flex items-center">
+                <Sparkles className="w-5 h-5 mr-2 text-purple-500" />
+                AI Career Coach
+              </h3>
+              <p className="text-gray-700 mb-4 text-sm">
+                Get personalized career advice and job recommendations powered by AI.
+              </p>
+              <Button className="w-full bg-purple-600 hover:bg-purple-700">
+                Chat with AI
+              </Button>
+            </Card>
+          </div>
         </div>
       </div>
+
+      <Footer />
     </div>
   )
 }

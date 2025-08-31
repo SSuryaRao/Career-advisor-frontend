@@ -27,7 +27,6 @@ const navigation = [
     name: 'Features',
     href: '#features',
     dropdown: [
-      { name: 'Digital Twin', href: '/features/digital-twin', icon: User },
       { name: 'AI Mentor', href: '/features/ai-mentor', icon: Brain },
       { name: 'Career Engine', href: '/features/career-engine', icon: Target },
       { name: 'Skill Analysis', href: '/features/skills', icon: TrendingUp },
