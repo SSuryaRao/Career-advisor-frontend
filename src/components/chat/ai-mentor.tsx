@@ -3,13 +3,13 @@
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Card } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import { Textarea } from '@/components/ui/textarea'
+import { geminiAI, type ChatMessage } from '@/lib/gemini'
 import {
   Send, Mic, MicOff, Volume2, VolumeX, Bot, User, 
   Languages, Sparkles, ThumbsUp, ThumbsDown, Copy,
-  RotateCcw, Zap, Brain, Target, BookOpen, Users
+  Zap, Brain, Target, BookOpen, Users, AlertCircle,
+  Check, Loader2
 } from 'lucide-react'
 
 interface Message {
@@ -103,9 +103,14 @@ export default function AIMentor() {
   const [selectedLanguage, setSelectedLanguage] = useState(languages[0])
   const [isSpeaking, setIsSpeaking] = useState(false)
   const [isTyping, setIsTyping] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null)
+  const [languageDropdownOpen, setLanguageDropdownOpen] = useState(false)
+  const [mentorDropdownOpen, setMentorDropdownOpen] = useState(false)
   
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  const inputRef = useRef<HTMLInputElement>(null)
+  const inputRef = useRef<HTMLTextAreaElement>(null)
+  const recognitionRef = useRef<any>(null)
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -115,78 +120,167 @@ export default function AIMentor() {
     scrollToBottom()
   }, [messages])
 
+  // Initialize speech recognition
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'webkitSpeechRecognition' in window) {
+      const recognition = new (window as any).webkitSpeechRecognition()
+      recognition.continuous = false
+      recognition.interimResults = false
+      recognition.lang = selectedLanguage.code === 'en' ? 'en-US' : `${selectedLanguage.code}-IN`
+      
+      recognition.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript
+        setInputMessage(prev => prev + ' ' + transcript)
+        setIsRecording(false)
+      }
+      
+      recognition.onerror = (event: any) => {
+        console.error('Speech recognition error:', event.error)
+        setIsRecording(false)
+        setError('Voice recognition failed. Please try typing instead.')
+      }
+      
+      recognitionRef.current = recognition
+    }
+  }, [selectedLanguage])
+
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement
+      if (!target.closest('.language-dropdown') && !target.closest('.mentor-dropdown')) {
+        setLanguageDropdownOpen(false)
+        setMentorDropdownOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
   const handleSendMessage = async () => {
-    if (!inputMessage.trim()) return
+    if (!inputMessage.trim() || isTyping) return
+
+    console.log('📤 Sending message:', inputMessage)
 
     const userMessage: Message = {
       id: Date.now().toString(),
       type: 'user',
-      content: inputMessage,
+      content: inputMessage.trim(),
       timestamp: new Date(),
     }
 
     setMessages(prev => [...prev, userMessage])
+    const currentInput = inputMessage
     setInputMessage('')
     setIsTyping(true)
+    setError(null)
 
-    // Simulate AI response
-    setTimeout(() => {
+    try {
+      // Check if API key exists
+      const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY
+      if (!apiKey) {
+        console.error('❌ API Key is missing!')
+        throw new Error('API Key is missing! Please add NEXT_PUBLIC_GEMINI_API_KEY to your .env.local file and restart the server.')
+      }
+
+      console.log('🔧 API Key found, preparing request...')
+      
+      // Convert messages to ChatMessage format
+      const chatHistory: ChatMessage[] = messages
+        .slice(-10) // Limit to last 10 messages
+        .filter(msg => msg.type !== 'assistant' || !msg.content.includes('Hello! I\'m your AI Career Mentor'))
+        .map(msg => ({
+          role: msg.type === 'user' ? 'user' as const : 'assistant' as const,
+          content: msg.content
+        }))
+
+      const mentorContext = {
+        mentorName: selectedMentor.name,
+        specialty: selectedMentor.specialty,
+        personality: selectedMentor.personality,
+        language: selectedLanguage.name
+      }
+
+      console.log('🎯 Calling Gemini API with context:', mentorContext)
+
+      let response
+      try {
+        // Call the actual Gemini API
+        response = await geminiAI.generateResponse(currentInput, mentorContext, chatHistory)
+        console.log('✅ API Response received:', response)
+      } catch (apiError: any) {
+        console.error('❌ API Error:', apiError)
+        
+        // If API fails, provide a helpful error message
+        if (apiError.message?.includes('API_KEY_INVALID')) {
+          throw new Error('Your API key is invalid. Please check your Gemini API key.')
+        } else if (apiError.message?.includes('QUOTA_EXCEEDED')) {
+          throw new Error('API quota exceeded. Please try again later.')
+        } else {
+          // Fallback response for debugging
+          response = {
+            content: `I understand you said: "${currentInput}". However, I'm experiencing connection issues. 
+
+Error: ${apiError.message || 'Unknown API error'}
+
+To fix this:
+1. Ensure your NEXT_PUBLIC_GEMINI_API_KEY is set in .env.local
+2. Restart your development server (npm run dev)
+3. Check that your API key has access to Gemini 1.5 Flash
+4. Look for detailed errors in the browser console (F12)`,
+            suggestions: [
+              'Check API configuration',
+              'Verify environment setup',
+              'Try a simpler query',
+              'Check browser console'
+            ]
+          }
+        }
+      }
+
       const aiResponse: Message = {
         id: (Date.now() + 1).toString(),
         type: 'assistant',
-        content: generateAIResponse(inputMessage),
+        content: response.content || 'I apologize, but I couldn\'t generate a response. Please try again.',
         timestamp: new Date(),
-        suggestions: generateSuggestions(inputMessage)
+        suggestions: response.suggestions || []
       }
+
+      console.log('✨ Adding AI response to messages')
       setMessages(prev => [...prev, aiResponse])
+
+    } catch (error: any) {
+      console.error('💥 Error in handleSendMessage:', error)
+      setError(error.message || 'Something went wrong. Please try again.')
+      
+      // Add error message to chat
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        type: 'assistant',
+        content: `I encountered an error: ${error.message}
+
+Please ensure:
+1. Your .env.local file contains: NEXT_PUBLIC_GEMINI_API_KEY=your_key_here
+2. You've restarted the server after adding the API key
+3. Your API key is valid and has access to Gemini API
+
+For detailed errors, check the browser console (Press F12).`,
+        timestamp: new Date(),
+        suggestions: ['Check setup guide', 'Verify API key', 'Try again']
+      }
+      setMessages(prev => [...prev, errorMessage])
+    } finally {
       setIsTyping(false)
-    }, 1500)
+      console.log('🏁 Message handling complete')
+    }
   }
 
-  const generateAIResponse = (userInput: string): string => {
-    const lowerInput = userInput.toLowerCase()
-    
-    if (lowerInput.includes('career') || lowerInput.includes('job')) {
-      return `Based on your profile, I see great potential in several career paths. Given the current market trends and your interests, here are some recommendations:
-
-**Top Matches for You:**
-• **Data Scientist** (92% match) - High growth industry with ₹15-25 LPA potential
-• **Product Manager** (88% match) - Great for your analytical and leadership skills  
-• **Software Engineer** (85% match) - Stable career with remote work opportunities
-
-Would you like me to dive deeper into any of these paths or analyze what skills you need to develop?`
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      handleSendMessage()
     }
-    
-    if (lowerInput.includes('skill') || lowerInput.includes('learn')) {
-      return `I've analyzed your current skill set and identified some key areas for development:
-
-**Priority Skills to Develop:**
-🎯 **Python & Data Analysis** - 3 month timeline
-🎯 **Communication & Presentation** - Ongoing practice
-🎯 **Project Management** - 2 month certification course
-
-**Recommended Learning Path:**
-1. Start with Python fundamentals (Coursera - 4 weeks)
-2. Join a public speaking club like Toastmasters
-3. Get certified in Agile/Scrum methodology
-
-I can create a detailed weekly study plan if you're interested!`
-    }
-    
-    return `That's a great question! Based on your career goals and current market trends, here's what I recommend:
-
-I can help you explore this topic in detail. Whether you're looking to switch careers, advance in your current role, or develop new skills, I'm here to provide personalized guidance.
-
-What specific aspect would you like to focus on? I can provide detailed insights, create action plans, or connect you with relevant resources and mentors.`
-  }
-
-  const generateSuggestions = (userInput: string): string[] => {
-    return [
-      'Tell me more about salary expectations',
-      'Show me the learning roadmap',
-      'Find relevant courses and certifications',
-      'Connect me with industry mentors'
-    ]
   }
 
   const handleQuickAction = (actionText: string) => {
@@ -195,78 +289,157 @@ What specific aspect would you like to focus on? I can provide detailed insights
   }
 
   const handleVoiceToggle = () => {
-    setIsRecording(!isRecording)
-    // Voice recording logic would go here
+    if (!recognitionRef.current) {
+      setError('Voice recognition is not supported in your browser')
+      return
+    }
+
+    if (isRecording) {
+      recognitionRef.current.stop()
+      setIsRecording(false)
+    } else {
+      try {
+        recognitionRef.current.start()
+        setIsRecording(true)
+      } catch (error) {
+        console.error('Failed to start recording:', error)
+        setError('Failed to start voice recording')
+      }
+    }
   }
 
-  const handleSpeakToggle = () => {
-    setIsSpeaking(!isSpeaking)
-    // Text-to-speech logic would go here
+  const handleSpeakMessage = (content: string) => {
+    if ('speechSynthesis' in window) {
+      if (isSpeaking) {
+        window.speechSynthesis.cancel()
+        setIsSpeaking(false)
+      } else {
+        const utterance = new SpeechSynthesisUtterance(content)
+        utterance.lang = selectedLanguage.code === 'en' ? 'en-US' : `${selectedLanguage.code}-IN`
+        utterance.onend = () => setIsSpeaking(false)
+        window.speechSynthesis.speak(utterance)
+        setIsSpeaking(true)
+      }
+    }
   }
 
-  const copyMessage = (content: string) => {
+  const copyMessage = (content: string, messageId: string) => {
     navigator.clipboard.writeText(content)
+    setCopiedMessageId(messageId)
+    setTimeout(() => setCopiedMessageId(null), 2000)
   }
 
   return (
-    <div className="flex flex-col h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+    <div className="flex flex-col h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-100">
       {/* Header */}
-      <div className="bg-white/80 backdrop-blur-xl border-b border-gray-200 p-4">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-2xl">
-                {selectedMentor.avatar}
+      <div className="bg-white/90 backdrop-blur-2xl border-b border-gray-200/50 shadow-lg">
+        <div className="max-w-6xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="relative">
+                <div className="w-14 h-14 bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 rounded-2xl flex items-center justify-center text-2xl shadow-lg">
+                  {selectedMentor.avatar}
+                </div>
+                <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
               </div>
               <div>
-                <h1 className="font-semibold text-gray-900">{selectedMentor.name}</h1>
-                <p className="text-sm text-gray-600">{selectedMentor.specialty}</p>
+                <h1 className="text-xl font-bold" style={{ color: '#111827' }}>{selectedMentor.name}</h1>
+                <p className="text-sm flex items-center" style={{ color: '#6b7280' }}>
+                  <span className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></span>
+                  {selectedMentor.specialty} • Online
+                </p>
               </div>
             </div>
-          </div>
-          
-          <div className="flex items-center space-x-2">
-            {/* Language Selector */}
-            <div className="relative group">
-              <Button variant="outline" size="sm">
-                <Languages className="w-4 h-4 mr-2" />
-                {selectedLanguage.flag} {selectedLanguage.name}
-              </Button>
-              <div className="absolute top-full right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
-                {languages.map((lang) => (
-                  <button
-                    key={lang.code}
-                    onClick={() => setSelectedLanguage(lang)}
-                    className="w-full text-left px-4 py-2 hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg"
-                  >
-                    {lang.flag} {lang.name}
-                  </button>
-                ))}
+            
+            <div className="flex items-center space-x-3">
+              {/* Language Selector */}
+              <div className="relative language-dropdown">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => {
+                    setLanguageDropdownOpen(!languageDropdownOpen)
+                    setMentorDropdownOpen(false)
+                  }}
+                  className="bg-white/50 hover:bg-white/80 border-gray-200 shadow-sm"
+                  style={{ color: '#374151' }}
+                >
+                  <Languages className="w-4 h-4 mr-2" />
+                  {selectedLanguage.flag} {selectedLanguage.name}
+                </Button>
+                <AnimatePresence>
+                  {languageDropdownOpen && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="absolute top-full right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50"
+                    >
+                      {languages.map((lang) => (
+                        <button
+                          key={lang.code}
+                          onClick={() => {
+                            setSelectedLanguage(lang)
+                            setLanguageDropdownOpen(false)
+                          }}
+                          className="w-full text-left px-4 py-2 hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg flex items-center transition-colors"
+                          style={{ color: '#374151' }}
+                        >
+                          <span className="mr-2">{lang.flag}</span>
+                          {lang.name}
+                        </button>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
-            </div>
 
-            {/* Mentor Selector */}
-            <div className="relative group">
-              <Button variant="outline" size="sm">
-                <Bot className="w-4 h-4 mr-2" />
-                Switch Mentor
-              </Button>
-              <div className="absolute top-full right-0 mt-2 w-72 bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
-                {mentorPersonas.map((mentor) => (
-                  <button
-                    key={mentor.id}
-                    onClick={() => setSelectedMentor(mentor)}
-                    className="w-full text-left p-4 hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg border-b border-gray-100 last:border-b-0"
-                  >
-                    <div className="flex items-center space-x-3">
-                      <div className="text-2xl">{mentor.avatar}</div>
-                      <div>
-                        <div className="font-medium">{mentor.name}</div>
-                        <div className="text-sm text-gray-600">{mentor.description}</div>
-                      </div>
-                    </div>
-                  </button>
-                ))}
+              {/* Mentor Selector */}
+              <div className="relative mentor-dropdown">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => {
+                    setMentorDropdownOpen(!mentorDropdownOpen)
+                    setLanguageDropdownOpen(false)
+                  }}
+                  className="bg-white/50 hover:bg-white/80 border-gray-200 shadow-sm"
+                  style={{ color: '#374151' }}
+                >
+                  <Bot className="w-4 h-4 mr-2" />
+                  Switch Mentor
+                </Button>
+                <AnimatePresence>
+                  {mentorDropdownOpen && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="absolute top-full right-0 mt-2 w-72 bg-white border border-gray-200 rounded-lg shadow-lg z-50"
+                    >
+                      {mentorPersonas.map((mentor) => (
+                        <button
+                          key={mentor.id}
+                          onClick={() => {
+                            setSelectedMentor(mentor)
+                            setMentorDropdownOpen(false)
+                          }}
+                          className={`w-full text-left p-4 hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg border-b border-gray-100 last:border-b-0 transition-colors ${
+                            selectedMentor.id === mentor.id ? 'bg-blue-50' : ''
+                          }`}
+                        >
+                          <div className="flex items-center space-x-3">
+                            <div className="text-2xl">{mentor.avatar}</div>
+                            <div>
+                              <div className="font-medium" style={{ color: '#111827' }}>{mentor.name}</div>
+                              <div className="text-sm" style={{ color: '#6b7280' }}>{mentor.description}</div>
+                            </div>
+                          </div>
+                        </button>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </div>
           </div>
@@ -274,18 +447,20 @@ What specific aspect would you like to focus on? I can provide detailed insights
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-white/50 border-b border-gray-200 p-4">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex flex-wrap gap-2">
+      <div className="bg-white/40 backdrop-blur-sm border-b border-gray-200/50 px-6 py-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex flex-wrap gap-3">
             {quickActions.map((action, index) => (
               <Button
                 key={index}
                 variant="outline"
                 size="sm"
                 onClick={() => handleQuickAction(action.text)}
-                className="text-xs rounded-full"
+                disabled={isTyping}
+                className="text-xs rounded-full bg-white/70 hover:bg-white shadow-sm border-gray-200 hover:border-blue-300 hover:text-blue-700 transition-all duration-200"
+                style={{ fontSize: '12px', color: '#374151' }}
               >
-                <action.icon className="w-3 h-3 mr-1" />
+                <action.icon className="w-3 h-3 mr-2" />
                 {action.text}
               </Button>
             ))}
@@ -293,9 +468,38 @@ What specific aspect would you like to focus on? I can provide detailed insights
         </div>
       </div>
 
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4">
-        <div className="max-w-4xl mx-auto space-y-6">
+      {/* Error Display */}
+      <AnimatePresence>
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="bg-red-50 border-l-4 border-red-400 overflow-hidden"
+          >
+            <div className="p-4">
+              <div className="max-w-4xl mx-auto flex">
+                <AlertCircle className="w-5 h-5 text-red-400 mr-2 mt-0.5 flex-shrink-0" />
+                <div className="flex-1">
+                  <p className="text-red-700 text-sm">{error}</p>
+                  <Button
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => setError(null)}
+                    className="text-red-600 hover:text-red-800 p-0 h-auto mt-1"
+                  >
+                    Dismiss
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Messages Container */}
+      <div className="flex-1 overflow-y-auto p-6 bg-gradient-to-b from-transparent to-white/20">
+        <div className="max-w-6xl mx-auto space-y-6">
           {messages.map((message) => (
             <motion.div
               key={message.id}
@@ -304,64 +508,126 @@ What specific aspect would you like to focus on? I can provide detailed insights
               transition={{ duration: 0.3 }}
               className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
             >
-              <div className={`max-w-3xl ${message.type === 'user' ? 'order-2' : 'order-1'}`}>
+              <div className={`max-w-4xl ${message.type === 'user' ? 'order-2' : 'order-1'}`}>
                 <div className="flex items-start space-x-3 mb-2">
+                  {/* Avatar for Assistant */}
                   {message.type === 'assistant' && (
-                    <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-sm">
+                    <div className="w-10 h-10 bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 rounded-2xl flex items-center justify-center text-sm shadow-md flex-shrink-0">
                       {selectedMentor.avatar}
                     </div>
                   )}
+                  
+                  {/* Avatar for User */}
                   {message.type === 'user' && (
-                    <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center order-2">
-                      <User className="w-4 h-4" />
+                    <div className="w-10 h-10 bg-gradient-to-r from-gray-400 to-gray-600 rounded-2xl flex items-center justify-center order-2 shadow-md flex-shrink-0">
+                      <User className="w-5 h-5 text-white" />
                     </div>
                   )}
-                  <Card className={`p-4 ${
-                    message.type === 'user' 
-                      ? 'bg-blue-500 text-white' 
-                      : 'bg-white border border-gray-200'
-                  }`}>
-                    <div className="whitespace-pre-wrap">{message.content}</div>
+                  
+                  {/* Message Card - Fixed with explicit styling */}
+                  <div 
+                    className={`px-5 py-4 rounded-lg shadow-lg border-0 ${
+                      message.type === 'user' 
+                        ? 'bg-gradient-to-r from-blue-600 to-blue-700' 
+                        : 'bg-white'
+                    }`}
+                    style={{
+                      maxWidth: '100%',
+                      wordBreak: 'break-word',
+                      backgroundColor: message.type === 'user' ? undefined : '#ffffff'
+                    }}
+                  >
+                    {/* Message Content - Most Important Fix */}
+                    <div 
+                      className={message.type === 'user' ? 'text-white' : 'text-gray-900'}
+                      style={{
+                        color: message.type === 'user' ? '#ffffff' : '#111827',
+                        fontSize: '14px',
+                        lineHeight: '1.75',
+                        whiteSpace: 'pre-wrap',
+                        fontFamily: 'inherit',
+                        backgroundColor: 'transparent',
+                        opacity: 1,
+                        visibility: 'visible'
+                      }}
+                    >
+                      {message.content}
+                    </div>
                     
+                    {/* Assistant Message Actions */}
                     {message.type === 'assistant' && (
-                      <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
+                      <div 
+                        className="flex items-center justify-between mt-3 pt-3" 
+                        style={{ borderTop: '1px solid #e5e7eb' }}
+                      >
                         <div className="flex items-center space-x-2">
-                          <Button variant="ghost" size="sm" onClick={() => copyMessage(message.content)}>
-                            <Copy className="w-4 h-4" />
-                          </Button>
-                          <Button variant="ghost" size="sm" onClick={handleSpeakToggle}>
+                          <button
+                            onClick={() => copyMessage(message.content, message.id)}
+                            className="p-1.5 rounded hover:bg-gray-100 transition-colors"
+                            style={{ color: '#6b7280' }}
+                          >
+                            {copiedMessageId === message.id ? (
+                              <Check className="w-4 h-4" style={{ color: '#10b981' }} />
+                            ) : (
+                              <Copy className="w-4 h-4" />
+                            )}
+                          </button>
+                          <button
+                            onClick={() => handleSpeakMessage(message.content)}
+                            className="p-1.5 rounded hover:bg-gray-100 transition-colors"
+                            style={{ color: '#6b7280' }}
+                          >
                             {isSpeaking ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-                          </Button>
-                          <div className="flex items-center space-x-1">
-                            <Button variant="ghost" size="sm">
-                              <ThumbsUp className="w-4 h-4" />
-                            </Button>
-                            <Button variant="ghost" size="sm">
-                              <ThumbsDown className="w-4 h-4" />
-                            </Button>
-                          </div>
+                          </button>
+                          <button 
+                            className="p-1.5 rounded hover:bg-gray-100 transition-colors" 
+                            style={{ color: '#6b7280' }}
+                          >
+                            <ThumbsUp className="w-4 h-4" />
+                          </button>
+                          <button 
+                            className="p-1.5 rounded hover:bg-gray-100 transition-colors" 
+                            style={{ color: '#6b7280' }}
+                          >
+                            <ThumbsDown className="w-4 h-4" />
+                          </button>
                         </div>
-                        <span className="text-xs text-gray-400">
-                          {message.timestamp.toLocaleTimeString()}
+                        <span style={{ fontSize: '12px', color: '#9ca3af' }}>
+                          {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </span>
                       </div>
                     )}
-                  </Card>
+                    
+                    {/* User Message Timestamp */}
+                    {message.type === 'user' && (
+                      <div className="flex justify-end mt-2">
+                        <span style={{ fontSize: '12px', color: '#dbeafe', opacity: 0.9 }}>
+                          {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </div>
+                    )}
+                  </div>
                 </div>
                 
                 {/* Suggestions */}
                 {message.suggestions && message.suggestions.length > 0 && (
-                  <div className="flex flex-wrap gap-2 ml-11 mt-2">
+                  <div className="flex flex-wrap gap-2 ml-13 mt-2">
                     {message.suggestions.map((suggestion, index) => (
                       <Button
                         key={index}
                         variant="outline"
                         size="sm"
                         onClick={() => handleQuickAction(suggestion)}
-                        className="text-xs rounded-full"
+                        disabled={isTyping}
+                        className="text-xs rounded-full bg-gradient-to-r from-blue-50 to-purple-50 hover:from-blue-100 hover:to-purple-100 border-blue-200 hover:border-blue-300 shadow-sm transition-all duration-200"
+                        style={{
+                          fontSize: '12px',
+                          padding: '4px 12px',
+                          color: '#1e40af'
+                        }}
                       >
-                        <Sparkles className="w-3 h-3 mr-1" />
-                        {suggestion}
+                        <Sparkles className="w-3 h-3 mr-2" />
+                        <span style={{ color: '#1e40af' }}>{suggestion}</span>
                       </Button>
                     ))}
                   </div>
@@ -374,21 +640,24 @@ What specific aspect would you like to focus on? I can provide detailed insights
           <AnimatePresence>
             {isTyping && (
               <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="flex items-center space-x-3"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="flex items-start space-x-3"
               >
-                <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-sm">
+                <div className="w-10 h-10 bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 rounded-2xl flex items-center justify-center text-sm shadow-md">
                   {selectedMentor.avatar}
                 </div>
-                <Card className="p-4">
-                  <div className="flex items-center space-x-1">
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse" />
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse delay-75" />
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse delay-150" />
+                <div className="px-5 py-4 bg-white rounded-lg shadow-lg">
+                  <div className="flex items-center space-x-2">
+                    <div className="flex space-x-1">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" />
+                      <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '75ms' }} />
+                      <div className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                    </div>
+                    <span className="text-xs" style={{ color: '#6b7280' }}>AI is thinking...</span>
                   </div>
-                </Card>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
@@ -397,37 +666,56 @@ What specific aspect would you like to focus on? I can provide detailed insights
         </div>
       </div>
 
-      {/* Input */}
-      <div className="bg-white/80 backdrop-blur-xl border-t border-gray-200 p-4">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex items-center space-x-3">
+{/* Input Section */}
+      <div className="bg-white/95 backdrop-blur-2xl border-t border-gray-200/50 shadow-2xl">
+        <div className="max-w-6xl mx-auto px-6 py-5">
+          <div className="flex items-end space-x-3">
             <div className="flex-1 relative">
-              <Input
+              <Textarea
                 ref={inputRef}
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                placeholder="Ask me anything about your career..."
-                className="pr-12 py-3"
+                onKeyPress={handleKeyPress}
+                placeholder="Ask me anything about your career... Press Shift+Enter for new line"
+                className="pr-12 py-3 text-gray-900 placeholder-gray-500 text-base rounded-2xl border-gray-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20 shadow-sm resize-none min-h-[52px] max-h-32 bg-white"
+                rows={1}
+                disabled={isTyping}
               />
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={handleVoiceToggle}
-                className={`absolute right-2 top-1/2 transform -translate-y-1/2 ${
-                  isRecording ? 'text-red-500' : 'text-gray-400'
+                disabled={isTyping}
+                className={`absolute right-2 bottom-2 h-8 w-8 p-0 rounded-full ${
+                  isRecording 
+                    ? 'text-red-500 bg-red-50 hover:bg-red-100' 
+                    : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
                 }`}
               >
                 {isRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
               </Button>
             </div>
-            <Button onClick={handleSendMessage} disabled={!inputMessage.trim()}>
-              <Send className="w-4 h-4" />
+            <Button 
+              onClick={handleSendMessage} 
+              disabled={!inputMessage.trim() || isTyping}
+              className="h-[52px] px-5 rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-white"
+            >
+              {isTyping ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <Send className="w-5 h-5" />
+              )}
             </Button>
           </div>
-          <p className="text-xs text-gray-500 mt-2 text-center">
-            AI responses are based on your profile and current market data. Always verify important decisions.
-          </p>
+          <div className="flex items-center justify-between mt-3">
+            <p className="text-xs text-gray-600">
+              AI responses are based on your profile and current market data. Always verify important decisions.
+            </p>
+            <div className="flex items-center space-x-2 text-xs text-gray-500">
+              <span>Powered by Gemini AI</span>
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

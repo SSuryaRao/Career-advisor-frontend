@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import Navbar from '@/components/layout/navbar'
@@ -16,10 +17,19 @@ import { ArrowRight, Sparkles, Brain, Target, Users, TrendingUp, Award, Globe } 
 
 export default function LandingPage() {
   const [isLoaded, setIsLoaded] = useState(false)
+  const router = useRouter()
 
   useEffect(() => {
     setIsLoaded(true)
   }, [])
+
+  const handleStartJourney = () => {
+    router.push('/mentor')
+  }
+
+  const handleWatchDemo = () => {
+    router.push('/mentor')
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-black text-white overflow-x-hidden">
@@ -85,6 +95,7 @@ export default function LandingPage() {
               <Button
                 size="lg"
                 className="btn-responsive-lg bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-full group shadow-2xl w-full sm:w-auto"
+                onClick={handleStartJourney}
               >
                 Start Your Journey
                 <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -93,6 +104,7 @@ export default function LandingPage() {
                 size="lg"
                 variant="outline"
                 className="btn-responsive-lg border-white/20 hover:bg-white/10 text-white rounded-full w-full sm:w-auto"
+                onClick={handleWatchDemo}
               >
                 Watch Demo
               </Button>

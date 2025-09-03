@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
+import { useRouter } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -13,6 +14,16 @@ import {
 } from 'lucide-react'
 
 export default function AIMentorPage() {
+  const router = useRouter()
+
+  const handleChatClick = () => {
+    router.push('/mentor')
+  }
+
+  const handleDemoClick = () => {
+    router.push('/mentor')
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50">
       <Navbar />
@@ -39,11 +50,20 @@ export default function AIMentorPage() {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700">
+              <Button 
+                size="lg" 
+                className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                onClick={handleChatClick}
+              >
                 Chat with AI Mentor
                 <MessageSquare className="w-5 h-5 ml-2" />
               </Button>
-              <Button size="lg" variant="outline" className="border-white/20 hover:bg-white/10 text-white">
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="border-white/20 hover:bg-white/10 text-white"
+                onClick={handleDemoClick}
+              >
                 View Demo
               </Button>
             </div>
@@ -96,7 +116,11 @@ export default function AIMentorPage() {
             <p className="text-purple-100 mb-8 text-lg max-w-2xl mx-auto">
               Join thousands of professionals who are accelerating their careers with AI-powered mentorship.
             </p>
-            <Button size="lg" className="bg-white text-purple-600 hover:bg-gray-100">
+            <Button 
+              size="lg" 
+              className="bg-white text-purple-600 hover:bg-gray-100"
+              onClick={handleChatClick}
+            >
               Get Started Today
               <ArrowRight className="w-5 h-5 ml-2" />
             </Button>
