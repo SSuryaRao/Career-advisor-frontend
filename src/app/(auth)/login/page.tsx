@@ -2,9 +2,16 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Mail, Lock, Github, Chrome, ArrowRight, Sparkles } from 'lucide-react'
+import { Mail, Lock, Chrome, ArrowRight, Sparkles, Home } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import {
+  signInWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithPopup,
+} from 'firebase/auth'
+import { auth } from '@/lib/firebase'
+import toast from 'react-hot-toast'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -15,16 +22,30 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-    // Simulate login
-    setTimeout(() => {
+    try {
+      await signInWithEmailAndPassword(auth, email, password)
       router.push('/dashboard')
-    }, 1500)
+    } catch (error: any) {
+      toast.error(error.message)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleGoogleLogin = async () => {
+    const provider = new GoogleAuthProvider()
+    try {
+      await signInWithPopup(auth, provider)
+      router.push('/dashboard')
+    } catch (error: any) {
+      toast.error(error.message)
+    }
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/50" />
-      
+
       {/* Animated background particles */}
       <div className="absolute inset-0">
         {[...Array(50)].map((_, i) => (
@@ -32,10 +53,10 @@ export default function LoginPage() {
             key={i}
             className="absolute animate-pulse"
             style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 5}s`,
-              animationDuration: `${3 + Math.random() * 4}s`
+              left: `${(i * 17) % 100}%`,
+              top: `${(i * 23) % 100}%`,
+              animationDelay: `${(i * 0.1) % 5}s`,
+              animationDuration: `${3 + (i * 0.08)}s`,
             }}
           >
             <Sparkles className="w-2 h-2 text-white/20" />
@@ -54,13 +75,15 @@ export default function LoginPage() {
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
-              transition={{ type: "spring", duration: 0.5 }}
+              transition={{ type: 'spring', duration: 0.5 }}
               className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full mb-4"
             >
               <Sparkles className="w-8 h-8 text-white" />
             </motion.div>
             <h1 className="text-3xl font-bold text-white mb-2">Welcome Back</h1>
-            <p className="text-white/60">Sign in to continue your career journey</p>
+            <p className="text-white/60">
+              Sign in to continue your career journey
+            </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -100,10 +123,16 @@ export default function LoginPage() {
 
             <div className="flex items-center justify-between">
               <label className="flex items-center">
-                <input type="checkbox" className="w-4 h-4 rounded border-white/20 bg-white/10 text-purple-500 focus:ring-purple-500" />
+                <input
+                  type="checkbox"
+                  className="w-4 h-4 rounded border-white/20 bg-white/10 text-purple-500 focus:ring-purple-500"
+                />
                 <span className="ml-2 text-sm text-white/60">Remember me</span>
               </label>
-              <Link href="/forgot-password" className="text-sm text-purple-300 hover:text-purple-200">
+              <Link
+                href="/forgot-password"
+                className="text-sm text-purple-300 hover:text-purple-200"
+              >
                 Forgot password?
               </Link>
             </div>
@@ -132,28 +161,40 @@ export default function LoginPage() {
                 <div className="w-full border-t border-white/20"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-transparent text-white/60">Or continue with</span>
+                <span className="px-2 bg-transparent text-white/60">
+                  Or continue with
+                </span>
               </div>
             </div>
 
-            <div className="mt-6 grid grid-cols-2 gap-3">
-              <button className="flex items-center justify-center px-4 py-2 bg-white/10 border border-white/20 rounded-lg hover:bg-white/20 transition">
+            <div className="mt-6">
+              <button
+                onClick={handleGoogleLogin}
+                className="w-full flex items-center justify-center px-4 py-3 bg-white/10 border border-white/20 rounded-lg hover:bg-white/20 transition"
+              >
                 <Chrome className="w-5 h-5 text-white" />
                 <span className="ml-2 text-white">Google</span>
-              </button>
-              <button className="flex items-center justify-center px-4 py-2 bg-white/10 border border-white/20 rounded-lg hover:bg-white/20 transition">
-                <Github className="w-5 h-5 text-white" />
-                <span className="ml-2 text-white">GitHub</span>
               </button>
             </div>
           </div>
 
           <p className="mt-8 text-center text-sm text-white/60">
             Don't have an account?{' '}
-            <Link href="/signup" className="text-purple-300 hover:text-purple-200 font-medium">
+            <Link
+              href="/signup"
+              className="text-purple-300 hover:text-purple-200 font-medium"
+            >
               Sign up
             </Link>
           </p>
+
+          <div className="mt-4 text-center">
+            <Link href="/" className="inline-flex items-center text-sm text-white/60 hover:text-white transition">
+              <Home className="w-4 h-4 mr-2" />
+              Back to Homepage
+            </Link>
+          </div>
+
         </div>
       </motion.div>
     </div>

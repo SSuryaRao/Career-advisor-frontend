@@ -1,9 +1,10 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { Providers } from '@/components/providers'
 import { Toaster } from 'react-hot-toast'
 import { Analytics } from '@vercel/analytics/react'
+import AuthProvider from '@/components/auth-provider'
 
 
 const inter = Inter({ subsets: ['latin'] })
@@ -59,18 +60,20 @@ export default function RootLayout({
       </head>
       <body className={inter.className}>
         <Providers>
-          {children}
-          <Toaster
-            position="bottom-right"
-            toastOptions={{
-              className: '',
-              style: {
-                background: '#18181b',
-                color: '#fff',
-                border: '1px solid #27272a',
-              },
-            }}
-          />
+          <AuthProvider>
+            {children}
+            <Toaster
+              position="bottom-right"
+              toastOptions={{
+                className: '',
+                style: {
+                  background: '#18181b',
+                  color: '#fff',
+                  border: '1px solid #27272a',
+                },
+              }}
+            />
+          </AuthProvider>
         </Providers>
         <Analytics />
       </body>

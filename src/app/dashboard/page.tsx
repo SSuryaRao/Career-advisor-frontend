@@ -10,10 +10,14 @@ import {
   LineChart, Line, PieChart, Pie, Cell, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis
 } from 'recharts'
 import {
-  Target, TrendingUp, Users, BookOpen, Clock, Star, 
+  Target, TrendingUp, Users, BookOpen, Clock, Star,
   Calendar, Award, Brain, MessageSquare, Video, FileText,
-  ChevronRight, Plus, Search, Filter, Bell, Settings
+  ChevronRight, Plus, Search, Filter, Bell, Settings, LogOut
 } from 'lucide-react'
+import { signOut } from 'firebase/auth'
+import { auth } from '@/lib/firebase'
+import { useRouter } from 'next/navigation'
+import toast from 'react-hot-toast'
 
 const careerProgressData = [
   { month: 'Jan', progress: 20 },
@@ -50,6 +54,17 @@ const radarData = [
 
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState('overview')
+  const router = useRouter()
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth)
+      toast.success('Logged out successfully!')
+      router.push('/login')
+    } catch (error: any) {
+      toast.error(error.message)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
@@ -69,6 +84,10 @@ export default function DashboardPage() {
               <Button size="sm">
                 <Plus className="w-4 h-4 mr-2" />
                 New Goal
+              </Button>
+              <Button variant="destructive" size="sm" onClick={handleLogout}>
+                <LogOut className="w-4 h-4 mr-2" />
+                Logout
               </Button>
             </div>
           </div>
@@ -167,10 +186,10 @@ export default function DashboardPage() {
                     <XAxis dataKey="month" />
                     <YAxis />
                     <Tooltip />
-                    <Line 
-                      type="monotone" 
-                      dataKey="progress" 
-                      stroke="#3b82f6" 
+                    <Line
+                      type="monotone"
+                      dataKey="progress"
+                      stroke="#3b82f6"
                       strokeWidth={3}
                       dot={{ fill: '#3b82f6', strokeWidth: 2, r: 6 }}
                     />
@@ -272,8 +291,8 @@ export default function DashboardPage() {
                 {careerMatchData.map((item, index) => (
                   <div key={index} className="flex items-center justify-between">
                     <div className="flex items-center">
-                      <div 
-                        className="w-3 h-3 rounded-full mr-2" 
+                      <div
+                        className="w-3 h-3 rounded-full mr-2"
                         style={{ backgroundColor: item.color }}
                       />
                       <span className="text-sm">{item.name}</span>
@@ -322,11 +341,11 @@ export default function DashboardPage() {
                 <PolarGrid />
                 <PolarAngleAxis dataKey="subject" />
                 <PolarRadiusAxis angle={90} domain={[0, 100]} />
-                <Radar 
-                  name="Skills" 
-                  dataKey="A" 
-                  stroke="#3b82f6" 
-                  fill="#3b82f6" 
+                <Radar
+                  name="Skills"
+                  dataKey="A"
+                  stroke="#3b82f6"
+                  fill="#3b82f6"
                   fillOpacity={0.2}
                   strokeWidth={2}
                 />

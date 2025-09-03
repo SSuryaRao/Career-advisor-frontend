@@ -1,3 +1,4 @@
+// src/components/layout/navbar.tsx
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -19,7 +20,12 @@ import {
   TrendingUp,
   BookOpen,
   Briefcase,
+  LogOut,
 } from 'lucide-react'
+import { useAuth } from '../auth-provider'
+import { auth } from '@/lib/firebase'
+import { signOut } from 'firebase/auth'
+import toast from 'react-hot-toast'
 
 const navigation = [
   {
@@ -27,7 +33,11 @@ const navigation = [
     href: '#features',
     dropdown: [
       { name: 'AI Mentor', href: '/features/ai-mentor', icon: Brain },
-      { name: 'Career Engine', href: '/features/career-engine', icon: Target },
+      {
+        name: 'Career Engine',
+        href: '/features/career-engine',
+        icon: Target,
+      },
       { name: 'Skill Analysis', href: '/features/skills', icon: TrendingUp },
     ],
   },
@@ -37,7 +47,11 @@ const navigation = [
     dropdown: [
       { name: 'For Students', href: '/solutions/students', icon: BookOpen },
       { name: 'For Parents', href: '/solutions/parents', icon: Users },
-      { name: 'For Institutions', href: '/solutions/institutions', icon: Briefcase },
+      {
+        name: 'For Institutions',
+        href: '/solutions/institutions',
+        icon: Briefcase,
+      },
     ],
   },
   { name: 'Careers', href: '/careers' },
@@ -50,6 +64,16 @@ export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null)
   const pathname = usePathname()
+  const { user } = useAuth()
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth)
+      toast.success('Logged out successfully')
+    } catch (error: any) {
+      toast.error(error.message)
+    }
+  }
 
   useEffect(() => {
     const handleScroll = () => {
@@ -97,9 +121,7 @@ export default function Navbar() {
                   className="flex items-center space-x-1 text-gray-300 hover:text-white transition-colors"
                 >
                   <span>{item.name}</span>
-                  {item.dropdown && (
-                    <ChevronDown className="w-4 h-4" />
-                  )}
+                  {item.dropdown && <ChevronDown className="w-4 h-4" />}
                 </Link>
 
                 {/* Dropdown Menu */}
@@ -133,17 +155,43 @@ export default function Navbar() {
 
           {/* Right Section */}
           <div className="hidden md:flex items-center space-x-4">
-            {/* Auth Buttons */}
-            <Button
-              variant="ghost"
-              className="text-gray-300 hover:text-white text-sm lg:text-base"
-            >
-              <LogIn className="w-4 h-4 mr-2" />
-              Login
-            </Button>
-            <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white text-sm lg:text-base px-4 lg:px-6">
-              Get Started
-            </Button>
+            {user ? (
+              <>
+                <Link href="/dashboard">
+                  <Button
+                    variant="ghost"
+                    className="text-gray-300 hover:text-white text-sm lg:text-base"
+                  >
+                    <User className="w-4 h-4 mr-2" />
+                    Dashboard
+                  </Button>
+                </Link>
+                <Button
+                  onClick={handleLogout}
+                  className="bg-red-600 hover:bg-red-700 text-white text-sm lg:text-base px-4 lg:px-6"
+                >
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Logout
+                </Button>
+              </>
+            ) : (
+              <>
+                <Link href="/login">
+                  <Button
+                    variant="ghost"
+                    className="text-gray-300 hover:text-white text-sm lg:text-base"
+                  >
+                    <LogIn className="w-4 h-4 mr-2" />
+                    Login
+                  </Button>
+                </Link>
+                <Link href="/signup">
+                  <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white text-sm lg:text-base px-4 lg:px-6">
+                    Get Started
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -198,12 +246,34 @@ export default function Navbar() {
                 </div>
               ))}
               <div className="flex flex-col space-y-2 mt-4 pt-4 border-t border-white/10">
-                <Button variant="outline" className="w-full">
-                  Login
-                </Button>
-                <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600">
-                  Get Started
-                </Button>
+                {user ? (
+                  <>
+                    <Link href="/dashboard" passHref>
+                      <Button variant="outline" className="w-full">
+                        Dashboard
+                      </Button>
+                    </Link>
+                    <Button
+                      onClick={handleLogout}
+                      className="w-full bg-red-600 hover:bg-red-700"
+                    >
+                      Logout
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Link href="/login" passHref>
+                      <Button variant="outline" className="w-full">
+                        Login
+                      </Button>
+                    </Link>
+                    <Link href="/signup" passHref>
+                      <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600">
+                        Get Started
+                      </Button>
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
           </motion.div>
