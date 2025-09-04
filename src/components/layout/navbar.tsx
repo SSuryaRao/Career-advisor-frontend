@@ -41,19 +41,7 @@ const navigation = [
       { name: 'Skill Analysis', href: '/features/skills', icon: TrendingUp },
     ],
   },
-  {
-    name: 'Solutions',
-    href: '#solutions',
-    dropdown: [
-      { name: 'For Students', href: '/solutions/students', icon: BookOpen },
-      { name: 'For Parents', href: '/solutions/parents', icon: Users },
-      {
-        name: 'For Institutions',
-        href: '/solutions/institutions',
-        icon: Briefcase,
-      },
-    ],
-  },
+  { name: 'Solutions', href: '/solutions/students' },
   { name: 'Careers', href: '/careers' },
   { name: 'Resources', href: '/resources' },
   { name: 'Pricing', href: '/pricing' },

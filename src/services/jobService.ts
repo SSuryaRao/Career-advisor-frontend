@@ -67,9 +67,10 @@ export interface SearchJobsResponse {
 class JobService {
   private async fetchAPI<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     try {
-      const headers: HeadersInit = {
+      // Use Record<string, string> for headers to ensure it's a plain object
+      const headers: Record<string, string> = {
         'Content-Type': 'application/json',
-        ...options.headers,
+        ...(options.headers as Record<string, string> || {}),
       };
 
       const token = await authService.getIdToken();
