@@ -19,9 +19,11 @@ import {
   createUserWithEmailAndPassword,
   GoogleAuthProvider,
   signInWithPopup,
+  updateProfile,
 } from 'firebase/auth'
 import { auth } from '@/lib/firebase'
 import toast from 'react-hot-toast'
+import { apiClient } from '@/lib/api'
 
 export default function SignupPage() {
   const [step, setStep] = useState(1)
@@ -33,6 +35,10 @@ export default function SignupPage() {
     confirmPassword: '',
     userType: 'student',
     birthDate: '',
+    careerInterests: [] as string[],
+    preferredLanguages: [] as string[],
+    enableAIMentor: true,
+    receiveCareerUpdates: true,
   })
   const router = useRouter()
 
@@ -46,26 +52,117 @@ export default function SignupPage() {
       toast.error('Passwords do not match')
       return
     }
+    
     try {
-      await createUserWithEmailAndPassword(
+      // Create Firebase user
+      const userCredential = await createUserWithEmailAndPassword(
         auth,
         formData.email,
         formData.password
       )
-      router.push('/onboarding')
+
+      // Update Firebase profile with display name
+      if (userCredential.user) {
+        await updateProfile(userCredential.user, {
+          displayName: formData.name
+        })
+
+        // Create user profile in MongoDB
+        await createUserProfile()
+      }
+
+      toast.success('Account created successfully!')
+      router.push('/dashboard')
     } catch (error: any) {
-      toast.error(error.message)
+      console.error('Signup error:', error)
+      toast.error(error.message || 'Failed to create account')
+    }
+  }
+
+  const createUserProfile = async () => {
+    try {
+      const profileData = {
+        profile: {
+          phone: formData.phone,
+          bio: `I am a ${formData.userType} interested in ${formData.careerInterests.join(', ')}`,
+        },
+        preferences: {
+          interestedTags: formData.careerInterests.map(interest => interest.toLowerCase()),
+          jobTypes: formData.userType === 'student' ? ['internship', 'entry'] : ['full-time'],
+        },
+        notifications: {
+          emailAlerts: formData.receiveCareerUpdates,
+          jobMatches: formData.receiveCareerUpdates,
+          applicationUpdates: true,
+          weeklyDigest: false
+        }
+      }
+
+      const response = await apiClient.updateProfile(profileData)
+      if (!response.success) {
+        console.error('Failed to create user profile:', response.error)
+      }
+    } catch (error) {
+      console.error('Error creating user profile:', error)
+      // Don't fail signup if profile creation fails
     }
   }
 
   const handleGoogleSignup = async () => {
     const provider = new GoogleAuthProvider()
     try {
-      await signInWithPopup(auth, provider)
+      const result = await signInWithPopup(auth, provider)
+      if (result.user) {
+        // Create basic profile in MongoDB for Google signup
+        await createBasicProfile()
+      }
+      toast.success('Account created successfully!')
       router.push('/dashboard')
     } catch (error: any) {
-      toast.error(error.message)
+      console.error('Google signup error:', error)
+      toast.error(error.message || 'Failed to sign up with Google')
     }
+  }
+
+  const createBasicProfile = async () => {
+    try {
+      const profileData = {
+        preferences: {
+          jobTypes: ['full-time'],
+        },
+        notifications: {
+          emailAlerts: true,
+          jobMatches: true,
+          applicationUpdates: true,
+          weeklyDigest: false
+        }
+      }
+
+      const response = await apiClient.updateProfile(profileData)
+      if (!response.success) {
+        console.error('Failed to create basic user profile:', response.error)
+      }
+    } catch (error) {
+      console.error('Error creating basic user profile:', error)
+    }
+  }
+
+  const toggleCareerInterest = (interest: string) => {
+    setFormData(prev => ({
+      ...prev,
+      careerInterests: prev.careerInterests.includes(interest)
+        ? prev.careerInterests.filter(item => item !== interest)
+        : [...prev.careerInterests, interest]
+    }))
+  }
+
+  const toggleLanguage = (language: string) => {
+    setFormData(prev => ({
+      ...prev,
+      preferredLanguages: prev.preferredLanguages.includes(language)
+        ? prev.preferredLanguages.filter(item => item !== language)
+        : [...prev.preferredLanguages, language]
+    }))
   }
 
   return (
@@ -307,6 +404,8 @@ export default function SignupPage() {
                     >
                       <input
                         type="checkbox"
+                        checked={formData.careerInterests.includes(interest)}
+                        onChange={() => toggleCareerInterest(interest)}
                         className="w-4 h-4 rounded border-white/20 bg-white/10 text-purple-500"
                       />
                       <span className="text-white/80">{interest}</span>
@@ -334,6 +433,8 @@ export default function SignupPage() {
                     >
                       <input
                         type="checkbox"
+                        checked={formData.preferredLanguages.includes(lang)}
+                        onChange={() => toggleLanguage(lang)}
                         className="w-4 h-4 rounded border-white/20 bg-white/10 text-purple-500"
                       />
                       <span className="text-white/80 text-sm">{lang}</span>
@@ -347,7 +448,8 @@ export default function SignupPage() {
                   <span className="text-white/80">Enable AI Mentor</span>
                   <input
                     type="checkbox"
-                    defaultChecked
+                    checked={formData.enableAIMentor}
+                    onChange={(e) => setFormData({...formData, enableAIMentor: e.target.checked})}
                     className="w-12 h-6 bg-white/20 rounded-full"
                   />
                 </label>
@@ -357,7 +459,8 @@ export default function SignupPage() {
                   </span>
                   <input
                     type="checkbox"
-                    defaultChecked
+                    checked={formData.receiveCareerUpdates}
+                    onChange={(e) => setFormData({...formData, receiveCareerUpdates: e.target.checked})}
                     className="w-12 h-6 bg-white/20 rounded-full"
                   />
                 </label>
