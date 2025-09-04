@@ -12,12 +12,10 @@ import {
 import {
   Target, TrendingUp, Users, BookOpen, Clock, Star,
   Calendar, Award, Brain, MessageSquare, Video, FileText,
-  ChevronRight, Plus, Search, Filter, Bell, Settings, LogOut
+  ChevronRight, Plus, Search, Filter, Bell, Settings
 } from 'lucide-react'
-import { signOut } from 'firebase/auth'
-import { auth } from '@/lib/firebase'
 import { useRouter } from 'next/navigation'
-import toast from 'react-hot-toast'
+import Navbar from '@/components/layout/navbar'
 
 const careerProgressData = [
   { month: 'Jan', progress: 20 },
@@ -56,20 +54,12 @@ export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState('overview')
   const router = useRouter()
 
-  const handleLogout = async () => {
-    try {
-      await signOut(auth)
-      toast.success('Logged out successfully!')
-      router.push('/login')
-    } catch (error: any) {
-      toast.error(error.message)
-    }
-  }
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      <Navbar />
+      
       {/* Header */}
-      <div className="bg-white/80 backdrop-blur-xl border-b border-gray-200 sticky top-0 z-40">
+      <div className="bg-white/80 backdrop-blur-xl border-b border-gray-200 sticky top-20 z-40 mt-20">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div>
@@ -84,10 +74,6 @@ export default function DashboardPage() {
               <Button size="sm">
                 <Plus className="w-4 h-4 mr-2" />
                 New Goal
-              </Button>
-              <Button variant="destructive" size="sm" onClick={handleLogout}>
-                <LogOut className="w-4 h-4 mr-2" />
-                Logout
               </Button>
             </div>
           </div>

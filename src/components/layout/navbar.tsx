@@ -21,6 +21,7 @@ import {
   BookOpen,
   Briefcase,
   LogOut,
+  Settings,
 } from 'lucide-react'
 import { useAuth } from '../auth-provider'
 import { auth } from '@/lib/firebase'
@@ -51,6 +52,7 @@ export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null)
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false)
   const pathname = usePathname()
   const { user } = useAuth()
 
@@ -144,24 +146,55 @@ export default function Navbar() {
           {/* Right Section */}
           <div className="hidden md:flex items-center space-x-4">
             {user ? (
-              <>
-                <Link href="/dashboard">
-                  <Button
-                    variant="ghost"
-                    className="text-gray-300 hover:text-white text-sm lg:text-base"
-                  >
-                    <User className="w-4 h-4 mr-2" />
-                    Dashboard
-                  </Button>
-                </Link>
+              <div 
+                className="relative"
+                onMouseEnter={() => setProfileDropdownOpen(true)}
+                onMouseLeave={() => setProfileDropdownOpen(false)}
+              >
                 <Button
-                  onClick={handleLogout}
-                  className="bg-red-600 hover:bg-red-700 text-white text-sm lg:text-base px-4 lg:px-6"
+                  variant="ghost"
+                  className="text-gray-300 hover:text-white text-sm lg:text-base flex items-center space-x-2"
                 >
-                  <LogOut className="w-4 h-4 mr-2" />
-                  Logout
+                  <User className="w-4 h-4" />
+                  <span>Profile</span>
+                  <ChevronDown className="w-4 h-4" />
                 </Button>
-              </>
+                
+                {/* Profile Dropdown */}
+                <AnimatePresence>
+                  {profileDropdownOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.2 }}
+                      className="absolute top-full right-0 mt-2 w-48 bg-gray-900/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl overflow-hidden"
+                    >
+                      <Link
+                        href="/profile"
+                        className="flex items-center space-x-3 px-4 py-3 hover:bg-white/10 transition-colors"
+                      >
+                        <User className="w-4 h-4 text-blue-400" />
+                        <span className="text-gray-300 hover:text-white">My Profile</span>
+                      </Link>
+                      <Link
+                        href="/dashboard"
+                        className="flex items-center space-x-3 px-4 py-3 hover:bg-white/10 transition-colors"
+                      >
+                        <Settings className="w-4 h-4 text-blue-400" />
+                        <span className="text-gray-300 hover:text-white">Dashboard</span>
+                      </Link>
+                      <button
+                        onClick={handleLogout}
+                        className="w-full flex items-center space-x-3 px-4 py-3 hover:bg-white/10 transition-colors text-left"
+                      >
+                        <LogOut className="w-4 h-4 text-red-400" />
+                        <span className="text-gray-300 hover:text-white">Logout</span>
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             ) : (
               <>
                 <Link href="/login">
@@ -236,15 +269,23 @@ export default function Navbar() {
               <div className="flex flex-col space-y-2 mt-4 pt-4 border-t border-white/10">
                 {user ? (
                   <>
+                    <Link href="/profile" passHref>
+                      <Button variant="outline" className="w-full flex items-center justify-center">
+                        <User className="w-4 h-4 mr-2" />
+                        My Profile
+                      </Button>
+                    </Link>
                     <Link href="/dashboard" passHref>
-                      <Button variant="outline" className="w-full">
+                      <Button variant="outline" className="w-full flex items-center justify-center">
+                        <Settings className="w-4 h-4 mr-2" />
                         Dashboard
                       </Button>
                     </Link>
                     <Button
                       onClick={handleLogout}
-                      className="w-full bg-red-600 hover:bg-red-700"
+                      className="w-full bg-red-600 hover:bg-red-700 flex items-center justify-center"
                     >
+                      <LogOut className="w-4 h-4 mr-2" />
                       Logout
                     </Button>
                   </>
