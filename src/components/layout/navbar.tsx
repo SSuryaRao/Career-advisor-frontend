@@ -22,6 +22,7 @@ import {
   Briefcase,
   LogOut,
   Settings,
+  FileSearch,
 } from 'lucide-react'
 import { useAuth } from '../auth-provider'
 import { auth } from '@/lib/firebase'
@@ -39,6 +40,7 @@ const navigation = [
         href: '/features/career-engine',
         icon: Target,
       },
+      { name: 'Resume Analyzer', href: '/features/resume-analyzer', icon: FileSearch },
       { name: 'Skill Analysis', href: '/features/skills', icon: TrendingUp },
     ],
   },
