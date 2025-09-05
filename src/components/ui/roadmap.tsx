@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Select } from '@/components/ui/select'
+import { ROISummaryCard } from '@/components/ui/roi-summary-card'
 import { 
   BookOpen, Clock, CheckCircle2, MapPin, Target, 
   Users, Code, Brain, Award, TrendingUp, ExternalLink 
@@ -23,6 +24,28 @@ interface RoadmapMilestone {
   category: string
 }
 
+interface ROIData {
+  estimatedTimeWeeks: number
+  estimatedInvestment: number
+  expectedSalaryRange: {
+    min: number
+    max: number
+    average: number
+  }
+  roiSummary: {
+    multiplier: number
+    paybackPeriodMonths: number
+    description: string
+  }
+  marketInsights: {
+    demand: string
+    growthRate: string
+    avgTimeToJob: number
+  }
+  keySkills: string[]
+  explanation: string
+}
+
 interface RoadmapData {
   domain: string
   total_estimated_time: string
@@ -30,6 +53,7 @@ interface RoadmapData {
     category: string
     milestones: RoadmapMilestone[]
   }[]
+  roiCalculator?: ROIData
 }
 
 interface RoadmapProps {
@@ -420,6 +444,20 @@ export function Roadmap({ onGenerateRoadmap }: RoadmapProps) {
               </div>
             </div>
           </Card>
+
+          {/* ROI Summary Card */}
+          {roadmapData.roiCalculator && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+            >
+              <ROISummaryCard 
+                roiData={roadmapData.roiCalculator} 
+                domain={roadmapData.domain}
+              />
+            </motion.div>
+          )}
 
           {/* Roadmap Stages */}
           {roadmapData.stages.map((stage, stageIndex) => {
