@@ -10,7 +10,8 @@ import { Card } from '@/components/ui/card'
 export default function RoadmapPage() {
   const generateRoadmap = async (career_domain: string, skill_level: string) => {
     try {
-      const response = await fetch('http://localhost:5000/api/roadmap/generate', {
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'
+      const response = await fetch(`${API_BASE_URL}/roadmap/generate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -67,9 +67,10 @@ export default function ScholarshipsPage() {
   const fetchData = async () => {
     setLoading(true)
     try {
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'
       const endpoint = activeTab === 'scholarships' 
-        ? 'http://localhost:5000/api/scholarships' 
-        : 'http://localhost:5000/api/internships'
+        ? `${API_BASE_URL}/scholarships` 
+        : `${API_BASE_URL}/internships`
       
       const response = await fetch(endpoint)
       const data = await response.json()

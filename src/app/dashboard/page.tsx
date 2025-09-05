@@ -72,7 +72,8 @@ export default function DashboardPage() {
     try {
       setIsLoading(true)
       // Mock API call - replace with actual API endpoint
-      const response = await fetch(`http://localhost:5000/api/progress/user/${userId}`)
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'
+      const response = await fetch(`${API_BASE_URL}/progress/user/${userId}`)
       if (response.ok) {
         const data = await response.json()
         setUserProgress(data.data.progress)
@@ -87,7 +88,8 @@ export default function DashboardPage() {
 
   const generateRoadmap = async (career_domain: string, skill_level: string) => {
     try {
-      const response = await fetch('http://localhost:5000/api/roadmap/generate', {
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'
+      const response = await fetch(`${API_BASE_URL}/roadmap/generate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
