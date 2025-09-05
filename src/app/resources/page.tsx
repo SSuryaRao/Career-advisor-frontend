@@ -1,743 +1,31 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import Navbar from '@/components/layout/navbar'
 import { Input } from '@/components/ui/input'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   BookOpen, FileText, Video, Headphones, Download, Calendar,
   Clock, User, Star, Search, Filter, ChevronRight, Play,
   ExternalLink, Tag, TrendingUp, Users, Award, Bookmark,
   X, Code, Database, Brain, Briefcase, GraduationCap, 
   Globe, Mic, PenTool, Target, Zap, MessageSquare, 
-  Monitor, Smartphone, Cloud, Shield, BarChart3, Layers
+  Monitor, Smartphone, Cloud, Shield, BarChart3, Layers,
+  CheckCircle2, Trophy, Flame
 } from 'lucide-react'
-
-const resourceCategories = [
-  { name: 'Career Guides', icon: BookOpen, color: 'bg-blue-500' },
-  { name: 'Resume Templates', icon: FileText, color: 'bg-green-500' },
-  { name: 'Video Tutorials', icon: Video, color: 'bg-red-500' },
-  { name: 'Podcasts', icon: Headphones, color: 'bg-purple-500' },
-  { name: 'Webinars', icon: Calendar, color: 'bg-orange-500' },
-  { name: 'Templates', icon: Download, color: 'bg-pink-500' },
-]
-
-// Significantly expanded featured resources
-const featuredResources = [
-  // Programming & Development - Videos
-  {
-    id: 1,
-    title: 'CodeWithHarry - Web Development Playlist',
-    description: 'Complete web development course in Hindi covering HTML, CSS, JavaScript, React, and more',
-    type: 'Video',
-    category: 'Programming',
-    duration: '15+ hours',
-    rating: 4.9,
-    downloads: 250000,
-    author: 'Harry (CodeWithHarry)',
-    tags: ['Web Dev', 'JavaScript', 'React', 'Hindi'],
-    externalUrl: 'https://www.youtube.com/playlist?list=PLu0W_9lII9agpFUAlPFe_VNSlXW5uE0YL',
-    isPremium: false,
-    icon: Video
-  },
-  {
-    id: 2,
-    title: 'Apna College - Java + DSA Course',
-    description: 'Complete Java programming and DSA course designed for placement preparation',
-    type: 'Video',
-    category: 'Programming',
-    duration: '40+ hours',
-    rating: 4.7,
-    downloads: 320000,
-    author: 'Shradha Khapra',
-    tags: ['Java', 'DSA', 'Placement'],
-    externalUrl: 'https://www.youtube.com/playlist?list=PLfqMhTWNBTe3LtFWcvwpqTkUSlB32kJop',
-    isPremium: false,
-    icon: Video
-  },
-  {
-    id: 3,
-    title: 'Programming with Mosh - Python Course',
-    description: 'Complete Python programming course from basics to advanced concepts',
-    type: 'Video',
-    category: 'Programming',
-    duration: '20+ hours',
-    rating: 4.8,
-    downloads: 185000,
-    author: 'Mosh Hamedani',
-    tags: ['Python', 'Beginner', 'Programming'],
-    externalUrl: 'https://www.youtube.com/watch?v=_uQrJ0TkZlc',
-    isPremium: false,
-    icon: Video
-  },
-  // Programming & Development - Courses
-  {
-    id: 4,
-    title: 'GeeksforGeeks - DSA Self Paced Course',
-    description: 'Master Data Structures & Algorithms with comprehensive tutorials and practice problems',
-    type: 'Course',
-    category: 'Programming',
-    duration: 'Self-paced',
-    rating: 4.8,
-    downloads: 180000,
-    author: 'GeeksforGeeks',
-    tags: ['DSA', 'Algorithms', 'Interview Prep'],
-    externalUrl: 'https://www.geeksforgeeks.org/data-structures/',
-    isPremium: false,
-    icon: Code
-  },
-  {
-    id: 5,
-    title: 'FreeCodeCamp - Full Stack Development',
-    description: 'Learn full stack development with hands-on projects and earn free certificates',
-    type: 'Course',
-    category: 'Programming',
-    duration: '300+ hours',
-    rating: 4.9,
-    downloads: 450000,
-    author: 'FreeCodeCamp',
-    tags: ['Full Stack', 'Projects', 'Certificate'],
-    externalUrl: 'https://www.freecodecamp.org/',
-    isPremium: false,
-    icon: GraduationCap
-  },
-  {
-    id: 6,
-    title: 'The Odin Project - Web Development',
-    description: 'Free full-stack curriculum with hands-on projects and community support',
-    type: 'Course',
-    category: 'Programming',
-    duration: '1000+ hours',
-    rating: 4.7,
-    downloads: 275000,
-    author: 'The Odin Project',
-    tags: ['Full Stack', 'JavaScript', 'Open Source'],
-    externalUrl: 'https://www.theodinproject.com/',
-    isPremium: false,
-    icon: Code
-  },
-  // Data Science & ML
-  {
-    id: 7,
-    title: 'Krish Naik - Machine Learning Playlist',
-    description: 'Comprehensive ML tutorials covering theory and practical implementations',
-    type: 'Video',
-    category: 'Data Science',
-    duration: '50+ hours',
-    rating: 4.6,
-    downloads: 150000,
-    author: 'Krish Naik',
-    tags: ['ML', 'Python', 'Data Science'],
-    externalUrl: 'https://www.youtube.com/playlist?list=PLZoTAELRMXVPBTrWtJkn3wWQxZkmTXGwe',
-    isPremium: false,
-    icon: Brain
-  },
-  {
-    id: 8,
-    title: 'Kaggle Learn - Data Science Micro-Courses',
-    description: 'Free micro-courses on data science, ML, and programming',
-    type: 'Course',
-    category: 'Data Science',
-    duration: '4-6 hours each',
-    rating: 4.7,
-    downloads: 200000,
-    author: 'Kaggle',
-    tags: ['Data Science', 'Python', 'ML', 'Free'],
-    externalUrl: 'https://www.kaggle.com/learn',
-    isPremium: false,
-    icon: Brain
-  },
-  {
-    id: 9,
-    title: 'Google Analytics Academy',
-    description: 'Learn Google Analytics and digital marketing analytics',
-    type: 'Course',
-    category: 'Data Science',
-    duration: '10+ hours',
-    rating: 4.5,
-    downloads: 75000,
-    author: 'Google',
-    tags: ['Analytics', 'Marketing', 'Google'],
-    externalUrl: 'https://analytics.google.com/analytics/academy/',
-    isPremium: false,
-    icon: BarChart3
-  },
-  {
-    id: 10,
-    title: 'CS50 Introduction to AI with Python',
-    description: 'Harvard\'s introduction to artificial intelligence with Python',
-    type: 'Course',
-    category: 'Data Science',
-    duration: '7 weeks',
-    rating: 4.8,
-    downloads: 95000,
-    author: 'Harvard University',
-    tags: ['AI', 'Python', 'Harvard', 'Machine Learning'],
-    externalUrl: 'https://cs50.harvard.edu/ai/',
-    isPremium: false,
-    icon: Brain
-  },
-  // Career Development
-  {
-    id: 11,
-    title: 'LinkedIn Learning - Career Development Path',
-    description: 'Comprehensive career development courses from industry experts',
-    type: 'Course',
-    category: 'Career Development',
-    duration: '25 hours',
-    rating: 4.5,
-    downloads: 85000,
-    author: 'LinkedIn Learning',
-    tags: ['Career Growth', 'Leadership', 'Professional Skills'],
-    externalUrl: 'https://www.linkedin.com/learning/',
-    isPremium: true,
-    icon: TrendingUp
-  },
-  {
-    id: 12,
-    title: 'Harvard Business Review - Career Collection',
-    description: 'Essential career advice articles from HBR experts',
-    type: 'Guide',
-    category: 'Career Development',
-    duration: 'Read at your pace',
-    rating: 4.7,
-    downloads: 55000,
-    author: 'Harvard Business Review',
-    tags: ['Career Strategy', 'Leadership', 'Business'],
-    externalUrl: 'https://hbr.org/topic/managing-yourself',
-    isPremium: true,
-    icon: BookOpen
-  },
-  {
-    id: 13,
-    title: 'Coursera Career Guide - Tech Transitions',
-    description: 'Complete guide for transitioning into tech careers',
-    type: 'Guide',
-    category: 'Career Development',
-    duration: '3-5 hours',
-    rating: 4.4,
-    downloads: 68000,
-    author: 'Coursera',
-    tags: ['Career Change', 'Tech Industry', 'Guide'],
-    externalUrl: 'https://www.coursera.org/articles/how-to-start-a-career-in-tech',
-    isPremium: false,
-    icon: Target
-  },
-  {
-    id: 14,
-    title: 'Google Career Certificates Program',
-    description: 'Job-ready training programs in high-growth fields',
-    type: 'Course',
-    category: 'Career Development',
-    duration: '3-6 months',
-    rating: 4.6,
-    downloads: 125000,
-    author: 'Google',
-    tags: ['Certificate', 'Job Ready', 'Google'],
-    externalUrl: 'https://grow.google/certificates/',
-    isPremium: true,
-    icon: Award
-  },
-  {
-    id: 15,
-    title: 'Product Hunt - Maker Stories',
-    description: 'Real stories from successful product makers and entrepreneurs',
-    type: 'Guide',
-    category: 'Career Development',
-    duration: 'Various lengths',
-    rating: 4.2,
-    downloads: 32000,
-    author: 'Product Hunt',
-    tags: ['Entrepreneurship', 'Product', 'Startups'],
-    externalUrl: 'https://www.producthunt.com/',
-    isPremium: false,
-    icon: Target
-  },
-  {
-    id: 16,
-    title: 'Y Combinator Startup School',
-    description: 'Free online course for entrepreneurs and startup founders',
-    type: 'Course',
-    category: 'Career Development',
-    duration: '10 weeks',
-    rating: 4.7,
-    downloads: 89000,
-    author: 'Y Combinator',
-    tags: ['Startup', 'Entrepreneurship', 'Business'],
-    externalUrl: 'https://www.startupschool.org/',
-    isPremium: false,
-    icon: Briefcase
-  },
-  // Resume Building & Templates
-  {
-    id: 17,
-    title: 'Overleaf - Resume Templates',
-    description: 'Professional LaTeX resume templates for tech professionals',
-    type: 'Template',
-    category: 'Resume Building',
-    duration: 'Download',
-    rating: 4.8,
-    downloads: 95000,
-    author: 'Overleaf',
-    tags: ['Resume', 'LaTeX', 'Templates'],
-    externalUrl: 'https://www.overleaf.com/gallery/tagged/cv',
-    isPremium: false,
-    icon: FileText
-  },
-  {
-    id: 18,
-    title: 'Canva Resume Templates - Tech Focus',
-    description: 'Modern, ATS-friendly resume templates designed for tech professionals',
-    type: 'Template',
-    category: 'Resume Building',
-    duration: 'Download',
-    rating: 4.6,
-    downloads: 125000,
-    author: 'Canva',
-    tags: ['Resume', 'ATS', 'Design'],
-    externalUrl: 'https://www.canva.com/resumes/templates/',
-    isPremium: false,
-    icon: PenTool
-  },
-  {
-    id: 19,
-    title: 'Resume.io - Professional Templates',
-    description: 'ATS-optimized resume templates with industry-specific examples',
-    type: 'Template',
-    category: 'Resume Building',
-    duration: 'Create online',
-    rating: 4.5,
-    downloads: 78000,
-    author: 'Resume.io',
-    tags: ['Resume', 'ATS', 'Professional'],
-    externalUrl: 'https://resume.io/',
-    isPremium: true,
-    icon: FileText
-  },
-  // Interview Preparation
-  {
-    id: 20,
-    title: 'Pramp - Mock Interview Practice',
-    description: 'Free peer-to-peer mock technical interviews with developers worldwide',
-    type: 'Practice',
-    category: 'Interview Prep',
-    duration: 'Live Sessions',
-    rating: 4.7,
-    downloads: 120000,
-    author: 'Pramp',
-    tags: ['Interview', 'Mock', 'Practice'],
-    externalUrl: 'https://www.pramp.com/',
-    isPremium: false,
-    icon: Users
-  },
-  {
-    id: 21,
-    title: 'Love Babbar - DSA Sheet',
-    description: '450 must-do coding questions for placement preparation',
-    type: 'Practice',
-    category: 'Interview Prep',
-    duration: 'Self-paced',
-    rating: 4.9,
-    downloads: 280000,
-    author: 'Love Babbar',
-    tags: ['DSA', 'Placement', 'Practice'],
-    externalUrl: 'https://www.geeksforgeeks.org/dsa-sheet-by-love-babbar/',
-    isPremium: false,
-    icon: Database
-  },
-  {
-    id: 22,
-    title: 'Striver\'s SDE Sheet',
-    description: 'Curated list of 191 problems for software developer interviews',
-    type: 'Practice',
-    category: 'Interview Prep',
-    duration: 'Self-paced',
-    rating: 4.8,
-    downloads: 195000,
-    author: 'Raj Vikramaditya',
-    tags: ['SDE', 'Interview', 'DSA'],
-    externalUrl: 'https://takeuforward.org/interviews/strivers-sde-sheet-top-coding-interview-problems/',
-    isPremium: false,
-    icon: Code
-  },
-  {
-    id: 23,
-    title: 'InterviewBit - Programming Track',
-    description: 'Structured programming interview preparation with company-specific questions',
-    type: 'Course',
-    category: 'Interview Prep',
-    duration: '2-3 months',
-    rating: 4.6,
-    downloads: 165000,
-    author: 'InterviewBit',
-    tags: ['Interview', 'Programming', 'Companies'],
-    externalUrl: 'https://www.interviewbit.com/courses/programming/',
-    isPremium: false,
-    icon: Briefcase
-  },
-  {
-    id: 24,
-    title: 'Cracking the Coding Interview - Solutions',
-    description: 'Complete solutions and explanations for CTCI problems',
-    type: 'Practice',
-    category: 'Interview Prep',
-    duration: 'Self-paced',
-    rating: 4.7,
-    downloads: 145000,
-    author: 'Gayle McDowell',
-    tags: ['CTCI', 'Interview', 'Algorithms'],
-    externalUrl: 'https://github.com/careercup/CtCI-6th-Edition',
-    isPremium: false,
-    icon: BookOpen
-  },
-  {
-    id: 25,
-    title: 'System Design Primer',
-    description: 'Learn how to design large-scale systems with interactive examples',
-    type: 'Guide',
-    category: 'Interview Prep',
-    duration: 'Self-paced',
-    rating: 4.8,
-    downloads: 225000,
-    author: 'Donne Martin',
-    tags: ['System Design', 'Architecture', 'Interview'],
-    externalUrl: 'https://github.com/donnemartin/system-design-primer',
-    isPremium: false,
-    icon: Layers
-  },
-  // Podcasts
-  {
-    id: 26,
-    title: 'The Tech Career Podcast',
-    description: 'Weekly insights on tech careers, interviews with industry leaders',
-    type: 'Podcast',
-    category: 'Career Development',
-    duration: '30-45 min episodes',
-    rating: 4.4,
-    downloads: 45000,
-    author: 'Tech Career Hub',
-    tags: ['Career', 'Tech Industry', 'Leadership'],
-    externalUrl: 'https://open.spotify.com/',
-    isPremium: false,
-    icon: Headphones
-  },
-  {
-    id: 27,
-    title: 'CodeNewbie Podcast',
-    description: 'Stories from people learning to code and changing careers',
-    type: 'Podcast',
-    category: 'Career Development',
-    duration: '20-40 min episodes',
-    rating: 4.6,
-    downloads: 65000,
-    author: 'CodeNewbie',
-    tags: ['Career Change', 'Learning', 'Stories'],
-    externalUrl: 'https://www.codenewbie.org/podcast',
-    isPremium: false,
-    icon: Headphones
-  },
-  // Webinars
-  {
-    id: 28,
-    title: 'Microsoft Learn Live Sessions',
-    description: 'Live webinars on Azure, .NET, and Microsoft technologies',
-    type: 'Webinar',
-    category: 'Programming',
-    duration: '1-2 hours',
-    rating: 4.3,
-    downloads: 35000,
-    author: 'Microsoft',
-    tags: ['Azure', '.NET', 'Microsoft', 'Live'],
-    externalUrl: 'https://docs.microsoft.com/en-us/learn/',
-    isPremium: false,
-    icon: Calendar
-  },
-  {
-    id: 29,
-    title: 'AWS Career Development Webinars',
-    description: 'Monthly webinars on cloud careers and AWS certifications',
-    type: 'Webinar',
-    category: 'Career Development',
-    duration: '1 hour',
-    rating: 4.4,
-    downloads: 28000,
-    author: 'AWS',
-    tags: ['AWS', 'Cloud', 'Certification'],
-    externalUrl: 'https://aws.amazon.com/training/',
-    isPremium: false,
-    icon: Calendar
-  },
-  // Additional specialized resources
-  {
-    id: 30,
-    title: 'Frontend Masters - Complete Path',
-    description: 'Comprehensive frontend development curriculum with expert instructors',
-    type: 'Course',
-    category: 'Programming',
-    duration: '100+ hours',
-    rating: 4.7,
-    downloads: 89000,
-    author: 'Frontend Masters',
-    tags: ['Frontend', 'JavaScript', 'React', 'Vue'],
-    externalUrl: 'https://frontendmasters.com/',
-    isPremium: true,
-    icon: Monitor
-  }
-]
-
-const trendingTopics = [
-  { name: 'AI/ML Career Path', searches: '+245%' },
-  { name: 'Remote Work Tips', searches: '+180%' },
-  { name: 'Startup Jobs', searches: '+125%' },
-  { name: 'Interview Preparation', searches: '+98%' },
-  { name: 'Skill Development', searches: '+87%' },
-  { name: 'Cloud Computing', searches: '+76%' },
-  { name: 'DevOps Career', searches: '+65%' },
-  { name: 'Product Management', searches: '+58%' },
-]
-
-const learningPlatforms = [
-  {
-    id: 1,
-    name: 'YouTube',
-    description: 'Free programming tutorials and career advice videos',
-    url: 'https://youtube.com',
-    icon: Video,
-    color: 'bg-red-500',
-    category: 'Video Learning'
-  },
-  {
-    id: 2,
-    name: 'GeeksforGeeks',
-    description: 'Comprehensive programming tutorials and interview preparation',
-    url: 'https://geeksforgeeks.org',
-    icon: BookOpen,
-    color: 'bg-green-500',
-    category: 'Programming'
-  },
-  {
-    id: 3,
-    name: 'LeetCode',
-    description: 'Coding practice and interview preparation platform',
-    url: 'https://leetcode.com',
-    icon: Award,
-    color: 'bg-orange-500',
-    category: 'Coding Practice'
-  },
-  {
-    id: 4,
-    name: 'Coursera',
-    description: 'Professional courses and certifications from top universities',
-    url: 'https://coursera.org',
-    icon: Users,
-    color: 'bg-blue-500',
-    category: 'Online Courses'
-  },
-  {
-    id: 5,
-    name: 'edX',
-    description: 'University-level courses in various tech fields',
-    url: 'https://edx.org',
-    icon: BookOpen,
-    color: 'bg-purple-500',
-    category: 'Online Courses'
-  },
-  {
-    id: 6,
-    name: 'Udemy',
-    description: 'Practical skill-based courses for career development',
-    url: 'https://udemy.com',
-    icon: Play,
-    color: 'bg-pink-500',
-    category: 'Online Courses'
-  },
-  {
-    id: 7,
-    name: 'Stack Overflow',
-    description: 'Programming Q&A community and developer resources',
-    url: 'https://stackoverflow.com',
-    icon: Users,
-    color: 'bg-orange-600',
-    category: 'Community'
-  },
-  {
-    id: 8,
-    name: 'GitHub',
-    description: 'Code repositories, open source projects, and portfolios',
-    url: 'https://github.com',
-    icon: FileText,
-    color: 'bg-gray-800',
-    category: 'Development'
-  },
-  {
-    id: 9,
-    name: 'HackerRank',
-    description: 'Coding challenges and skill assessments',
-    url: 'https://hackerrank.com',
-    icon: Code,
-    color: 'bg-green-600',
-    category: 'Coding Practice'
-  },
-  {
-    id: 10,
-    name: 'CodeChef',
-    description: 'Competitive programming platform with contests',
-    url: 'https://codechef.com',
-    icon: Award,
-    color: 'bg-amber-600',
-    category: 'Coding Practice'
-  },
-  {
-    id: 11,
-    name: 'Codeforces',
-    description: 'Competitive programming contests and practice',
-    url: 'https://codeforces.com',
-    icon: Code,
-    color: 'bg-blue-600',
-    category: 'Coding Practice'
-  },
-  {
-    id: 12,
-    name: 'W3Schools',
-    description: 'Web development tutorials and references',
-    url: 'https://w3schools.com',
-    icon: BookOpen,
-    color: 'bg-green-500',
-    category: 'Programming'
-  },
-  {
-    id: 13,
-    name: 'Pluralsight',
-    description: 'Technology skills development platform',
-    url: 'https://pluralsight.com',
-    icon: Play,
-    color: 'bg-pink-600',
-    category: 'Online Courses'
-  },
-  {
-    id: 14,
-    name: 'Khan Academy',
-    description: 'Free educational content including computer science',
-    url: 'https://khanacademy.org',
-    icon: GraduationCap,
-    color: 'bg-green-600',
-    category: 'Education'
-  },
-  {
-    id: 15,
-    name: 'Skillshare',
-    description: 'Creative and business skill development',
-    url: 'https://skillshare.com',
-    icon: PenTool,
-    color: 'bg-blue-600',
-    category: 'Creative Skills'
-  },
-  {
-    id: 16,
-    name: 'freeCodeCamp',
-    description: 'Free coding bootcamp with certifications',
-    url: 'https://freecodecamp.org',
-    icon: Code,
-    color: 'bg-gray-900',
-    category: 'Programming'
-  },
-  {
-    id: 17,
-    name: 'Codecademy',
-    description: 'Interactive programming lessons and projects',
-    url: 'https://codecademy.com',
-    icon: Monitor,
-    color: 'bg-purple-600',
-    category: 'Programming'
-  },
-  {
-    id: 18,
-    name: 'Udacity',
-    description: 'Tech nanodegree programs with industry mentors',
-    url: 'https://udacity.com',
-    icon: GraduationCap,
-    color: 'bg-blue-700',
-    category: 'Online Courses'
-  },
-  {
-    id: 19,
-    name: 'LinkedIn Learning',
-    description: 'Professional development and technical skills',
-    url: 'https://linkedin.com/learning',
-    icon: Briefcase,
-    color: 'bg-blue-800',
-    category: 'Professional Development'
-  },
-  {
-    id: 20,
-    name: 'Kaggle',
-    description: 'Data science competitions and learning platform',
-    url: 'https://kaggle.com',
-    icon: BarChart3,
-    color: 'bg-cyan-600',
-    category: 'Data Science'
-  }
-]
-
-const upcomingWebinars = [
-  {
-    id: 1,
-    title: 'Product Management in Indian Startups',
-    date: 'Dec 15, 2025',
-    time: '6:00 PM IST',
-    speaker: 'Ankit Gupta',
-    company: 'Razorpay',
-    attendees: 1250,
-    registrationUrl: 'https://www.linkedin.com/events/'
-  },
-  {
-    id: 2,
-    title: 'Frontend Development Trends 2026',
-    date: 'Dec 18, 2025',
-    time: '7:00 PM IST',
-    speaker: 'Shreya Singh',
-    company: 'Microsoft',
-    attendees: 2100,
-    registrationUrl: 'https://www.linkedin.com/events/'
-  },
-  {
-    id: 3,
-    title: 'Career Switch to Tech at 30+',
-    date: 'Dec 20, 2025',
-    time: '8:00 PM IST',
-    speaker: 'Rohit Mehta',
-    company: 'Google',
-    attendees: 890,
-    registrationUrl: 'https://www.linkedin.com/events/'
-  },
-  {
-    id: 4,
-    title: 'Data Science Career Roadmap 2026',
-    date: 'Dec 22, 2025',
-    time: '7:30 PM IST',
-    speaker: 'Priya Sharma',
-    company: 'Amazon',
-    attendees: 1580,
-    registrationUrl: 'https://www.linkedin.com/events/'
-  },
-  {
-    id: 5,
-    title: 'DevOps and Cloud Career Paths',
-    date: 'Dec 25, 2025',
-    time: '8:00 PM IST',
-    speaker: 'Arjun Kumar',
-    company: 'Netflix',
-    attendees: 965,
-    registrationUrl: 'https://www.linkedin.com/events/'
-  },
-]
-
-// Filter options
-const resourceTypes = ['all', 'Video', 'Course', 'Practice', 'Template', 'Guide', 'Podcast', 'Webinar']
-const resourceCategoriesFilter = ['all', 'Programming', 'Data Science', 'Interview Prep', 'Career Development', 'Resume Building']
+import { 
+  resourceCategories, 
+  featuredResources, 
+  trendingTopics, 
+  learningPlatforms, 
+  upcomingWebinars, 
+  resourceTypes, 
+  resourceCategoriesFilter 
+} from '@/data/resources'
 
 export default function ResourcesPage() {
   const [searchTerm, setSearchTerm] = useState('')
@@ -748,6 +36,61 @@ export default function ResourcesPage() {
   const [bookmarkedItems, setBookmarkedItems] = useState<number[]>([])
   const [showFilters, setShowFilters] = useState(false)
   const [showResourceFilters, setShowResourceFilters] = useState(false)
+  const [completedResources, setCompletedResources] = useState<number[]>([])
+  const [userProgress, setUserProgress] = useState<any>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  
+  // Mock user ID - in real app, get from auth context
+  const userId = '6746d123456789abcdef0123'
+  
+  useEffect(() => {
+    fetchUserProgress()
+  }, [])
+  
+  const fetchUserProgress = async () => {
+    try {
+      setIsLoading(true)
+      // Mock API call - replace with actual API endpoint
+      const response = await fetch(`http://localhost:5000/api/progress/user/${userId}`)
+      if (response.ok) {
+        const data = await response.json()
+        setUserProgress(data.data.progress)
+        setCompletedResources(data.data.progress.completedResources.map((r: any) => r.resourceId))
+      }
+    } catch (error) {
+      console.error('Error fetching user progress:', error)
+      // Continue without progress data
+    } finally {
+      setIsLoading(false)
+    }
+  }
+  
+  const handleResourceComplete = async (resourceId: number, isCompleted: boolean) => {
+    try {
+      const endpoint = isCompleted ? 'complete' : 'uncomplete'
+      const response = await fetch(`http://localhost:5000/api/progress/user/${userId}/${endpoint}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ resourceId })
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        setUserProgress(data.data.progress)
+        setCompletedResources(data.data.progress.completedResources.map((r: any) => r.resourceId))
+        
+        // Show achievement notification if any new achievements
+        if (isCompleted && data.data.newAchievements && data.data.newAchievements.length > 0) {
+          // In a real app, show toast notification for new achievements
+          console.log('New achievements unlocked!', data.data.newAchievements)
+        }
+      }
+    } catch (error) {
+      console.error('Error updating resource completion:', error)
+    }
+  }
 
   // Dynamic resource counts calculation
   const resourceCounts = useMemo(() => {
@@ -845,7 +188,7 @@ export default function ResourcesPage() {
             </h1>
             <p className="text-xl text-gray-300 max-w-3xl mx-auto mb-8">
               Access comprehensive career resources, guides, templates, and expert insights 
-              to accelerate your professional journey in the Indian market.
+              to accelerate your professional journey. Track your progress and build your skills systematically.
             </p>
             
             {/* Search Bar */}
@@ -877,8 +220,8 @@ export default function ResourcesPage() {
               {[
                 { label: 'Resources Available', value: `${featuredResources.length}` },
                 { label: 'Learning Platforms', value: `${learningPlatforms.length}` },
-                { label: 'Monthly Downloads', value: '3.2M+' },
-                { label: 'Success Stories', value: '25,000+' },
+                { label: 'Your Progress', value: userProgress ? `${Math.round((completedResources.length / featuredResources.length) * 100)}%` : '0%' },
+                { label: 'Completed Resources', value: `${completedResources.length}/${featuredResources.length}` },
               ].map((stat, index) => (
                 <motion.div
                   key={index}
@@ -892,6 +235,39 @@ export default function ResourcesPage() {
                 </motion.div>
               ))}
             </div>
+
+            {/* Progress Bar */}
+            {userProgress && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                className="mt-8 max-w-md mx-auto"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm text-gray-300">Overall Progress</span>
+                  <span className="text-sm text-gray-300">
+                    {Math.round((completedResources.length / featuredResources.length) * 100)}%
+                  </span>
+                </div>
+                <div className="w-full bg-gray-700 rounded-full h-3">
+                  <div 
+                    className="bg-gradient-to-r from-blue-500 to-purple-500 h-3 rounded-full transition-all duration-300"
+                    style={{ width: `${(completedResources.length / featuredResources.length) * 100}%` }}
+                  />
+                </div>
+                <div className="flex items-center justify-center space-x-4 mt-4 text-sm text-gray-300">
+                  <div className="flex items-center">
+                    <Flame className="w-4 h-4 mr-1 text-orange-400" />
+                    <span>Streak: {userProgress.stats?.streak?.current || 0} days</span>
+                  </div>
+                  <div className="flex items-center">
+                    <Trophy className="w-4 h-4 mr-1 text-yellow-400" />
+                    <span>{userProgress.achievements?.length || 0} achievements</span>
+                  </div>
+                </div>
+              </motion.div>
+            )}
           </motion.div>
         </div>
       </section>
@@ -968,7 +344,7 @@ export default function ResourcesPage() {
 
           {/* Enhanced Platform Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {filteredPlatforms.map((platform, index) => (
+            {filteredPlatforms.slice(0, 8).map((platform, index) => (
               <motion.div
                 key={platform.id}
                 initial={{ opacity: 0, y: 20 }}
@@ -1098,10 +474,15 @@ export default function ResourcesPage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.05 * index }}
                   >
-                    <Card className="p-6 hover:shadow-xl transition-all duration-300 bg-white border border-gray-200 hover:border-blue-300">
+                    <Card className={`p-6 hover:shadow-xl transition-all duration-300 bg-white border border-gray-200 hover:border-blue-300 ${completedResources.includes(resource.id) ? 'ring-2 ring-green-200 bg-green-50' : ''}`}>
                       <div className="flex flex-col sm:flex-row gap-6">
-                        <div className="w-24 h-24 bg-gradient-to-br from-blue-100 to-purple-100 rounded-xl flex items-center justify-center flex-shrink-0 mx-auto sm:mx-0 shadow-sm">
+                        <div className="w-24 h-24 bg-gradient-to-br from-blue-100 to-purple-100 rounded-xl flex items-center justify-center flex-shrink-0 mx-auto sm:mx-0 shadow-sm relative">
                           <resource.icon className="w-8 h-8 text-blue-600" />
+                          {completedResources.includes(resource.id) && (
+                            <div className="absolute -top-2 -right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                              <CheckCircle2 className="w-4 h-4 text-white" />
+                            </div>
+                          )}
                         </div>
                         
                         <div className="flex-1">
@@ -1111,6 +492,12 @@ export default function ResourcesPage() {
                                 <h3 className="text-xl font-semibold text-gray-900 hover:text-blue-600 transition-colors">{resource.title}</h3>
                                 {resource.isPremium && (
                                   <Badge className="bg-amber-100 text-amber-800 border border-amber-200">Premium</Badge>
+                                )}
+                                {completedResources.includes(resource.id) && (
+                                  <Badge className="bg-green-100 text-green-800 border border-green-200">
+                                    <CheckCircle2 className="w-3 h-3 mr-1" />
+                                    Completed
+                                  </Badge>
                                 )}
                               </div>
                               <p className="text-gray-600 mb-3 leading-relaxed">{resource.description}</p>
@@ -1155,13 +542,36 @@ export default function ResourcesPage() {
                                 </Badge>
                               ))}
                             </div>
-                            <Button 
-                              className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
-                              onClick={() => handleExternalLink(resource.externalUrl)}
-                            >
-                              {resource.type === 'Template' ? 'Download' : 'Access'}
-                              <ExternalLink className="w-4 h-4 ml-2" />
-                            </Button>
+                            <div className="flex items-center space-x-3">
+                              <div className="flex items-center space-x-2">
+                                <Checkbox
+                                  id={`resource-${resource.id}`}
+                                  checked={completedResources.includes(resource.id)}
+                                  onCheckedChange={(checked) => handleResourceComplete(resource.id, checked as boolean)}
+                                  className="w-5 h-5"
+                                />
+                                <label 
+                                  htmlFor={`resource-${resource.id}`} 
+                                  className="text-sm font-medium text-gray-700 cursor-pointer flex items-center space-x-1"
+                                >
+                                  {completedResources.includes(resource.id) ? (
+                                    <>
+                                      <CheckCircle2 className="w-4 h-4 text-green-600" />
+                                      <span className="text-green-700">Completed</span>
+                                    </>
+                                  ) : (
+                                    <span>Mark Complete</span>
+                                  )}
+                                </label>
+                              </div>
+                              <Button 
+                                className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
+                                onClick={() => handleExternalLink(resource.externalUrl)}
+                              >
+                                {resource.type === 'Template' ? 'Download' : 'Access'}
+                                <ExternalLink className="w-4 h-4 ml-2" />
+                              </Button>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -1196,6 +606,45 @@ export default function ResourcesPage() {
 
           {/* Sidebar */}
           <div className="space-y-6">
+            {/* Progress Summary */}
+            {userProgress && (
+              <Card className="p-6 bg-gradient-to-br from-blue-50 to-purple-50 border-blue-200">
+                <h3 className="text-lg font-semibold mb-4 flex items-center">
+                  <Trophy className="w-5 h-5 mr-2 text-blue-500" />
+                  Your Progress
+                </h3>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-700">Resources Completed</span>
+                    <span className="text-lg font-bold text-blue-600">
+                      {completedResources.length}/{featuredResources.length}
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${(completedResources.length / featuredResources.length) * 100}%` }}
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4 text-center">
+                    <div>
+                      <div className="text-lg font-bold text-orange-600 flex items-center justify-center">
+                        <Flame className="w-4 h-4 mr-1" />
+                        {userProgress.stats?.streak?.current || 0}
+                      </div>
+                      <div className="text-xs text-gray-600">Day Streak</div>
+                    </div>
+                    <div>
+                      <div className="text-lg font-bold text-yellow-600">
+                        {userProgress.achievements?.length || 0}
+                      </div>
+                      <div className="text-xs text-gray-600">Achievements</div>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            )}
+
             {/* Trending Topics */}
             <Card className="p-6 bg-white border border-gray-200 shadow-sm">
               <h3 className="text-lg font-semibold mb-4 flex items-center">
@@ -1219,7 +668,7 @@ export default function ResourcesPage() {
                 Upcoming Webinars
               </h3>
               <div className="space-y-4">
-                {upcomingWebinars.map((webinar) => (
+                {upcomingWebinars.slice(0, 3).map((webinar) => (
                   <div key={webinar.id} className="p-4 bg-blue-50 rounded-lg border border-blue-100">
                     <h4 className="font-semibold text-gray-900 mb-2 text-sm">{webinar.title}</h4>
                     <div className="text-xs text-gray-600 space-y-1">

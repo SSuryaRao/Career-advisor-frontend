@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -12,10 +12,13 @@ import {
 import {
   Target, TrendingUp, Users, BookOpen, Clock, Star,
   Calendar, Award, Brain, MessageSquare, Video, FileText,
-  ChevronRight, Plus, Search, Filter, Bell, Settings
+  ChevronRight, Plus, Search, Filter, Bell, Settings, CheckCircle2, Trophy,
+  ChevronDown, MapPin, GraduationCap, Lightbulb
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import Navbar from '@/components/layout/navbar'
+import { featuredResources } from '@/data/resources'
+import { Roadmap } from '@/components/ui/roadmap'
 
 const careerProgressData = [
   { month: 'Jan', progress: 20 },
@@ -52,7 +55,60 @@ const radarData = [
 
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState('overview')
+  const [userProgress, setUserProgress] = useState<any>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [showSolutionsDropdown, setShowSolutionsDropdown] = useState(false)
+  const [showRoadmap, setShowRoadmap] = useState(false)
   const router = useRouter()
+  
+  // Mock user ID - in real app, get from auth context
+  const userId = '6746d123456789abcdef0123'
+  
+  useEffect(() => {
+    fetchUserProgress()
+  }, [])
+  
+  const fetchUserProgress = async () => {
+    try {
+      setIsLoading(true)
+      // Mock API call - replace with actual API endpoint
+      const response = await fetch(`http://localhost:5000/api/progress/user/${userId}`)
+      if (response.ok) {
+        const data = await response.json()
+        setUserProgress(data.data.progress)
+      }
+    } catch (error) {
+      console.error('Error fetching user progress:', error)
+      // Continue without progress data
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const generateRoadmap = async (career_domain: string, skill_level: string) => {
+    try {
+      const response = await fetch('http://localhost:5000/api/roadmap/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          career_domain,
+          skill_level
+        }),
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        return data
+      } else {
+        throw new Error('Failed to generate roadmap')
+      }
+    } catch (error) {
+      console.error('Error generating roadmap:', error)
+      return null
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
@@ -71,6 +127,61 @@ export default function DashboardPage() {
                 <Bell className="w-4 h-4 mr-2" />
                 Notifications
               </Button>
+              
+              {/* Solutions Dropdown */}
+              <div className="relative">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setShowSolutionsDropdown(!showSolutionsDropdown)}
+                  className="flex items-center"
+                >
+                  <Lightbulb className="w-4 h-4 mr-2" />
+                  Solutions
+                  <ChevronDown className={`w-4 h-4 ml-2 transition-transform ${showSolutionsDropdown ? 'rotate-180' : ''}`} />
+                </Button>
+                
+                {showSolutionsDropdown && (
+                  <>
+                    <div 
+                      className="fixed inset-0 z-10" 
+                      onClick={() => setShowSolutionsDropdown(false)}
+                    />
+                    <div className="absolute right-0 z-20 mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg">
+                      <div className="p-2">
+                        <button
+                          onClick={() => {
+                            router.push('/solutions/students')
+                            setShowSolutionsDropdown(false)
+                          }}
+                          className="w-full flex items-center p-3 text-left hover:bg-gray-50 rounded-lg transition-colors"
+                        >
+                          <GraduationCap className="w-5 h-5 text-blue-500 mr-3" />
+                          <div>
+                            <div className="font-medium text-gray-900">For Students</div>
+                            <div className="text-sm text-gray-600">Resources and tools for students</div>
+                          </div>
+                        </button>
+                        
+                        <button
+                          onClick={() => {
+                            setShowRoadmap(true)
+                            setShowSolutionsDropdown(false)
+                          }}
+                          className="w-full flex items-center p-3 text-left hover:bg-gray-50 rounded-lg transition-colors"
+                        >
+                          <MapPin className="w-5 h-5 text-purple-500 mr-3" />
+                          <div>
+                            <div className="font-medium text-gray-900">Roadmap</div>
+                            <div className="text-sm text-gray-600">Get personalized learning path</div>
+                          </div>
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+              
               <Button size="sm">
                 <Plus className="w-4 h-4 mr-2" />
                 New Goal
@@ -81,6 +192,36 @@ export default function DashboardPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* Roadmap Modal/Overlay */}
+        {showRoadmap && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
+            onClick={() => setShowRoadmap(false)}
+          >
+            <div 
+              className="fixed inset-4 bg-white rounded-xl shadow-2xl overflow-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="sticky top-0 bg-white border-b border-gray-200 p-6 flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">Career Roadmap Generator</h2>
+                  <p className="text-gray-600">Create your personalized learning journey</p>
+                </div>
+                <Button 
+                  variant="outline" 
+                  onClick={() => setShowRoadmap(false)}
+                >
+                  Close
+                </Button>
+              </div>
+              <div className="p-6">
+                <Roadmap onGenerateRoadmap={generateRoadmap} />
+              </div>
+            </div>
+          </motion.div>
+        )}
         {/* Quick Stats */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <motion.div
@@ -289,32 +430,120 @@ export default function DashboardPage() {
               </div>
             </Card>
 
-            {/* Upcoming Tasks */}
+            {/* Quick Actions */}
             <Card className="p-6">
-              <h3 className="text-lg font-semibold mb-4">Upcoming Tasks</h3>
+              <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
               <div className="space-y-3">
-                {[
-                  { task: 'Complete React Advanced Course', due: 'Tomorrow', type: 'learning' },
-                  { task: 'Mock Interview with AI', due: '2 days', type: 'interview' },
-                  { task: 'Portfolio Project Review', due: '1 week', type: 'project' },
-                  { task: 'Mentor Session Booking', due: '3 days', type: 'mentorship' },
-                ].map((item, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <div>
-                      <p className="font-medium text-sm">{item.task}</p>
-                      <p className="text-xs text-gray-600">Due: {item.due}</p>
-                    </div>
-                    <Badge variant="outline" className="text-xs">
-                      {item.type}
-                    </Badge>
-                  </div>
-                ))}
+                <Button 
+                  className="w-full justify-start" 
+                  variant="outline"
+                  onClick={() => router.push('/resources')}
+                >
+                  <BookOpen className="w-4 h-4 mr-2" />
+                  Continue Learning
+                </Button>
+                <Button 
+                  className="w-full justify-start" 
+                  variant="outline"
+                  onClick={() => router.push('/jobs')}
+                >
+                  <Search className="w-4 h-4 mr-2" />
+                  Find Jobs
+                </Button>
+                <Button 
+                  className="w-full justify-start" 
+                  variant="outline"
+                  onClick={() => router.push('/profile')}
+                >
+                  <Users className="w-4 h-4 mr-2" />
+                  Update Profile
+                </Button>
               </div>
-              <Button variant="outline" className="w-full mt-4">
-                <Plus className="w-4 h-4 mr-2" />
-                Add Task
-              </Button>
             </Card>
+            
+            {/* Recent Learning Activity */}
+            {userProgress && userProgress.completedResources && userProgress.completedResources.length > 0 && (
+              <Card className="p-6">
+                <h3 className="text-lg font-semibold mb-4">Recent Learning Activity</h3>
+                <div className="space-y-3">
+                  {userProgress.completedResources.slice(-3).reverse().map((completed: any) => {
+                    const resource = featuredResources.find(r => r.id === completed.resourceId)
+                    if (!resource) return null
+                    
+                    return (
+                      <div key={completed.resourceId} className="flex items-center p-3 bg-gray-50 rounded-lg">
+                        <CheckCircle2 className="w-5 h-5 text-green-500 mr-3" />
+                        <div className="flex-1">
+                          <h4 className="font-medium text-gray-900 text-sm">{resource.title}</h4>
+                          <p className="text-xs text-gray-600">
+                            Completed {new Date(completed.completedAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <Badge variant="secondary" className="text-xs">{resource.type}</Badge>
+                      </div>
+                    )
+                  })}
+                </div>
+              </Card>
+            )}
+            
+            {/* Recent Achievements */}
+            {userProgress && userProgress.achievements && userProgress.achievements.length > 0 && (
+              <Card className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold flex items-center">
+                    <Trophy className="w-5 h-5 mr-2 text-yellow-500" />
+                    Recent Achievements
+                  </h3>
+                  <Badge variant="secondary">{userProgress.achievements.length}</Badge>
+                </div>
+                <div className="space-y-3">
+                  {userProgress.achievements.slice(-3).reverse().map((achievement: any, index: number) => (
+                    <div key={achievement.id} className="flex items-center p-3 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg border border-yellow-200">
+                      <div className="w-10 h-10 bg-yellow-500 rounded-full flex items-center justify-center mr-3">
+                        <Trophy className="w-5 h-5 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-medium text-gray-900">{achievement.name}</h4>
+                        <p className="text-sm text-gray-600">{achievement.description}</p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Unlocked {new Date(achievement.unlockedAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            )}
+            
+            {/* Weekly Goal Progress */}
+            {userProgress && (
+              <Card className="p-6">
+                <h3 className="text-lg font-semibold mb-4 flex items-center">
+                  <Target className="w-5 h-5 mr-2 text-blue-500" />
+                  Weekly Learning Goal
+                </h3>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-700">Progress this week</span>
+                    <span className="text-lg font-bold text-blue-600">
+                      {userProgress.stats?.weeklyGoal?.current || 0}/{userProgress.stats?.weeklyGoal?.target || 5}
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-3">
+                    <div 
+                      className="bg-blue-600 h-3 rounded-full transition-all duration-300"
+                      style={{ width: `${Math.min(((userProgress.stats?.weeklyGoal?.current || 0) / (userProgress.stats?.weeklyGoal?.target || 5)) * 100, 100)}%` }}
+                    />
+                  </div>
+                  <p className="text-sm text-gray-600">
+                    {userProgress.stats?.weeklyGoal?.current >= userProgress.stats?.weeklyGoal?.target 
+                      ? "🎉 Goal achieved! Great work this week!" 
+                      : `${(userProgress.stats?.weeklyGoal?.target || 5) - (userProgress.stats?.weeklyGoal?.current || 0)} more to reach your weekly goal`}
+                  </p>
+                </div>
+              </Card>
+            )}
           </div>
         </div>
 
