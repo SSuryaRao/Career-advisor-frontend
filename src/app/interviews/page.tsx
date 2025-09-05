@@ -11,7 +11,7 @@ import {
   Play, Pause, RotateCcw, Download, Share2, Bookmark,
   Target, TrendingUp, Award, Brain, MessageSquare,
   Filter, Search, ChevronRight, Plus, Eye, FileText,
-  CheckCircle, AlertTriangle, Zap, Phone, MapPin
+  CheckCircle, AlertTriangle, Zap, Phone, MapPin,BookOpen
 } from 'lucide-react'
 
 const interviewTypes = [
