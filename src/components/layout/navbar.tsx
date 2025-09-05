@@ -25,6 +25,7 @@ import {
   FileSearch,
   GraduationCap,
   MapPin,
+  Award,
 } from 'lucide-react'
 import { useAuth } from '../auth-provider'
 import { auth } from '@/lib/firebase'
@@ -44,6 +45,7 @@ const navigation = [
       },
       { name: 'Resume Analyzer', href: '/features/resume-analyzer', icon: FileSearch },
       { name: 'Skill Analysis', href: '/features/skills', icon: TrendingUp },
+      { name: 'Scholarship & Internship Finder', href: '/features/scholarships', icon: Award },
     ],
   },
   {
