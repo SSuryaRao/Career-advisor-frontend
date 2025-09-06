@@ -22,7 +22,8 @@ import {
   Settings,
   Bell,
   Shield,
-  ChevronRight
+  ChevronRight,
+  Target
 } from 'lucide-react'
 import Navbar from '@/components/layout/navbar'
 import { apiClient } from '@/lib/api'
@@ -42,6 +43,9 @@ interface UserProfile {
     linkedin: string
     github: string
     phone: string
+    education: string
+    interests: string[]
+    careerGoal: string
   }
   skills: Array<{
     name: string
@@ -94,6 +98,7 @@ export default function ProfilePage(): JSX.Element {
     level: 'intermediate', 
     yearsOfExperience: 0 
   })
+  const [newInterest, setNewInterest] = useState<string>('')
 
   // Fetch user profile data from backend
   useEffect(() => {
@@ -148,6 +153,33 @@ export default function ProfilePage(): JSX.Element {
     setProfile(updatedProfile)
   }
 
+  const addInterest = (): void => {
+    if (!profile || !newInterest.trim()) return
+
+    const updatedProfile: UserProfile = {
+      ...profile,
+      profile: {
+        ...profile.profile,
+        interests: [...profile.profile.interests, newInterest.trim().toLowerCase()]
+      }
+    }
+    setProfile(updatedProfile)
+    setNewInterest('')
+  }
+
+  const removeInterest = (index: number): void => {
+    if (!profile) return
+
+    const updatedProfile: UserProfile = {
+      ...profile,
+      profile: {
+        ...profile.profile,
+        interests: profile.profile.interests.filter((_, i) => i !== index)
+      }
+    }
+    setProfile(updatedProfile)
+  }
+
   const updateProfile = (field: string, value: any): void => {
     if (!profile) return
 
@@ -198,6 +230,7 @@ export default function ProfilePage(): JSX.Element {
 
   const tabs: TabItem[] = [
     { id: 'personal', label: 'Personal Info', icon: User, color: 'bg-blue-500' },
+    { id: 'career', label: 'Career Profile', icon: Target, color: 'bg-indigo-500' },
     { id: 'skills', label: 'Skills', icon: Briefcase, color: 'bg-purple-500' },
     { id: 'preferences', label: 'Job Preferences', icon: Settings, color: 'bg-green-500' },
     { id: 'notifications', label: 'Notifications', icon: Bell, color: 'bg-orange-500' },
@@ -505,6 +538,114 @@ export default function ProfilePage(): JSX.Element {
                       rows={4}
                       className="border-white/20 focus:border-cyan-400 focus:ring-cyan-400/20 bg-white/10 backdrop-blur-sm text-white placeholder-blue-200/60 transition-all duration-300 hover:bg-white/15 resize-none"
                     />
+                  </div>
+                </Card>
+              )}
+
+              {activeTab === 'career' && (
+                <Card className="p-10 bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:bg-white/15">
+                  <div className="flex items-center space-x-4 mb-10">
+                    <div className="p-4 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl shadow-lg">
+                      <Target className="w-8 h-8 text-white" />
+                    </div>
+                    <h2 className="text-3xl font-bold text-white">Career Profile</h2>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 gap-8">
+                    <div className="space-y-3">
+                      <label className="block text-sm font-bold text-blue-100/90 tracking-wide uppercase">
+                        Education Background
+                      </label>
+                      <Input
+                        value={profile.profile.education || ''}
+                        onChange={(e) => handleInputChange(e, 'profile.education')}
+                        disabled={!isEditing}
+                        placeholder="e.g. B.Tech Computer Science, MBA Marketing"
+                        className="border-white/20 focus:border-cyan-400 focus:ring-cyan-400/20 bg-white/10 backdrop-blur-sm text-white placeholder-blue-200/60 transition-all duration-300 hover:bg-white/15"
+                      />
+                    </div>
+
+                    <div className="space-y-3">
+                      <label className="block text-sm font-bold text-blue-100/90 tracking-wide uppercase">
+                        Career Goal (Optional)
+                      </label>
+                      <Textarea
+                        value={profile.profile.careerGoal || ''}
+                        onChange={(e) => handleTextareaChange(e, 'profile.careerGoal')}
+                        disabled={!isEditing}
+                        placeholder="e.g. Machine Learning Engineer, Full-Stack Developer, Product Manager"
+                        rows={3}
+                        className="border-white/20 focus:border-cyan-400 focus:ring-cyan-400/20 bg-white/10 backdrop-blur-sm text-white placeholder-blue-200/60 transition-all duration-300 hover:bg-white/15 resize-none"
+                      />
+                    </div>
+
+                    <div className="space-y-6">
+                      <div className="flex items-center justify-between">
+                        <label className="block text-sm font-bold text-blue-100/90 tracking-wide uppercase">
+                          Interests & Areas of Interest
+                        </label>
+                        {isEditing && (
+                          <Button
+                            onClick={addInterest}
+                            disabled={!newInterest.trim()}
+                            className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white shadow-2xl hover:shadow-emerald-500/25 transition-all duration-300"
+                          >
+                            <Plus className="w-4 h-4 mr-2" />
+                            Add Interest
+                          </Button>
+                        )}
+                      </div>
+
+                      {isEditing && (
+                        <div className="mb-6 p-6 bg-white/5 backdrop-blur-sm rounded-3xl border border-white/10">
+                          <h3 className="text-lg font-bold text-white mb-4">Add New Interest</h3>
+                          <div className="flex gap-4">
+                            <Input
+                              value={newInterest}
+                              onChange={(e) => setNewInterest(e.target.value)}
+                              placeholder="e.g. AI/ML, Data Science, Web Development"
+                              className="flex-1 border-white/20 focus:border-cyan-400 focus:ring-cyan-400/20 bg-white/10 backdrop-blur-sm text-white placeholder-blue-200/60 transition-all duration-300 hover:bg-white/15"
+                              onKeyPress={(e) => {
+                                if (e.key === 'Enter') {
+                                  addInterest()
+                                }
+                              }}
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="flex flex-wrap gap-4">
+                        {profile.profile.interests && profile.profile.interests.length > 0 ? (
+                          profile.profile.interests.map((interest, index) => (
+                            <Badge 
+                              key={index} 
+                              className="group px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 text-white border-0 font-semibold text-sm hover:shadow-2xl hover:from-indigo-400 hover:to-purple-400 transition-all duration-300 rounded-full"
+                            >
+                              {interest}
+                              {isEditing && (
+                                <button
+                                  onClick={() => removeInterest(index)}
+                                  className="ml-3 text-white/80 hover:text-white transition-colors"
+                                >
+                                  <X className="w-4 h-4" />
+                                </button>
+                              )}
+                            </Badge>
+                          ))
+                        ) : (
+                          <div className="text-center py-10 text-blue-100/60 w-full">
+                            <div className="w-16 h-16 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center mx-auto mb-4 border border-white/20">
+                              <Target className="w-8 h-8 text-blue-200/80" />
+                            </div>
+                            <p className="text-lg font-semibold text-white mb-2">No interests added yet</p>
+                            {isEditing && (
+                              <p className="text-blue-200/70">Add your interests to get personalized career recommendations</p>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </Card>
               )}

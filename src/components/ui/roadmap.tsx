@@ -12,6 +12,7 @@ import {
 } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useAuth } from '@/components/auth-provider'
+import { apiClient } from '@/lib/api'
 import toast from 'react-hot-toast'
 
 interface RoadmapMilestone {
@@ -58,6 +59,9 @@ interface RoadmapData {
 
 interface RoadmapProps {
   onGenerateRoadmap: (domain: string, skillLevel: string) => Promise<RoadmapData | null>
+  prefilledDomain?: string
+  prefilledSkillLevel?: string
+  onPrefilledUsed?: () => void
 }
 
 const careerDomains = [
@@ -99,7 +103,7 @@ const getCategoryColor = (category: string) => {
   }
 }
 
-export function Roadmap({ onGenerateRoadmap }: RoadmapProps) {
+export function Roadmap({ onGenerateRoadmap, prefilledDomain, prefilledSkillLevel, onPrefilledUsed }: RoadmapProps) {
   const [selectedDomain, setSelectedDomain] = useState<string>('')
   const [selectedSkillLevel, setSelectedSkillLevel] = useState<string>('')
   const [roadmapData, setRoadmapData] = useState<RoadmapData | null>(null)
@@ -107,6 +111,40 @@ export function Roadmap({ onGenerateRoadmap }: RoadmapProps) {
   const [completedMilestones, setCompletedMilestones] = useState<Set<string>>(new Set())
   const [isLoading, setIsLoading] = useState(false)
   const { user } = useAuth()
+
+  // Handle prefilled values from recommendations
+  useEffect(() => {
+    if (prefilledDomain && prefilledSkillLevel) {
+      setSelectedDomain(prefilledDomain)
+      setSelectedSkillLevel(prefilledSkillLevel)
+      
+      // Auto-generate roadmap after a short delay
+      const timer = setTimeout(async () => {
+        try {
+          setIsGenerating(true)
+          const data = await onGenerateRoadmap(prefilledDomain, prefilledSkillLevel)
+          setRoadmapData(data)
+          
+          // Load any existing progress for this roadmap
+          if (user) {
+            setTimeout(() => loadSavedProgress(), 100)
+          }
+          
+          // Clear the prefilled values
+          if (onPrefilledUsed) {
+            onPrefilledUsed()
+          }
+        } catch (error) {
+          console.error('Error auto-generating roadmap:', error)
+          toast.error('Failed to generate roadmap')
+        } finally {
+          setIsGenerating(false)
+        }
+      }, 1000) // 1 second delay to allow for smooth scrolling
+      
+      return () => clearTimeout(timer)
+    }
+  }, [prefilledDomain, prefilledSkillLevel, onGenerateRoadmap, onPrefilledUsed, user])
 
   // Load saved progress on component mount
   useEffect(() => {
@@ -120,16 +158,12 @@ export function Roadmap({ onGenerateRoadmap }: RoadmapProps) {
     
     setIsLoading(true)
     try {
-      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
-      const response = await fetch(`${API_BASE_URL}/api/roadmap-progress/get?userId=${user.uid}&careerDomain=${selectedDomain}&skillLevel=${selectedSkillLevel}`)
-      if (response.ok) {
-        const data = await response.json()
-        if (data.success && data.data.length > 0) {
-          const progress = data.data[0]
-          const completed = new Set(progress.completedMilestones.map((m: any) => m.milestoneId))
-          setCompletedMilestones(completed)
-          toast.success('Progress loaded successfully!')
-        }
+      const response = await apiClient.getRoadmapProgress(user.uid, selectedDomain, selectedSkillLevel)
+      if (response.success && response.data.length > 0) {
+        const progress = response.data[0]
+        const completed = new Set(progress.completedMilestones.map((m: any) => m.milestoneId))
+        setCompletedMilestones(completed)
+        toast.success('Progress loaded successfully!')
       }
     } catch (error) {
       console.error('Error loading saved progress:', error)
@@ -143,30 +177,32 @@ export function Roadmap({ onGenerateRoadmap }: RoadmapProps) {
     if (!user || !roadmapData || !selectedDomain || !selectedSkillLevel) return
 
     try {
-      const completedMilestonesArray = Array.from(completedMilestones).map(id => ({
-        milestoneId: id,
-        completedAt: new Date().toISOString()
-      }))
-
-      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
-      const response = await fetch(`${API_BASE_URL}/api/roadmap-progress/save`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userId: user.uid,
-          careerDomain: selectedDomain,
-          skillLevel: selectedSkillLevel,
-          completedMilestones: completedMilestonesArray,
-          roadmapData
-        }),
+      const completedMilestonesArray = Array.from(completedMilestones).map(id => {
+        const milestone = roadmapData.stages
+          .flatMap(s => s.milestones)
+          .find(m => m.id === id)
+        return {
+          milestoneId: id,
+          title: milestone?.title || id,
+          completedAt: new Date().toISOString()
+        }
       })
 
-      if (response.ok) {
+      const progressData = {
+        userId: user.uid,
+        domain: selectedDomain,
+        skillLevel: selectedSkillLevel,
+        title: roadmapData.domain,
+        completedMilestones: completedMilestonesArray,
+        roadmapData
+      }
+
+      const response = await apiClient.saveRoadmapProgress(progressData)
+
+      if (response.success) {
         toast.success('Progress saved successfully!')
       } else {
-        throw new Error('Failed to save progress')
+        throw new Error(response.error || 'Failed to save progress')
       }
     } catch (error) {
       console.error('Error saving progress:', error)
@@ -196,6 +232,8 @@ export function Roadmap({ onGenerateRoadmap }: RoadmapProps) {
 
   const toggleMilestone = async (milestoneId: string) => {
     const newCompleted = new Set(completedMilestones)
+    const isCompleted = !newCompleted.has(milestoneId)
+    
     if (newCompleted.has(milestoneId)) {
       newCompleted.delete(milestoneId)
     } else {
@@ -206,25 +244,27 @@ export function Roadmap({ onGenerateRoadmap }: RoadmapProps) {
     // Save progress immediately when milestone is toggled
     if (user && roadmapData && selectedDomain && selectedSkillLevel) {
       try {
-        const completedMilestonesArray = Array.from(newCompleted).map(id => ({
-          milestoneId: id,
-          completedAt: new Date().toISOString()
-        }))
-
-        const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
-        await fetch(`${API_BASE_URL}/api/roadmap-progress/save`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            userId: user.uid,
-            careerDomain: selectedDomain,
-            skillLevel: selectedSkillLevel,
-            completedMilestones: completedMilestonesArray,
-            roadmapData
-          }),
+        const completedMilestonesArray = Array.from(newCompleted).map(id => {
+          const milestone = roadmapData.stages
+            .flatMap(s => s.milestones)
+            .find(m => m.id === id)
+          return {
+            milestoneId: id,
+            title: milestone?.title || id,
+            completedAt: new Date().toISOString()
+          }
         })
+
+        const progressData = {
+          userId: user.uid,
+          domain: selectedDomain,
+          skillLevel: selectedSkillLevel,
+          title: roadmapData.domain,
+          completedMilestones: completedMilestonesArray,
+          roadmapData
+        }
+
+        await apiClient.saveRoadmapProgress(progressData)
       } catch (error) {
         console.error('Error saving milestone progress:', error)
       }
@@ -334,31 +374,55 @@ export function Roadmap({ onGenerateRoadmap }: RoadmapProps) {
           <div>
             <label className="block text-base font-semibold text-gray-800 mb-3">
               🎯 Career Domain
+              {prefilledDomain && (
+                <span className="ml-2 text-sm text-green-600 font-normal">
+                  ✨ Auto-selected from recommendation
+                </span>
+              )}
             </label>
             <Select
               options={careerDomains}
               value={selectedDomain}
               onValueChange={setSelectedDomain}
               placeholder="Choose your career domain"
-              className="text-base"
+              className={`text-base ${prefilledDomain ? 'ring-2 ring-green-400 ring-opacity-50' : ''}`}
             />
           </div>
 
           <div>
             <label className="block text-base font-semibold text-gray-800 mb-3">
               📊 Current Skill Level
+              {prefilledSkillLevel && (
+                <span className="ml-2 text-sm text-green-600 font-normal">
+                  ✨ Auto-selected from recommendation
+                </span>
+              )}
             </label>
             <Select
               options={skillLevels}
               value={selectedSkillLevel}
               onValueChange={setSelectedSkillLevel}
               placeholder="Select your current level"
-              className="text-base"
+              className={`text-base ${prefilledSkillLevel ? 'ring-2 ring-green-400 ring-opacity-50' : ''}`}
             />
           </div>
         </div>
 
         <div className="space-y-3">
+          {prefilledDomain && prefilledSkillLevel && (
+            <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-2xl p-4 mb-4">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                  <Target className="w-4 h-4 text-white" />
+                </div>
+                <div>
+                  <p className="text-green-800 font-semibold">🎯 Starting recommended roadmap...</p>
+                  <p className="text-green-600 text-sm">Auto-generating your personalized learning path</p>
+                </div>
+              </div>
+            </div>
+          )}
+          
           <Button 
             onClick={handleGenerateRoadmap}
             disabled={!selectedDomain || !selectedSkillLevel || isGenerating}
@@ -367,7 +431,7 @@ export function Roadmap({ onGenerateRoadmap }: RoadmapProps) {
             {isGenerating ? (
               <>
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-3" />
-                ✨ Generating Your Roadmap...
+                {prefilledDomain ? '✨ Creating Your Recommended Roadmap...' : '✨ Generating Your Roadmap...'}
               </>
             ) : (
               <>

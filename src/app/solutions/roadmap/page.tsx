@@ -1,13 +1,18 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { motion } from 'framer-motion'
 import Navbar from '@/components/layout/navbar'
 import { Roadmap } from '@/components/ui/roadmap'
+import { RecommendedRoadmaps } from '@/components/ui/recommended-roadmaps'
 import { MapPin, Target, BookOpen } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 
 export default function RoadmapPage() {
+  const roadmapGeneratorRef = useRef<HTMLDivElement>(null)
+  const [prefilledDomain, setPrefilledDomain] = useState<string>('')
+  const [prefilledSkillLevel, setPrefilledSkillLevel] = useState<string>('')
+  
   const generateRoadmap = async (career_domain: string, skill_level: string) => {
     try {
       const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
@@ -32,6 +37,23 @@ export default function RoadmapPage() {
       console.error('Error generating roadmap:', error)
       return null
     }
+  }
+
+  const handleStartRecommendedRoadmap = (domain: string, skillLevel: string) => {
+    // Set the prefilled values
+    setPrefilledDomain(domain)
+    setPrefilledSkillLevel(skillLevel)
+    
+    // Scroll to the roadmap generator
+    roadmapGeneratorRef.current?.scrollIntoView({ 
+      behavior: 'smooth', 
+      block: 'start' 
+    })
+    
+    // Small delay to ensure scrolling completes, then trigger auto-generation
+    setTimeout(() => {
+      // The Roadmap component will auto-generate when it receives these props
+    }, 500)
   }
 
   return (
@@ -199,18 +221,37 @@ export default function RoadmapPage() {
           </motion.div>
         </div>
 
+        {/* Recommended Roadmaps Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.8 }}
+          className="relative"
+        >
+          <RecommendedRoadmaps onStartRoadmap={handleStartRecommendedRoadmap} />
+        </motion.div>
+
         {/* Roadmap Component */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.0 }}
           className="relative"
+          ref={roadmapGeneratorRef}
         >
           {/* Background decoration */}
           <div className="absolute -inset-4 bg-gradient-to-r from-purple-200/20 via-pink-200/20 to-indigo-200/20 rounded-3xl blur-3xl" />
           <div className="relative bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-gray-200/50 p-1">
             <div className="bg-white rounded-3xl shadow-inner">
-              <Roadmap onGenerateRoadmap={generateRoadmap} />
+              <Roadmap 
+                onGenerateRoadmap={generateRoadmap} 
+                prefilledDomain={prefilledDomain}
+                prefilledSkillLevel={prefilledSkillLevel}
+                onPrefilledUsed={() => {
+                  setPrefilledDomain('')
+                  setPrefilledSkillLevel('')
+                }}
+              />
             </div>
           </div>
         </motion.div>

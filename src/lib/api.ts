@@ -103,6 +103,53 @@ class ApiClient {
     return this.request(`/api/user/activity?page=${page}&limit=${limit}`)
   }
 
+  // Career Recommendations
+  async generateRecommendations(): Promise<ApiResponse<any>> {
+    return this.request('/api/recommendations/generate', {
+      method: 'POST'
+    })
+  }
+
+  async getRecommendations(): Promise<ApiResponse<any>> {
+    return this.request('/api/recommendations/get')
+  }
+
+  // Enhanced Roadmap Management
+  async saveRoadmapProgress(progressData: any): Promise<ApiResponse<any>> {
+    return this.request('/api/roadmaps/save', {
+      method: 'POST',
+      body: JSON.stringify(progressData)
+    })
+  }
+
+  async getRoadmapProgress(userId: string, domain?: string, skillLevel?: string): Promise<ApiResponse<any>> {
+    const params = new URLSearchParams({ userId })
+    if (domain) params.append('domain', domain)
+    if (skillLevel) params.append('skillLevel', skillLevel)
+    return this.request(`/api/roadmaps/get?${params.toString()}`)
+  }
+
+  async getUserRoadmaps(): Promise<ApiResponse<any>> {
+    return this.request('/api/roadmaps/user')
+  }
+
+  async toggleMilestone(roadmapId: string, milestoneId: string, milestoneTitle: string, isCompleted: boolean): Promise<ApiResponse<any>> {
+    return this.request('/api/roadmaps/milestone/toggle', {
+      method: 'POST',
+      body: JSON.stringify({ roadmapId, milestoneId, milestoneTitle, isCompleted })
+    })
+  }
+
+  async getRoadmapStats(): Promise<ApiResponse<any>> {
+    return this.request('/api/roadmaps/stats')
+  }
+
+  async deactivateRoadmap(roadmapId: string): Promise<ApiResponse<any>> {
+    return this.request(`/api/roadmaps/${roadmapId}`, {
+      method: 'DELETE'
+    })
+  }
+
   // Health check
   async healthCheck(): Promise<ApiResponse<any>> {
     return this.request('/api/health')
