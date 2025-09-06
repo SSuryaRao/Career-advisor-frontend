@@ -150,6 +150,18 @@ class ApiClient {
     })
   }
 
+  // Chatbot Methods
+  async sendChatbotMessage(message: string, sessionId: string): Promise<ApiResponse<any>> {
+    return this.request('/api/chatbot/message', {
+      method: 'POST',
+      body: JSON.stringify({ message, sessionId })
+    })
+  }
+
+  async getChatbotHealth(): Promise<ApiResponse<any>> {
+    return this.request('/api/chatbot/health')
+  }
+
   // Health check
   async healthCheck(): Promise<ApiResponse<any>> {
     return this.request('/api/health')

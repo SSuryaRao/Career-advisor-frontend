@@ -5,6 +5,7 @@ import { Providers } from '@/components/providers'
 import { Toaster } from 'react-hot-toast'
 import { Analytics } from '@vercel/analytics/react'
 import AuthProvider from '@/components/auth-provider'
+import ChatbotWidget from '@/components/ui/chatbot-widget'
 
 
 const inter = Inter({ subsets: ['latin'] })
@@ -62,8 +63,9 @@ export default function RootLayout({
         <Providers>
           <AuthProvider>
             {children}
+            <ChatbotWidget />
             <Toaster
-              position="bottom-right"
+              position="bottom-left"
               toastOptions={{
                 className: '',
                 style: {
