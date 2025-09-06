@@ -24,6 +24,31 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 221.2 83.2% 53.3%;
     --radius: 0.5rem;
+
+    /* Enhanced Career-focused color palette */
+    --primary-blue: 221.2 83.2% 53.3%;
+    --primary-purple: 271.5 81% 56%;
+    --primary-indigo: 239 84% 67%;
+    --primary-teal: 180 85% 47%;
+    --primary-emerald: 160 84% 39%;
+    --primary-orange: 20.5 90.2% 48.2%;
+    --primary-rose: 350 89% 60%;
+
+    --surface-glass: 220 14% 96%;
+    --surface-elevated: 0 0% 98%;
+    --surface-interactive: 216 12% 84%;
+    
+    --success: 142.1 76.2% 36.3%;
+    --success-foreground: 355.7 100% 97.3%;
+    --warning: 47.9 95.8% 53.1%;
+    --warning-foreground: 26 83.3% 14.1%;
+    --info: 217.2 91.2% 59.8%;
+    --info-foreground: 210 40% 98%;
+    
+    --gradient-primary: linear-gradient(135deg, hsl(221.2 83.2% 53.3%) 0%, hsl(271.5 81% 56%) 100%);
+    --gradient-success: linear-gradient(135deg, hsl(160 84% 39%) 0%, hsl(142.1 76.2% 36.3%) 100%);
+    --gradient-warning: linear-gradient(135deg, hsl(47.9 95.8% 53.1%) 0%, hsl(20.5 90.2% 48.2%) 100%);
+    --gradient-surface: linear-gradient(135deg, hsl(220 14% 96%) 0%, hsl(0 0% 98%) 100%);
   }
 
   .dark {
@@ -190,11 +215,29 @@
 }
 
 @layer utilities {
-  /* Gradient Animations */
+  /* Enhanced Gradient Backgrounds */
   .gradient-bg {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #4facfe 100%);
     background-size: 400% 400%;
     animation: gradient-shift 15s ease infinite;
+  }
+
+  .gradient-career {
+    background: linear-gradient(135deg, hsl(221.2 83.2% 53.3%) 0%, hsl(271.5 81% 56%) 25%, hsl(239 84% 67%) 50%, hsl(180 85% 47%) 75%, hsl(160 84% 39%) 100%);
+    background-size: 400% 400%;
+    animation: gradient-shift 20s ease infinite;
+  }
+
+  .gradient-mentor {
+    background: linear-gradient(135deg, hsl(271.5 81% 56%) 0%, hsl(239 84% 67%) 30%, hsl(221.2 83.2% 53.3%) 60%, hsl(180 85% 47%) 100%);
+    background-size: 300% 300%;
+    animation: gradient-shift 25s ease infinite;
+  }
+
+  .gradient-students {
+    background: linear-gradient(135deg, hsl(160 84% 39%) 0%, hsl(180 85% 47%) 25%, hsl(221.2 83.2% 53.3%) 50%, hsl(271.5 81% 56%) 75%, hsl(350 89% 60%) 100%);
+    background-size: 350% 350%;
+    animation: gradient-shift 18s ease infinite;
   }
 
   @keyframes gradient-shift {
@@ -212,13 +255,25 @@
     text-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
   }
 
-  /* Glass Morphism */
+  /* Enhanced Glass Morphism */
   .glass {
     @apply backdrop-blur-lg bg-white/10 border border-white/20;
   }
 
   .glass-dark {
     @apply backdrop-blur-lg bg-black/10 border border-white/10;
+  }
+
+  .glass-career {
+    @apply backdrop-blur-xl bg-white/20 border border-blue-200/30 shadow-xl;
+  }
+
+  .glass-mentor {
+    @apply backdrop-blur-xl bg-gradient-to-br from-purple-50/30 to-blue-50/30 border border-purple-200/40 shadow-xl;
+  }
+
+  .glass-students {
+    @apply backdrop-blur-xl bg-gradient-to-br from-emerald-50/30 to-teal-50/30 border border-emerald-200/40 shadow-xl;
   }
 
   /* Shimmer Loading Effect */
@@ -303,5 +358,80 @@
 
   .safe-right {
     padding-right: env(safe-area-inset-right);
+  }
+
+  /* Enhanced Interactive Elements */
+  .interactive-card {
+    @apply transition-all duration-300 hover:scale-105 hover:shadow-xl cursor-pointer;
+  }
+
+  .interactive-card-subtle {
+    @apply transition-all duration-300 hover:scale-[1.02] hover:shadow-lg cursor-pointer;
+  }
+
+  .career-card {
+    @apply bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 hover:border-blue-300 hover:shadow-lg transition-all duration-300;
+  }
+
+  .mentor-card {
+    @apply bg-gradient-to-br from-purple-50 to-indigo-50 border border-purple-100 hover:border-purple-300 hover:shadow-lg transition-all duration-300;
+  }
+
+  .student-card {
+    @apply bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-100 hover:border-emerald-300 hover:shadow-lg transition-all duration-300;
+  }
+
+  /* Enhanced Button Variants */
+  .btn-career {
+    @apply bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-300;
+  }
+
+  .btn-mentor {
+    @apply bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-300;
+  }
+
+  .btn-student {
+    @apply bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-lg hover:shadow-xl transition-all duration-300;
+  }
+
+  /* Page-specific background patterns */
+  .bg-career-pattern {
+    background-image: 
+      radial-gradient(circle at 20% 80%, hsl(221.2 83.2% 53.3% / 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, hsl(271.5 81% 56% / 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 40% 40%, hsl(239 84% 67% / 0.05) 0%, transparent 50%);
+  }
+
+  .bg-mentor-pattern {
+    background-image: 
+      radial-gradient(circle at 25% 75%, hsl(271.5 81% 56% / 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 75% 25%, hsl(239 84% 67% / 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 50% 50%, hsl(221.2 83.2% 53.3% / 0.05) 0%, transparent 50%);
+  }
+
+  .bg-students-pattern {
+    background-image: 
+      radial-gradient(circle at 30% 70%, hsl(160 84% 39% / 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 70% 30%, hsl(180 85% 47% / 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 50% 50%, hsl(350 89% 60% / 0.05) 0%, transparent 50%);
+  }
+
+  /* Floating animation variants */
+  .float-slow {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .float-fast {
+    animation: float 2s ease-in-out infinite;
+  }
+
+  .float-delay-1 {
+    animation: float 3s ease-in-out infinite;
+    animation-delay: 1s;
+  }
+
+  .float-delay-2 {
+    animation: float 3s ease-in-out infinite;
+    animation-delay: 2s;
   }
 }

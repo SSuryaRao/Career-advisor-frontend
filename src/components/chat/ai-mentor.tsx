@@ -330,24 +330,25 @@ For detailed errors, check the browser console (Press F12).`,
   }
 
   return (
-    <div className="flex flex-col h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-100">
+    <div className="flex flex-col h-screen bg-gradient-to-br from-gray-50 via-purple-50 to-indigo-100 bg-mentor-pattern">
       {/* Header */}
-      <div className="bg-white/90 backdrop-blur-2xl border-b border-gray-200/50 shadow-lg">
+      <div className="glass-mentor border-b border-purple-200/50 shadow-lg">
         <div className="max-w-6xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <div className="relative">
-                <div className="w-14 h-14 bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 rounded-2xl flex items-center justify-center text-2xl shadow-lg">
+                <div className="w-16 h-16 gradient-mentor rounded-3xl flex items-center justify-center text-2xl shadow-xl ring-4 ring-white/50">
                   {selectedMentor.avatar}
                 </div>
-                <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
+                <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 rounded-full border-3 border-white shadow-lg animate-pulse"></div>
               </div>
               <div>
-                <h1 className="text-xl font-bold" style={{ color: '#111827' }}>{selectedMentor.name}</h1>
-                <p className="text-sm flex items-center" style={{ color: '#6b7280' }}>
-                  <span className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></span>
+                <h1 className="text-xl font-bold text-gray-800">{selectedMentor.name}</h1>
+                <p className="text-sm flex items-center text-gray-600">
+                  <span className="w-2 h-2 bg-emerald-500 rounded-full mr-2 animate-pulse"></span>
                   {selectedMentor.specialty} • Online
                 </p>
+                <p className="text-xs text-purple-600 font-medium mt-1">{selectedMentor.personality}</p>
               </div>
             </div>
             
@@ -361,8 +362,7 @@ For detailed errors, check the browser console (Press F12).`,
                     setLanguageDropdownOpen(!languageDropdownOpen)
                     setMentorDropdownOpen(false)
                   }}
-                  className="bg-white/50 hover:bg-white/80 border-gray-200 shadow-sm"
-                  style={{ color: '#374151' }}
+                  className="bg-white/60 hover:bg-white/80 border-purple-200/60 shadow-md hover:shadow-lg transition-all duration-300 rounded-xl"
                 >
                   <Languages className="w-4 h-4 mr-2" />
                   {selectedLanguage.flag} {selectedLanguage.name}
@@ -403,8 +403,7 @@ For detailed errors, check the browser console (Press F12).`,
                     setMentorDropdownOpen(!mentorDropdownOpen)
                     setLanguageDropdownOpen(false)
                   }}
-                  className="bg-white/50 hover:bg-white/80 border-gray-200 shadow-sm"
-                  style={{ color: '#374151' }}
+                  className="bg-white/60 hover:bg-white/80 border-purple-200/60 shadow-md hover:shadow-lg transition-all duration-300 rounded-xl"
                 >
                   <Bot className="w-4 h-4 mr-2" />
                   Switch Mentor
@@ -447,7 +446,7 @@ For detailed errors, check the browser console (Press F12).`,
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-white/40 backdrop-blur-sm border-b border-gray-200/50 px-6 py-4">
+      <div className="bg-white/20 backdrop-blur-sm border-b border-purple-200/30 px-6 py-4">
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-wrap gap-3">
             {quickActions.map((action, index) => (
@@ -457,8 +456,7 @@ For detailed errors, check the browser console (Press F12).`,
                 size="sm"
                 onClick={() => handleQuickAction(action.text)}
                 disabled={isTyping}
-                className="text-xs rounded-full bg-white/70 hover:bg-white shadow-sm border-gray-200 hover:border-blue-300 hover:text-blue-700 transition-all duration-200"
-                style={{ fontSize: '12px', color: '#374151' }}
+                className="text-xs rounded-full mentor-card hover:bg-white shadow-md border-purple-200 hover:border-purple-400 hover:text-purple-700 transition-all duration-300 font-medium"
               >
                 <action.icon className="w-3 h-3 mr-2" />
                 {action.text}
@@ -498,7 +496,7 @@ For detailed errors, check the browser console (Press F12).`,
       </AnimatePresence>
 
       {/* Messages Container */}
-      <div className="flex-1 overflow-y-auto p-6 bg-gradient-to-b from-transparent to-white/20">
+      <div className="flex-1 overflow-y-auto p-6 bg-gradient-to-b from-transparent to-purple-50/20">
         <div className="max-w-6xl mx-auto space-y-6">
           {messages.map((message) => (
             <motion.div
@@ -512,29 +510,29 @@ For detailed errors, check the browser console (Press F12).`,
                 <div className="flex items-start space-x-3 mb-2">
                   {/* Avatar for Assistant */}
                   {message.type === 'assistant' && (
-                    <div className="w-10 h-10 bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 rounded-2xl flex items-center justify-center text-sm shadow-md flex-shrink-0">
+                    <div className="w-12 h-12 gradient-mentor rounded-2xl flex items-center justify-center text-sm shadow-lg flex-shrink-0 ring-2 ring-purple-200/50">
                       {selectedMentor.avatar}
                     </div>
                   )}
                   
                   {/* Avatar for User */}
                   {message.type === 'user' && (
-                    <div className="w-10 h-10 bg-gradient-to-r from-gray-400 to-gray-600 rounded-2xl flex items-center justify-center order-2 shadow-md flex-shrink-0">
+                    <div className="w-12 h-12 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center order-2 shadow-lg flex-shrink-0 ring-2 ring-emerald-200/50">
                       <User className="w-5 h-5 text-white" />
                     </div>
                   )}
                   
                   {/* Message Card - Fixed with explicit styling */}
                   <div 
-                    className={`px-5 py-4 rounded-lg shadow-lg border-0 ${
+                    className={`px-6 py-5 rounded-2xl shadow-lg border-0 ${
                       message.type === 'user' 
-                        ? 'bg-gradient-to-r from-blue-600 to-blue-700' 
-                        : 'bg-white'
+                        ? 'bg-gradient-to-r from-emerald-600 to-teal-600' 
+                        : 'mentor-card'
                     }`}
                     style={{
                       maxWidth: '100%',
                       wordBreak: 'break-word',
-                      backgroundColor: message.type === 'user' ? undefined : '#ffffff'
+                      backgroundColor: message.type === 'user' ? undefined : undefined
                     }}
                   >
                     {/* Message Content - Most Important Fix */}
@@ -619,11 +617,11 @@ For detailed errors, check the browser console (Press F12).`,
                         size="sm"
                         onClick={() => handleQuickAction(suggestion)}
                         disabled={isTyping}
-                        className="text-xs rounded-full bg-gradient-to-r from-blue-50 to-purple-50 hover:from-blue-100 hover:to-purple-100 border-blue-200 hover:border-blue-300 shadow-sm transition-all duration-200"
+                        className="text-xs rounded-full bg-gradient-to-r from-purple-50 to-indigo-50 hover:from-purple-100 hover:to-indigo-100 border-purple-200 hover:border-purple-300 shadow-md hover:shadow-lg transition-all duration-300 font-medium"
                         style={{
                           fontSize: '12px',
-                          padding: '4px 12px',
-                          color: '#1e40af'
+                          padding: '6px 14px',
+                          color: '#7c3aed'
                         }}
                       >
                         <Sparkles className="w-3 h-3 mr-2" />
@@ -645,17 +643,17 @@ For detailed errors, check the browser console (Press F12).`,
                 exit={{ opacity: 0, y: -20 }}
                 className="flex items-start space-x-3"
               >
-                <div className="w-10 h-10 bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 rounded-2xl flex items-center justify-center text-sm shadow-md">
+                <div className="w-12 h-12 gradient-mentor rounded-2xl flex items-center justify-center text-sm shadow-lg ring-2 ring-purple-200/50">
                   {selectedMentor.avatar}
                 </div>
-                <div className="px-5 py-4 bg-white rounded-lg shadow-lg">
+                <div className="mentor-card px-6 py-5 rounded-2xl shadow-lg">
                   <div className="flex items-center space-x-2">
                     <div className="flex space-x-1">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" />
-                      <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '75ms' }} />
-                      <div className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                      <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" />
+                      <div className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '75ms' }} />
+                      <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
                     </div>
-                    <span className="text-xs" style={{ color: '#6b7280' }}>AI is thinking...</span>
+                    <span className="text-xs text-gray-600 font-medium">AI is thinking...</span>
                   </div>
                 </div>
               </motion.div>
@@ -667,9 +665,9 @@ For detailed errors, check the browser console (Press F12).`,
       </div>
 
 {/* Input Section */}
-      <div className="bg-white/95 backdrop-blur-2xl border-t border-gray-200/50 shadow-2xl">
+      <div className="glass-mentor border-t border-purple-200/50 shadow-2xl">
         <div className="max-w-6xl mx-auto px-6 py-5">
-          <div className="flex items-end space-x-3">
+          <div className="flex items-end space-x-4">
             <div className="flex-1 relative">
               <Textarea
                 ref={inputRef}
@@ -677,7 +675,7 @@ For detailed errors, check the browser console (Press F12).`,
                 onChange={(e) => setInputMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="Ask me anything about your career... Press Shift+Enter for new line"
-                className="pr-12 py-3 text-gray-900 placeholder-gray-500 text-base rounded-2xl border-gray-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20 shadow-sm resize-none min-h-[52px] max-h-32 bg-white"
+                className="pr-12 py-4 text-gray-900 placeholder-gray-500 text-base rounded-2xl border-purple-200 focus:border-purple-400 focus:ring-2 focus:ring-purple-400/20 shadow-md resize-none min-h-[60px] max-h-32 bg-white/90 backdrop-blur-sm"
                 rows={1}
                 disabled={isTyping}
               />
@@ -686,10 +684,10 @@ For detailed errors, check the browser console (Press F12).`,
                 size="sm"
                 onClick={handleVoiceToggle}
                 disabled={isTyping}
-                className={`absolute right-2 bottom-2 h-8 w-8 p-0 rounded-full ${
+                className={`absolute right-3 bottom-3 h-9 w-9 p-0 rounded-full ${
                   isRecording 
-                    ? 'text-red-500 bg-red-50 hover:bg-red-100' 
-                    : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
+                    ? 'text-red-500 bg-red-50 hover:bg-red-100 shadow-md' 
+                    : 'text-purple-400 hover:text-purple-600 hover:bg-purple-50'
                 }`}
               >
                 {isRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
@@ -698,7 +696,7 @@ For detailed errors, check the browser console (Press F12).`,
             <Button 
               onClick={handleSendMessage} 
               disabled={!inputMessage.trim() || isTyping}
-              className="h-[52px] px-5 rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-white"
+              className="h-[60px] px-6 rounded-2xl btn-mentor shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isTyping ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
@@ -707,13 +705,13 @@ For detailed errors, check the browser console (Press F12).`,
               )}
             </Button>
           </div>
-          <div className="flex items-center justify-between mt-3">
+          <div className="flex items-center justify-between mt-4">
             <p className="text-xs text-gray-600">
               AI responses are based on your profile and current market data. Always verify important decisions.
             </p>
-            <div className="flex items-center space-x-2 text-xs text-gray-500">
+            <div className="flex items-center space-x-2 text-xs text-purple-600 font-medium">
               <span>Powered by Gemini AI</span>
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+              <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
             </div>
           </div>
         </div>
