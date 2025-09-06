@@ -1,6 +1,6 @@
 import { authService } from './authService';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 export interface Job {
   id: string;
@@ -123,20 +123,20 @@ class JobService {
       }
     });
 
-    const endpoint = `/jobs${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+    const endpoint = `/api/jobs${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
     return this.fetchAPI<JobsResponse>(endpoint);
   }
 
   async getJobById(id: string): Promise<{ success: boolean; data: Job }> {
-    return this.fetchAPI<{ success: boolean; data: Job }>(`/jobs/${id}`);
+    return this.fetchAPI<{ success: boolean; data: Job }>(`/api/jobs/${id}`);
   }
 
   async getFeaturedJobs(limit: number = 6): Promise<{ success: boolean; data: Job[] }> {
-    return this.fetchAPI<{ success: boolean; data: Job[] }>(`/jobs/featured?limit=${limit}`);
+    return this.fetchAPI<{ success: boolean; data: Job[] }>(`/api/jobs/featured?limit=${limit}`);
   }
 
   async getJobStats(): Promise<JobStatsResponse> {
-    return this.fetchAPI<JobStatsResponse>('/jobs/stats');
+    return this.fetchAPI<JobStatsResponse>('/api/jobs/stats');
   }
 
   async searchJobs(query: string, limit: number = 10): Promise<SearchJobsResponse> {
@@ -145,7 +145,7 @@ class JobService {
       limit: limit.toString()
     });
     
-    return this.fetchAPI<SearchJobsResponse>(`/jobs/search?${queryParams.toString()}`);
+    return this.fetchAPI<SearchJobsResponse>(`/api/jobs/search?${queryParams.toString()}`);
   }
 
   formatSalary(job: Job): string {
@@ -222,24 +222,24 @@ class JobService {
 
   // User-specific methods (require authentication)
   async saveJob(jobId: string, notes?: string): Promise<void> {
-    await this.fetchAPI(`/user/saved-jobs/${jobId}`, {
+    await this.fetchAPI(`/api/user/saved-jobs/${jobId}`, {
       method: 'POST',
       body: JSON.stringify({ notes: notes || '' }),
     });
   }
 
   async unsaveJob(jobId: string): Promise<void> {
-    await this.fetchAPI(`/user/saved-jobs/${jobId}`, {
+    await this.fetchAPI(`/api/user/saved-jobs/${jobId}`, {
       method: 'DELETE',
     });
   }
 
   async getSavedJobs(page: number = 1, limit: number = 10): Promise<JobsResponse> {
-    return this.fetchAPI<JobsResponse>(`/user/saved-jobs?page=${page}&limit=${limit}`);
+    return this.fetchAPI<JobsResponse>(`/api/user/saved-jobs?page=${page}&limit=${limit}`);
   }
 
   async markJobAsApplied(jobId: string, status: string = 'applied', notes?: string): Promise<void> {
-    await this.fetchAPI(`/user/applied-jobs/${jobId}`, {
+    await this.fetchAPI(`/api/user/applied-jobs/${jobId}`, {
       method: 'POST',
       body: JSON.stringify({ status, notes: notes || '' }),
     });
@@ -249,7 +249,7 @@ class JobService {
     const params = new URLSearchParams({ page: page.toString(), limit: limit.toString() });
     if (status) params.append('status', status);
     
-    return this.fetchAPI<JobsResponse>(`/user/applied-jobs?${params.toString()}`);
+    return this.fetchAPI<JobsResponse>(`/api/user/applied-jobs?${params.toString()}`);
   }
 }
 

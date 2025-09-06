@@ -1,6 +1,6 @@
 import { auth } from '@/lib/firebase'
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
 
 export interface BackendResumeAnalysis {
   resumeId: string
@@ -126,7 +126,7 @@ export const uploadAndAnalyzeResume = async (
       reject(new Error('Network error during upload'))
     }
 
-    xhr.open('POST', `${API_BASE_URL}/resume/upload`)
+    xhr.open('POST', `${API_BASE_URL}/api/resume/upload`)
     xhr.setRequestHeader('Authorization', `Bearer ${token}`)
     xhr.send(formData)
   })
@@ -148,7 +148,7 @@ export const getResumeHistory = async (
   const token = await getAuthToken()
   
   const response = await fetch(
-    `${API_BASE_URL}/resume/history?page=${page}&limit=${limit}`,
+    `${API_BASE_URL}/api/resume/history?page=${page}&limit=${limit}`,
     {
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -170,7 +170,7 @@ export const getResumeHistory = async (
 export const getResumeAnalysis = async (resumeId: string): Promise<BackendResumeAnalysis> => {
   const token = await getAuthToken()
   
-  const response = await fetch(`${API_BASE_URL}/resume/${resumeId}`, {
+  const response = await fetch(`${API_BASE_URL}/api/resume/${resumeId}`, {
     headers: {
       'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json'
@@ -190,7 +190,7 @@ export const getResumeAnalysis = async (resumeId: string): Promise<BackendResume
 export const deleteResume = async (resumeId: string): Promise<void> => {
   const token = await getAuthToken()
   
-  const response = await fetch(`${API_BASE_URL}/resume/${resumeId}`, {
+  const response = await fetch(`${API_BASE_URL}/api/resume/${resumeId}`, {
     method: 'DELETE',
     headers: {
       'Authorization': `Bearer ${token}`,
@@ -208,7 +208,7 @@ export const deleteResume = async (resumeId: string): Promise<void> => {
 export const getAnalytics = async (): Promise<AnalyticsData> => {
   const token = await getAuthToken()
   
-  const response = await fetch(`${API_BASE_URL}/resume/analytics`, {
+  const response = await fetch(`${API_BASE_URL}/api/resume/analytics`, {
     headers: {
       'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json'

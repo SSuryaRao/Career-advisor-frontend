@@ -1,7 +1,7 @@
 // src/lib/api.ts
 import { auth } from './firebase'
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
 
 interface ApiResponse<T = any> {
   success: boolean
@@ -59,11 +59,11 @@ class ApiClient {
 
   // User profile methods
   async getProfile(): Promise<ApiResponse<any>> {
-    return this.request('/user/profile')
+    return this.request('/api/user/profile')
   }
 
   async updateProfile(profileData: any): Promise<ApiResponse<any>> {
-    return this.request('/user/profile', {
+    return this.request('/api/user/profile', {
       method: 'PUT',
       body: JSON.stringify(profileData)
     })
@@ -71,41 +71,41 @@ class ApiClient {
 
   // Additional user methods
   async getSavedJobs(page = 1, limit = 10): Promise<ApiResponse<any>> {
-    return this.request(`/user/saved-jobs?page=${page}&limit=${limit}`)
+    return this.request(`/api/user/saved-jobs?page=${page}&limit=${limit}`)
   }
 
   async saveJob(jobId: string, notes = ''): Promise<ApiResponse<any>> {
-    return this.request(`/user/saved-jobs/${jobId}`, {
+    return this.request(`/api/user/saved-jobs/${jobId}`, {
       method: 'POST',
       body: JSON.stringify({ notes })
     })
   }
 
   async unsaveJob(jobId: string): Promise<ApiResponse<any>> {
-    return this.request(`/user/saved-jobs/${jobId}`, {
+    return this.request(`/api/user/saved-jobs/${jobId}`, {
       method: 'DELETE'
     })
   }
 
   async getAppliedJobs(page = 1, limit = 10, status?: string): Promise<ApiResponse<any>> {
     const statusParam = status ? `&status=${status}` : ''
-    return this.request(`/user/applied-jobs?page=${page}&limit=${limit}${statusParam}`)
+    return this.request(`/api/user/applied-jobs?page=${page}&limit=${limit}${statusParam}`)
   }
 
   async markJobAsApplied(jobId: string, status = 'applied', notes = ''): Promise<ApiResponse<any>> {
-    return this.request(`/user/applied-jobs/${jobId}`, {
+    return this.request(`/api/user/applied-jobs/${jobId}`, {
       method: 'POST',
       body: JSON.stringify({ status, notes })
     })
   }
 
   async getActivityLog(page = 1, limit = 20): Promise<ApiResponse<any>> {
-    return this.request(`/user/activity?page=${page}&limit=${limit}`)
+    return this.request(`/api/user/activity?page=${page}&limit=${limit}`)
   }
 
   // Health check
   async healthCheck(): Promise<ApiResponse<any>> {
-    return this.request('/health')
+    return this.request('/api/health')
   }
 }
 

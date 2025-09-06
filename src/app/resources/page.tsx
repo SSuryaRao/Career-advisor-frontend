@@ -51,8 +51,8 @@ export default function ResourcesPage() {
     try {
       setIsLoading(true)
       // Mock API call - replace with actual API endpoint
-      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'
-      const response = await fetch(`${API_BASE_URL}/progress/user/${userId}`)
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+      const response = await fetch(`${API_BASE_URL}/api/progress/user/${userId}`)
       if (response.ok) {
         const data = await response.json()
         setUserProgress(data.data.progress)
@@ -68,9 +68,9 @@ export default function ResourcesPage() {
   
   const handleResourceComplete = async (resourceId: number, isCompleted: boolean) => {
     try {
-      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
       const endpoint = isCompleted ? 'complete' : 'uncomplete'
-      const response = await fetch(`${API_BASE_URL}/progress/user/${userId}/${endpoint}`, {
+      const response = await fetch(`${API_BASE_URL}/api/progress/user/${userId}/${endpoint}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

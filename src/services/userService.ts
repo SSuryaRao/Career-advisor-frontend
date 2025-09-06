@@ -1,6 +1,6 @@
 import { authService } from './authService';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 export interface UserProfile {
   id: string;
@@ -97,12 +97,12 @@ class UserService {
   }
 
   async getProfile(): Promise<UserProfile> {
-    const response = await this.fetchAPI<{ success: boolean; data: UserProfile }>('/user/profile');
+    const response = await this.fetchAPI<{ success: boolean; data: UserProfile }>('/api/user/profile');
     return response.data;
   }
 
   async updateProfile(updates: Partial<UserProfile>): Promise<UserProfile> {
-    const response = await this.fetchAPI<{ success: boolean; data: UserProfile }>('/user/profile', {
+    const response = await this.fetchAPI<{ success: boolean; data: UserProfile }>('/api/user/profile', {
       method: 'PUT',
       body: JSON.stringify(updates),
     });
@@ -153,13 +153,13 @@ class UserService {
         activities: ActivityLogItem[];
         pagination: any;
       };
-    }>(`/user/activity?page=${page}&limit=${limit}`);
+    }>(`/api/user/activity?page=${page}&limit=${limit}`);
     
     return response.data;
   }
 
   async deleteAccount(): Promise<void> {
-    await this.fetchAPI('/user/account', {
+    await this.fetchAPI('/api/user/account', {
       method: 'DELETE',
     });
   }

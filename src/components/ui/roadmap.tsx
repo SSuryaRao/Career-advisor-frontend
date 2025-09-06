@@ -120,8 +120,8 @@ export function Roadmap({ onGenerateRoadmap }: RoadmapProps) {
     
     setIsLoading(true)
     try {
-      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'
-      const response = await fetch(`${API_BASE_URL}/roadmap-progress/get?userId=${user.uid}&careerDomain=${selectedDomain}&skillLevel=${selectedSkillLevel}`)
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+      const response = await fetch(`${API_BASE_URL}/api/roadmap-progress/get?userId=${user.uid}&careerDomain=${selectedDomain}&skillLevel=${selectedSkillLevel}`)
       if (response.ok) {
         const data = await response.json()
         if (data.success && data.data.length > 0) {
@@ -148,8 +148,8 @@ export function Roadmap({ onGenerateRoadmap }: RoadmapProps) {
         completedAt: new Date().toISOString()
       }))
 
-      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'
-      const response = await fetch(`${API_BASE_URL}/roadmap-progress/save`, {
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+      const response = await fetch(`${API_BASE_URL}/api/roadmap-progress/save`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -211,8 +211,8 @@ export function Roadmap({ onGenerateRoadmap }: RoadmapProps) {
           completedAt: new Date().toISOString()
         }))
 
-        const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'
-        await fetch(`${API_BASE_URL}/roadmap-progress/save`, {
+        const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+        await fetch(`${API_BASE_URL}/api/roadmap-progress/save`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
