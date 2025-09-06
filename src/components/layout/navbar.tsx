@@ -26,6 +26,7 @@ import {
   GraduationCap,
   MapPin,
   Award,
+  MessageSquareText,
 } from 'lucide-react'
 import { useAuth } from '../auth-provider'
 import { auth } from '@/lib/firebase'
@@ -38,13 +39,13 @@ const navigation = [
     href: '#features',
     dropdown: [
       { name: 'AI Mentor', href: '/features/ai-mentor', icon: Brain },
-      {
-        name: 'Career Engine',
-        href: '/features/career-engine',
-        icon: Target,
-      },
+      // {
+      //   name: 'Career Engine',
+      //   href: '/features/career-engine',
+      //   icon: Target,
+      // },
       { name: 'Resume Analyzer', href: '/features/resume-analyzer', icon: FileSearch },
-      { name: 'Skill Analysis', href: '/features/skills', icon: TrendingUp },
+      // { name: 'Skill Analysis', href: '/features/skills', icon: TrendingUp },
       { name: 'Scholarship & Internship Finder', href: '/features/scholarships', icon: Award },
     ],
   },
@@ -54,6 +55,7 @@ const navigation = [
     dropdown: [
       { name: 'For Students', href: '/solutions/students', icon: GraduationCap },
       { name: 'Roadmap', href: '/solutions/roadmap', icon: MapPin },
+      { name: 'AI Mock Interview', href: '/mock-interview', icon: MessageSquareText },
     ],
   },
   { name: 'Careers', href: '/careers' },
