@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import {
   Send, Mic, MicOff, Volume2, VolumeX, Bot, User, 
-  Languages, Sparkles, ThumbsUp, ThumbsDown, Copy,
+  Sparkles, ThumbsUp, ThumbsDown, Copy,
   Zap, Brain, Target, BookOpen, Users, AlertCircle,
   Check, Loader2, ChevronDown
 } from 'lucide-react'
@@ -82,6 +82,66 @@ const quickActions = [
   { text: 'Create a roadmap for my goals', icon: Zap },
 ]
 
+// Mentor Dropdown Component - Separate for portal rendering
+function MentorDropdown({ 
+  isOpen, 
+  onClose, 
+  selectedMentor, 
+  onSelectMentor 
+}: {
+  isOpen: boolean
+  onClose: () => void
+  selectedMentor: MentorPersona
+  onSelectMentor: (mentor: MentorPersona) => void
+}) {
+  useEffect(() => {
+    if (isOpen) {
+      const handleEscape = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') onClose()
+      }
+      document.addEventListener('keydown', handleEscape)
+      return () => document.removeEventListener('keydown', handleEscape)
+    }
+  }, [isOpen, onClose])
+
+  if (!isOpen) return null
+
+  return (
+    <>
+      {/* Backdrop */}
+      <div 
+        className="fixed inset-0 z-[999998]" 
+        onClick={onClose}
+      />
+      
+      {/* Dropdown */}
+      <div 
+        className="fixed top-20 right-6 w-80 bg-slate-800 border border-white/10 rounded-xl shadow-2xl z-[999999]"
+      >
+        {mentorPersonas.map((mentor) => (
+          <button
+            key={mentor.id}
+            onClick={() => {
+              onSelectMentor(mentor)
+              onClose()
+            }}
+            className={`w-full text-left p-4 hover:bg-white/10 border-b border-white/5 last:border-b-0 transition-colors first:rounded-t-xl last:rounded-b-xl ${
+              selectedMentor.id === mentor.id ? 'bg-violet-600/20' : ''
+            }`}
+          >
+            <div className="flex items-center space-x-3">
+              <div className="text-2xl">{mentor.avatar}</div>
+              <div>
+                <div className="font-medium text-white">{mentor.name}</div>
+                <div className="text-sm text-gray-400">{mentor.description}</div>
+              </div>
+            </div>
+          </button>
+        ))}
+      </div>
+    </>
+  )
+}
 
 export default function AIMentor() {
   const [messages, setMessages] = useState<Message[]>([
@@ -106,7 +166,6 @@ export default function AIMentor() {
   const [isTyping, setIsTyping] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null)
-  const [languageDropdownOpen, setLanguageDropdownOpen] = useState(false)
   const [mentorDropdownOpen, setMentorDropdownOpen] = useState(false)
   
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -144,20 +203,6 @@ export default function AIMentor() {
       recognitionRef.current = recognition
     }
   }, [selectedLanguage])
-
-  // Close dropdowns when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as HTMLElement
-      if (!target.closest('.language-dropdown') && !target.closest('.mentor-dropdown')) {
-        setLanguageDropdownOpen(false)
-        setMentorDropdownOpen(false)
-      }
-    }
-
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
 
   const handleSendMessage = async () => {
     if (!inputMessage.trim() || isTyping) return
@@ -268,352 +313,285 @@ export default function AIMentor() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-      {/* Header */}
-      <div className="bg-black/20 backdrop-blur-xl border-b border-white/10">
-        <div className="max-w-6xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="relative">
-                <div className="w-16 h-16 bg-gradient-to-br from-violet-500 to-purple-600 rounded-2xl flex items-center justify-center text-2xl shadow-xl ring-4 ring-white/20">
-                  {selectedMentor.avatar}
+    <>
+      <div className="flex flex-col h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+        {/* Header */}
+        <div className="bg-black/20 backdrop-blur-xl border-b border-white/10">
+          <div className="max-w-6xl mx-auto px-6 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <div className="relative">
+                  <div className="w-16 h-16 bg-gradient-to-br from-violet-500 to-purple-600 rounded-2xl flex items-center justify-center text-2xl shadow-xl ring-4 ring-white/20">
+                    {selectedMentor.avatar}
+                  </div>
+                  <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-slate-900 animate-pulse"></div>
                 </div>
-                <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-slate-900 animate-pulse"></div>
+                <div>
+                  <h1 className="text-xl font-bold text-white">{selectedMentor.name}</h1>
+                  <p className="text-sm flex items-center text-gray-300">
+                    <span className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></span>
+                    {selectedMentor.specialty} • Online
+                  </p>
+                  <p className="text-xs text-violet-400 font-medium mt-1">{selectedMentor.personality}</p>
+                </div>
               </div>
-              <div>
-                <h1 className="text-xl font-bold text-white">{selectedMentor.name}</h1>
-                <p className="text-sm flex items-center text-gray-300">
-                  <span className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></span>
-                  {selectedMentor.specialty} • Online
-                </p>
-                <p className="text-xs text-violet-400 font-medium mt-1">{selectedMentor.personality}</p>
-              </div>
-            </div>
-            
-            <div className="flex items-center space-x-3">
-              {/* Language Selector */}
-              <div className="relative language-dropdown">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={() => {
-                    setLanguageDropdownOpen(!languageDropdownOpen)
-                    setMentorDropdownOpen(false)
-                  }}
-                  className="bg-white/10 hover:bg-white/20 border-white/20 text-white shadow-lg transition-all duration-300 rounded-xl"
-                >
-                  <Languages className="w-4 h-4 mr-2" />
-                  {selectedLanguage.flag} {selectedLanguage.name}
-                  <ChevronDown className="w-3 h-3 ml-2" />
-                </Button>
-                <AnimatePresence>
-                  {languageDropdownOpen && (
-                    <motion.div 
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      className="absolute top-full right-0 mt-2 w-48 bg-slate-800 border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden"
-                    >
-                      {languages.map((lang) => (
-                        <button
-                          key={lang.code}
-                          onClick={() => {
-                            setSelectedLanguage(lang)
-                            setLanguageDropdownOpen(false)
-                          }}
-                          className="w-full text-left px-4 py-3 hover:bg-white/10 flex items-center transition-colors text-white"
-                        >
-                          <span className="mr-3 text-lg">{lang.flag}</span>
-                          <span className="text-sm">{lang.name}</span>
-                        </button>
-                      ))}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-
-              {/* Mentor Selector */}
-              <div className="relative mentor-dropdown">
+              
+              <div className="flex items-center space-x-3">
+                {/* Mentor Selector Button */}
                 <Button 
                   variant="outline" 
                   size="sm"
-                  onClick={() => {
-                    setMentorDropdownOpen(!mentorDropdownOpen)
-                    setLanguageDropdownOpen(false)
-                  }}
+                  onClick={() => setMentorDropdownOpen(true)}
                   className="bg-white/10 hover:bg-white/20 border-white/20 text-white shadow-lg transition-all duration-300 rounded-xl"
                 >
                   <Bot className="w-4 h-4 mr-2" />
                   Switch Mentor
                   <ChevronDown className="w-3 h-3 ml-2" />
                 </Button>
-                <AnimatePresence>
-                  {mentorDropdownOpen && (
-                    <motion.div 
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      className="absolute top-full right-0 mt-2 w-80 bg-slate-800 border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden"
-                    >
-                      {mentorPersonas.map((mentor) => (
-                        <button
-                          key={mentor.id}
-                          onClick={() => {
-                            setSelectedMentor(mentor)
-                            setMentorDropdownOpen(false)
-                          }}
-                          className={`w-full text-left p-4 hover:bg-white/10 border-b border-white/5 last:border-b-0 transition-colors ${
-                            selectedMentor.id === mentor.id ? 'bg-violet-600/20' : ''
-                          }`}
-                        >
-                          <div className="flex items-center space-x-3">
-                            <div className="text-2xl">{mentor.avatar}</div>
-                            <div>
-                              <div className="font-medium text-white">{mentor.name}</div>
-                              <div className="text-sm text-gray-400">{mentor.description}</div>
-                            </div>
-                          </div>
-                        </button>
-                      ))}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Quick Actions */}
-      <div className="bg-black/10 backdrop-blur-sm border-b border-white/5 px-6 py-4">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex flex-wrap gap-2">
-            {quickActions.map((action, index) => (
-              <Button
-                key={index}
-                variant="outline"
-                size="sm"
-                onClick={() => handleQuickAction(action.text)}
-                disabled={isTyping}
-                className="text-xs rounded-full bg-white/5 hover:bg-white/10 border-white/20 text-white/90 hover:text-white transition-all duration-300 font-medium"
-              >
-                <action.icon className="w-3 h-3 mr-2" />
-                {action.text}
-              </Button>
-            ))}
+        {/* Quick Actions */}
+        <div className="bg-black/10 backdrop-blur-sm border-b border-white/5 px-6 py-4">
+          <div className="max-w-6xl mx-auto">
+            <div className="flex flex-wrap gap-2">
+              {quickActions.map((action, index) => (
+                <Button
+                  key={index}
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleQuickAction(action.text)}
+                  disabled={isTyping}
+                  className="text-xs rounded-full bg-white/5 hover:bg-white/10 border-white/20 text-white/90 hover:text-white transition-all duration-300 font-medium"
+                >
+                  <action.icon className="w-3 h-3 mr-2" />
+                  {action.text}
+                </Button>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Error Display */}
-      <AnimatePresence>
-        {error && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="bg-red-500/10 border-l-4 border-red-500 overflow-hidden backdrop-blur-sm"
-          >
-            <div className="p-4">
-              <div className="max-w-4xl mx-auto flex">
-                <AlertCircle className="w-5 h-5 text-red-400 mr-2 mt-0.5 flex-shrink-0" />
-                <div className="flex-1">
-                  <p className="text-red-300 text-sm">{error}</p>
-                  <Button
-                    variant="ghost" 
-                    size="sm"
-                    onClick={() => setError(null)}
-                    className="text-red-400 hover:text-red-300 p-0 h-auto mt-1"
-                  >
-                    Dismiss
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Messages Container */}
-      <div className="flex-1 overflow-y-auto p-6">
-        <div className="max-w-4xl mx-auto space-y-6">
-          {messages.map((message) => (
+        {/* Error Display */}
+        <AnimatePresence>
+          {error && (
             <motion.div
-              key={message.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-              className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="bg-red-500/10 border-l-4 border-red-500 overflow-hidden backdrop-blur-sm"
             >
-              <div className={`max-w-3xl ${message.type === 'user' ? 'order-2' : 'order-1'}`}>
-                <div className="flex items-start space-x-3 mb-2">
-                  {/* Avatar for Assistant */}
-                  {message.type === 'assistant' && (
-                    <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl flex items-center justify-center text-lg shadow-lg flex-shrink-0">
-                      {selectedMentor.avatar}
-                    </div>
-                  )}
-                  
-                  {/* Message Content */}
-                  <div 
-                    className={`px-5 py-4 rounded-2xl shadow-xl max-w-full ${
-                      message.type === 'user' 
-                        ? 'bg-gradient-to-r from-violet-600 to-purple-600 text-white ml-auto' 
-                        : 'bg-white/10 backdrop-blur-lg border border-white/10 text-white'
-                    }`}
-                  >
-                    <p className="text-sm leading-relaxed whitespace-pre-wrap">
-                      {message.content}
-                    </p>
-                    
-                    {/* Message Actions */}
-                    <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/10">
-                      <div className="flex items-center space-x-1">
-                        {message.type === 'assistant' && (
-                          <>
-                            <button
-                              onClick={() => copyMessage(message.content, message.id)}
-                              className="p-1.5 rounded-lg hover:bg-white/10 transition-colors text-white/60 hover:text-white"
-                            >
-                              {copiedMessageId === message.id ? (
-                                <Check className="w-3.5 h-3.5 text-green-400" />
-                              ) : (
-                                <Copy className="w-3.5 h-3.5" />
-                              )}
-                            </button>
-                            <button
-                              onClick={() => handleSpeakMessage(message.content)}
-                              className="p-1.5 rounded-lg hover:bg-white/10 transition-colors text-white/60 hover:text-white"
-                            >
-                              {isSpeaking ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
-                            </button>
-                            <button className="p-1.5 rounded-lg hover:bg-white/10 transition-colors text-white/60 hover:text-white">
-                              <ThumbsUp className="w-3.5 h-3.5" />
-                            </button>
-                            <button className="p-1.5 rounded-lg hover:bg-white/10 transition-colors text-white/60 hover:text-white">
-                              <ThumbsDown className="w-3.5 h-3.5" />
-                            </button>
-                          </>
-                        )}
-                      </div>
-                      <span className={`text-xs ${message.type === 'user' ? 'text-white/70' : 'text-white/50'}`}>
-                        {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </span>
-                    </div>
+              <div className="p-4">
+                <div className="max-w-4xl mx-auto flex">
+                  <AlertCircle className="w-5 h-5 text-red-400 mr-2 mt-0.5 flex-shrink-0" />
+                  <div className="flex-1">
+                    <p className="text-red-300 text-sm">{error}</p>
+                    <Button
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => setError(null)}
+                      className="text-red-400 hover:text-red-300 p-0 h-auto mt-1"
+                    >
+                      Dismiss
+                    </Button>
                   </div>
-                  
-                  {/* Avatar for User */}
-                  {message.type === 'user' && (
-                    <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center order-2 shadow-lg flex-shrink-0">
-                      <User className="w-5 h-5 text-white" />
-                    </div>
-                  )}
                 </div>
-                
-                {/* Suggestions */}
-                {message.suggestions && message.suggestions.length > 0 && (
-                  <div className="flex flex-wrap gap-2 ml-13 mt-2">
-                    {message.suggestions.map((suggestion, index) => (
-                      <Button
-                        key={index}
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleQuickAction(suggestion)}
-                        disabled={isTyping}
-                        className="text-xs rounded-full bg-violet-600/20 hover:bg-violet-600/30 border-violet-500/30 text-violet-300 hover:text-white transition-all duration-300"
-                      >
-                        <Sparkles className="w-3 h-3 mr-2" />
-                        {suggestion}
-                      </Button>
-                    ))}
-                  </div>
-                )}
               </div>
             </motion.div>
-          ))}
-          
-          {/* Typing Indicator */}
-          <AnimatePresence>
-            {isTyping && (
+          )}
+        </AnimatePresence>
+
+        {/* Messages Container */}
+        <div className="flex-1 overflow-y-auto p-6">
+          <div className="max-w-4xl mx-auto space-y-6">
+            {messages.map((message) => (
               <motion.div
+                key={message.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                className="flex items-start space-x-3"
+                transition={{ duration: 0.3 }}
+                className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
               >
-                <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl flex items-center justify-center text-lg shadow-lg">
-                  {selectedMentor.avatar}
-                </div>
-                <div className="bg-white/10 backdrop-blur-lg border border-white/10 px-5 py-4 rounded-2xl shadow-xl">
-                  <div className="flex items-center space-x-2">
-                    <div className="flex space-x-1">
-                      <div className="w-2 h-2 bg-violet-400 rounded-full animate-bounce" />
-                      <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '75ms' }} />
-                      <div className="w-2 h-2 bg-pink-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                <div className={`max-w-3xl ${message.type === 'user' ? 'order-2' : 'order-1'}`}>
+                  <div className="flex items-start space-x-3 mb-2">
+                    {/* Avatar for Assistant */}
+                    {message.type === 'assistant' && (
+                      <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl flex items-center justify-center text-lg shadow-lg flex-shrink-0">
+                        {selectedMentor.avatar}
+                      </div>
+                    )}
+                    
+                    {/* Message Content */}
+                    <div 
+                      className={`px-5 py-4 rounded-2xl shadow-xl max-w-full ${
+                        message.type === 'user' 
+                          ? 'bg-gradient-to-r from-violet-600 to-purple-600 text-white ml-auto' 
+                          : 'bg-white/10 backdrop-blur-lg border border-white/10 text-white'
+                      }`}
+                    >
+                      <p className="text-sm leading-relaxed whitespace-pre-wrap">
+                        {message.content}
+                      </p>
+                      
+                      {/* Message Actions */}
+                      <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/10">
+                        <div className="flex items-center space-x-1">
+                          {message.type === 'assistant' && (
+                            <>
+                              <button
+                                onClick={() => copyMessage(message.content, message.id)}
+                                className="p-1.5 rounded-lg hover:bg-white/10 transition-colors text-white/60 hover:text-white"
+                              >
+                                {copiedMessageId === message.id ? (
+                                  <Check className="w-3.5 h-3.5 text-green-400" />
+                                ) : (
+                                  <Copy className="w-3.5 h-3.5" />
+                                )}
+                              </button>
+                              <button
+                                onClick={() => handleSpeakMessage(message.content)}
+                                className="p-1.5 rounded-lg hover:bg-white/10 transition-colors text-white/60 hover:text-white"
+                              >
+                                {isSpeaking ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
+                              </button>
+                              <button className="p-1.5 rounded-lg hover:bg-white/10 transition-colors text-white/60 hover:text-white">
+                                <ThumbsUp className="w-3.5 h-3.5" />
+                              </button>
+                              <button className="p-1.5 rounded-lg hover:bg-white/10 transition-colors text-white/60 hover:text-white">
+                                <ThumbsDown className="w-3.5 h-3.5" />
+                              </button>
+                            </>
+                          )}
+                        </div>
+                        <span className={`text-xs ${message.type === 'user' ? 'text-white/70' : 'text-white/50'}`}>
+                          {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </div>
                     </div>
-                    <span className="text-xs text-gray-300 font-medium">AI is thinking...</span>
+                    
+                    {/* Avatar for User */}
+                    {message.type === 'user' && (
+                      <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center order-2 shadow-lg flex-shrink-0">
+                        <User className="w-5 h-5 text-white" />
+                      </div>
+                    )}
                   </div>
+                  
+                  {/* Suggestions */}
+                  {message.suggestions && message.suggestions.length > 0 && (
+                    <div className="flex flex-wrap gap-2 ml-13 mt-2">
+                      {message.suggestions.map((suggestion, index) => (
+                        <Button
+                          key={index}
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleQuickAction(suggestion)}
+                          disabled={isTyping}
+                          className="text-xs rounded-full bg-violet-600/20 hover:bg-violet-600/30 border-violet-500/30 text-violet-300 hover:text-white transition-all duration-300"
+                        >
+                          <Sparkles className="w-3 h-3 mr-2" />
+                          {suggestion}
+                        </Button>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </motion.div>
-            )}
-          </AnimatePresence>
-          
-          <div ref={messagesEndRef} />
+            ))}
+            
+            {/* Typing Indicator */}
+            <AnimatePresence>
+              {isTyping && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  className="flex items-start space-x-3"
+                >
+                  <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl flex items-center justify-center text-lg shadow-lg">
+                    {selectedMentor.avatar}
+                  </div>
+                  <div className="bg-white/10 backdrop-blur-lg border border-white/10 px-5 py-4 rounded-2xl shadow-xl">
+                    <div className="flex items-center space-x-2">
+                      <div className="flex space-x-1">
+                        <div className="w-2 h-2 bg-violet-400 rounded-full animate-bounce" />
+                        <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '75ms' }} />
+                        <div className="w-2 h-2 bg-pink-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                      </div>
+                      <span className="text-xs text-gray-300 font-medium">AI is thinking...</span>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+            
+            <div ref={messagesEndRef} />
+          </div>
+        </div>
+
+        {/* Input Section */}
+        <div className="bg-black/20 backdrop-blur-xl border-t border-white/10">
+          <div className="max-w-4xl mx-auto px-6 py-5">
+            <div className="flex items-end space-x-4">
+              <div className="flex-1 relative">
+                <Textarea
+                  ref={inputRef}
+                  value={inputMessage}
+                  onChange={(e) => setInputMessage(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  placeholder="Ask me anything about your career..."
+                  className="pr-12 py-4 text-white placeholder-gray-400 text-sm rounded-2xl border-white/20 bg-white/10 backdrop-blur-lg focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 shadow-xl resize-none min-h-[56px] max-h-32"
+                  rows={1}
+                  disabled={isTyping}
+                />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleVoiceToggle}
+                  disabled={isTyping}
+                  className={`absolute right-3 bottom-3 h-8 w-8 p-0 rounded-xl ${
+                    isRecording 
+                      ? 'text-red-400 bg-red-500/20 hover:bg-red-500/30' 
+                      : 'text-gray-400 hover:text-white hover:bg-white/10'
+                  }`}
+                >
+                  {isRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                </Button>
+              </div>
+              <Button 
+                onClick={handleSendMessage} 
+                disabled={!inputMessage.trim() || isTyping}
+                className="h-[56px] px-6 rounded-2xl bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isTyping ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <Send className="w-5 h-5" />
+                )}
+              </Button>
+            </div>
+            <div className="flex items-center justify-between mt-4">
+              <p className="text-xs text-gray-400">
+                AI responses are based on your profile and current market data.
+              </p>
+              <div className="flex items-center space-x-2 text-xs text-violet-400 font-medium">
+                <span>Powered by Gemini AI</span>
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Input Section */}
-      <div className="bg-black/20 backdrop-blur-xl border-t border-white/10">
-        <div className="max-w-4xl mx-auto px-6 py-5">
-          <div className="flex items-end space-x-4">
-            <div className="flex-1 relative">
-              <Textarea
-                ref={inputRef}
-                value={inputMessage}
-                onChange={(e) => setInputMessage(e.target.value)}
-                onKeyPress={handleKeyPress}
-                placeholder="Ask me anything about your career..."
-                className="pr-12 py-4 text-white placeholder-gray-400 text-sm rounded-2xl border-white/20 bg-white/10 backdrop-blur-lg focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 shadow-xl resize-none min-h-[56px] max-h-32"
-                rows={1}
-                disabled={isTyping}
-              />
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleVoiceToggle}
-                disabled={isTyping}
-                className={`absolute right-3 bottom-3 h-8 w-8 p-0 rounded-xl ${
-                  isRecording 
-                    ? 'text-red-400 bg-red-500/20 hover:bg-red-500/30' 
-                    : 'text-gray-400 hover:text-white hover:bg-white/10'
-                }`}
-              >
-                {isRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
-              </Button>
-            </div>
-            <Button 
-              onClick={handleSendMessage} 
-              disabled={!inputMessage.trim() || isTyping}
-              className="h-[56px] px-6 rounded-2xl bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isTyping ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
-              ) : (
-                <Send className="w-5 h-5" />
-              )}
-            </Button>
-          </div>
-          <div className="flex items-center justify-between mt-4">
-            <p className="text-xs text-gray-400">
-              AI responses are based on your profile and current market data.
-            </p>
-            <div className="flex items-center space-x-2 text-xs text-violet-400 font-medium">
-              <span>Powered by Gemini AI</span>
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+      {/* Mentor Dropdown - Rendered outside main component */}
+      <MentorDropdown 
+        isOpen={mentorDropdownOpen}
+        onClose={() => setMentorDropdownOpen(false)}
+        selectedMentor={selectedMentor}
+        onSelectMentor={setSelectedMentor}
+      />
+    </>
   )
 }
