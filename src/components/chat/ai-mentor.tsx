@@ -4,13 +4,13 @@ import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
-import { geminiAI, type ChatMessage } from '@/lib/gemini'
 import {
   Send, Mic, MicOff, Volume2, VolumeX, Bot, User, 
   Languages, Sparkles, ThumbsUp, ThumbsDown, Copy,
   Zap, Brain, Target, BookOpen, Users, AlertCircle,
-  Check, Loader2
+  Check, Loader2, ChevronDown
 } from 'lucide-react'
+import { geminiAI, type MentorContext, type ChatMessage } from '@/lib/gemini'
 
 interface Message {
   id: string
@@ -81,6 +81,7 @@ const quickActions = [
   { text: 'Help with interview prep', icon: Users },
   { text: 'Create a roadmap for my goals', icon: Zap },
 ]
+
 
 export default function AIMentor() {
   const [messages, setMessages] = useState<Message[]>([
@@ -161,8 +162,6 @@ export default function AIMentor() {
   const handleSendMessage = async () => {
     if (!inputMessage.trim() || isTyping) return
 
-    console.log('📤 Sending message:', inputMessage)
-
     const userMessage: Message = {
       id: Date.now().toString(),
       type: 'user',
@@ -177,102 +176,41 @@ export default function AIMentor() {
     setError(null)
 
     try {
-      // Check if API key exists
-      const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY
-      if (!apiKey) {
-        console.error('❌ API Key is missing!')
-        throw new Error('API Key is missing! Please add NEXT_PUBLIC_GEMINI_API_KEY to your .env.local file and restart the server.')
-      }
-
-      console.log('🔧 API Key found, preparing request...')
-      
-      // Convert messages to ChatMessage format
-      const chatHistory: ChatMessage[] = messages
-        .slice(-10) // Limit to last 10 messages
-        .filter(msg => msg.type !== 'assistant' || !msg.content.includes('Hello! I\'m your AI Career Mentor'))
-        .map(msg => ({
-          role: msg.type === 'user' ? 'user' as const : 'assistant' as const,
-          content: msg.content
-        }))
-
-      const mentorContext = {
+      // Create context for Gemini API
+      const context: MentorContext = {
         mentorName: selectedMentor.name,
         specialty: selectedMentor.specialty,
         personality: selectedMentor.personality,
         language: selectedLanguage.name
       }
 
-      console.log('🎯 Calling Gemini API with context:', mentorContext)
+      // Convert message history to ChatMessage format
+      const chatHistory: ChatMessage[] = messages.map(msg => ({
+        role: msg.type === 'user' ? 'user' : 'assistant',
+        content: msg.content
+      }))
 
-      let response
-      try {
-        // Call the actual Gemini API
-        response = await geminiAI.generateResponse(currentInput, mentorContext, chatHistory)
-        console.log('✅ API Response received:', response)
-      } catch (apiError: any) {
-        console.error('❌ API Error:', apiError)
-        
-        // If API fails, provide a helpful error message
-        if (apiError.message?.includes('API_KEY_INVALID')) {
-          throw new Error('Your API key is invalid. Please check your Gemini API key.')
-        } else if (apiError.message?.includes('QUOTA_EXCEEDED')) {
-          throw new Error('API quota exceeded. Please try again later.')
-        } else {
-          // Fallback response for debugging
-          response = {
-            content: `I understand you said: "${currentInput}". However, I'm experiencing connection issues. 
-
-Error: ${apiError.message || 'Unknown API error'}
-
-To fix this:
-1. Ensure your NEXT_PUBLIC_GEMINI_API_KEY is set in .env.local
-2. Restart your development server (npm run dev)
-3. Check that your API key has access to Gemini 1.5 Flash
-4. Look for detailed errors in the browser console (F12)`,
-            suggestions: [
-              'Check API configuration',
-              'Verify environment setup',
-              'Try a simpler query',
-              'Check browser console'
-            ]
-          }
-        }
-      }
+      // Use Gemini AI for response generation
+      const response = await geminiAI.generateResponse(
+        currentInput,
+        context,
+        chatHistory
+      )
 
       const aiResponse: Message = {
         id: (Date.now() + 1).toString(),
         type: 'assistant',
-        content: response.content || 'I apologize, but I couldn\'t generate a response. Please try again.',
+        content: response.content,
         timestamp: new Date(),
         suggestions: response.suggestions || []
       }
 
-      console.log('✨ Adding AI response to messages')
       setMessages(prev => [...prev, aiResponse])
-
     } catch (error: any) {
-      console.error('💥 Error in handleSendMessage:', error)
+      console.error('Error generating AI response:', error)
       setError(error.message || 'Something went wrong. Please try again.')
-      
-      // Add error message to chat
-      const errorMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        type: 'assistant',
-        content: `I encountered an error: ${error.message}
-
-Please ensure:
-1. Your .env.local file contains: NEXT_PUBLIC_GEMINI_API_KEY=your_key_here
-2. You've restarted the server after adding the API key
-3. Your API key is valid and has access to Gemini API
-
-For detailed errors, check the browser console (Press F12).`,
-        timestamp: new Date(),
-        suggestions: ['Check setup guide', 'Verify API key', 'Try again']
-      }
-      setMessages(prev => [...prev, errorMessage])
     } finally {
       setIsTyping(false)
-      console.log('🏁 Message handling complete')
     }
   }
 
@@ -330,25 +268,25 @@ For detailed errors, check the browser console (Press F12).`,
   }
 
   return (
-    <div className="flex flex-col h-screen bg-gradient-to-br from-gray-50 via-purple-50 to-indigo-100 bg-mentor-pattern">
+    <div className="flex flex-col h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
       {/* Header */}
-      <div className="glass-mentor border-b border-purple-200/50 shadow-lg">
+      <div className="bg-black/20 backdrop-blur-xl border-b border-white/10">
         <div className="max-w-6xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <div className="relative">
-                <div className="w-16 h-16 gradient-mentor rounded-3xl flex items-center justify-center text-2xl shadow-xl ring-4 ring-white/50">
+                <div className="w-16 h-16 bg-gradient-to-br from-violet-500 to-purple-600 rounded-2xl flex items-center justify-center text-2xl shadow-xl ring-4 ring-white/20">
                   {selectedMentor.avatar}
                 </div>
-                <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 rounded-full border-3 border-white shadow-lg animate-pulse"></div>
+                <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-slate-900 animate-pulse"></div>
               </div>
               <div>
-                <h1 className="text-xl font-bold text-gray-800">{selectedMentor.name}</h1>
-                <p className="text-sm flex items-center text-gray-600">
-                  <span className="w-2 h-2 bg-emerald-500 rounded-full mr-2 animate-pulse"></span>
+                <h1 className="text-xl font-bold text-white">{selectedMentor.name}</h1>
+                <p className="text-sm flex items-center text-gray-300">
+                  <span className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></span>
                   {selectedMentor.specialty} • Online
                 </p>
-                <p className="text-xs text-purple-600 font-medium mt-1">{selectedMentor.personality}</p>
+                <p className="text-xs text-violet-400 font-medium mt-1">{selectedMentor.personality}</p>
               </div>
             </div>
             
@@ -362,10 +300,11 @@ For detailed errors, check the browser console (Press F12).`,
                     setLanguageDropdownOpen(!languageDropdownOpen)
                     setMentorDropdownOpen(false)
                   }}
-                  className="bg-white/60 hover:bg-white/80 border-purple-200/60 shadow-md hover:shadow-lg transition-all duration-300 rounded-xl"
+                  className="bg-white/10 hover:bg-white/20 border-white/20 text-white shadow-lg transition-all duration-300 rounded-xl"
                 >
                   <Languages className="w-4 h-4 mr-2" />
                   {selectedLanguage.flag} {selectedLanguage.name}
+                  <ChevronDown className="w-3 h-3 ml-2" />
                 </Button>
                 <AnimatePresence>
                   {languageDropdownOpen && (
@@ -373,7 +312,7 @@ For detailed errors, check the browser console (Press F12).`,
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
-                      className="absolute top-full right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50"
+                      className="absolute top-full right-0 mt-2 w-48 bg-slate-800 border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden"
                     >
                       {languages.map((lang) => (
                         <button
@@ -382,11 +321,10 @@ For detailed errors, check the browser console (Press F12).`,
                             setSelectedLanguage(lang)
                             setLanguageDropdownOpen(false)
                           }}
-                          className="w-full text-left px-4 py-2 hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg flex items-center transition-colors"
-                          style={{ color: '#374151' }}
+                          className="w-full text-left px-4 py-3 hover:bg-white/10 flex items-center transition-colors text-white"
                         >
-                          <span className="mr-2">{lang.flag}</span>
-                          {lang.name}
+                          <span className="mr-3 text-lg">{lang.flag}</span>
+                          <span className="text-sm">{lang.name}</span>
                         </button>
                       ))}
                     </motion.div>
@@ -403,10 +341,11 @@ For detailed errors, check the browser console (Press F12).`,
                     setMentorDropdownOpen(!mentorDropdownOpen)
                     setLanguageDropdownOpen(false)
                   }}
-                  className="bg-white/60 hover:bg-white/80 border-purple-200/60 shadow-md hover:shadow-lg transition-all duration-300 rounded-xl"
+                  className="bg-white/10 hover:bg-white/20 border-white/20 text-white shadow-lg transition-all duration-300 rounded-xl"
                 >
                   <Bot className="w-4 h-4 mr-2" />
                   Switch Mentor
+                  <ChevronDown className="w-3 h-3 ml-2" />
                 </Button>
                 <AnimatePresence>
                   {mentorDropdownOpen && (
@@ -414,7 +353,7 @@ For detailed errors, check the browser console (Press F12).`,
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
-                      className="absolute top-full right-0 mt-2 w-72 bg-white border border-gray-200 rounded-lg shadow-lg z-50"
+                      className="absolute top-full right-0 mt-2 w-80 bg-slate-800 border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden"
                     >
                       {mentorPersonas.map((mentor) => (
                         <button
@@ -423,15 +362,15 @@ For detailed errors, check the browser console (Press F12).`,
                             setSelectedMentor(mentor)
                             setMentorDropdownOpen(false)
                           }}
-                          className={`w-full text-left p-4 hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg border-b border-gray-100 last:border-b-0 transition-colors ${
-                            selectedMentor.id === mentor.id ? 'bg-blue-50' : ''
+                          className={`w-full text-left p-4 hover:bg-white/10 border-b border-white/5 last:border-b-0 transition-colors ${
+                            selectedMentor.id === mentor.id ? 'bg-violet-600/20' : ''
                           }`}
                         >
                           <div className="flex items-center space-x-3">
                             <div className="text-2xl">{mentor.avatar}</div>
                             <div>
-                              <div className="font-medium" style={{ color: '#111827' }}>{mentor.name}</div>
-                              <div className="text-sm" style={{ color: '#6b7280' }}>{mentor.description}</div>
+                              <div className="font-medium text-white">{mentor.name}</div>
+                              <div className="text-sm text-gray-400">{mentor.description}</div>
                             </div>
                           </div>
                         </button>
@@ -446,9 +385,9 @@ For detailed errors, check the browser console (Press F12).`,
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-white/20 backdrop-blur-sm border-b border-purple-200/30 px-6 py-4">
+      <div className="bg-black/10 backdrop-blur-sm border-b border-white/5 px-6 py-4">
         <div className="max-w-6xl mx-auto">
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-2">
             {quickActions.map((action, index) => (
               <Button
                 key={index}
@@ -456,7 +395,7 @@ For detailed errors, check the browser console (Press F12).`,
                 size="sm"
                 onClick={() => handleQuickAction(action.text)}
                 disabled={isTyping}
-                className="text-xs rounded-full mentor-card hover:bg-white shadow-md border-purple-200 hover:border-purple-400 hover:text-purple-700 transition-all duration-300 font-medium"
+                className="text-xs rounded-full bg-white/5 hover:bg-white/10 border-white/20 text-white/90 hover:text-white transition-all duration-300 font-medium"
               >
                 <action.icon className="w-3 h-3 mr-2" />
                 {action.text}
@@ -473,18 +412,18 @@ For detailed errors, check the browser console (Press F12).`,
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="bg-red-50 border-l-4 border-red-400 overflow-hidden"
+            className="bg-red-500/10 border-l-4 border-red-500 overflow-hidden backdrop-blur-sm"
           >
             <div className="p-4">
               <div className="max-w-4xl mx-auto flex">
                 <AlertCircle className="w-5 h-5 text-red-400 mr-2 mt-0.5 flex-shrink-0" />
                 <div className="flex-1">
-                  <p className="text-red-700 text-sm">{error}</p>
+                  <p className="text-red-300 text-sm">{error}</p>
                   <Button
                     variant="ghost" 
                     size="sm"
                     onClick={() => setError(null)}
-                    className="text-red-600 hover:text-red-800 p-0 h-auto mt-1"
+                    className="text-red-400 hover:text-red-300 p-0 h-auto mt-1"
                   >
                     Dismiss
                   </Button>
@@ -496,8 +435,8 @@ For detailed errors, check the browser console (Press F12).`,
       </AnimatePresence>
 
       {/* Messages Container */}
-      <div className="flex-1 overflow-y-auto p-6 bg-gradient-to-b from-transparent to-purple-50/20">
-        <div className="max-w-6xl mx-auto space-y-6">
+      <div className="flex-1 overflow-y-auto p-6">
+        <div className="max-w-4xl mx-auto space-y-6">
           {messages.map((message) => (
             <motion.div
               key={message.id}
@@ -506,105 +445,69 @@ For detailed errors, check the browser console (Press F12).`,
               transition={{ duration: 0.3 }}
               className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
             >
-              <div className={`max-w-4xl ${message.type === 'user' ? 'order-2' : 'order-1'}`}>
+              <div className={`max-w-3xl ${message.type === 'user' ? 'order-2' : 'order-1'}`}>
                 <div className="flex items-start space-x-3 mb-2">
                   {/* Avatar for Assistant */}
                   {message.type === 'assistant' && (
-                    <div className="w-12 h-12 gradient-mentor rounded-2xl flex items-center justify-center text-sm shadow-lg flex-shrink-0 ring-2 ring-purple-200/50">
+                    <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl flex items-center justify-center text-lg shadow-lg flex-shrink-0">
                       {selectedMentor.avatar}
                     </div>
                   )}
                   
+                  {/* Message Content */}
+                  <div 
+                    className={`px-5 py-4 rounded-2xl shadow-xl max-w-full ${
+                      message.type === 'user' 
+                        ? 'bg-gradient-to-r from-violet-600 to-purple-600 text-white ml-auto' 
+                        : 'bg-white/10 backdrop-blur-lg border border-white/10 text-white'
+                    }`}
+                  >
+                    <p className="text-sm leading-relaxed whitespace-pre-wrap">
+                      {message.content}
+                    </p>
+                    
+                    {/* Message Actions */}
+                    <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/10">
+                      <div className="flex items-center space-x-1">
+                        {message.type === 'assistant' && (
+                          <>
+                            <button
+                              onClick={() => copyMessage(message.content, message.id)}
+                              className="p-1.5 rounded-lg hover:bg-white/10 transition-colors text-white/60 hover:text-white"
+                            >
+                              {copiedMessageId === message.id ? (
+                                <Check className="w-3.5 h-3.5 text-green-400" />
+                              ) : (
+                                <Copy className="w-3.5 h-3.5" />
+                              )}
+                            </button>
+                            <button
+                              onClick={() => handleSpeakMessage(message.content)}
+                              className="p-1.5 rounded-lg hover:bg-white/10 transition-colors text-white/60 hover:text-white"
+                            >
+                              {isSpeaking ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
+                            </button>
+                            <button className="p-1.5 rounded-lg hover:bg-white/10 transition-colors text-white/60 hover:text-white">
+                              <ThumbsUp className="w-3.5 h-3.5" />
+                            </button>
+                            <button className="p-1.5 rounded-lg hover:bg-white/10 transition-colors text-white/60 hover:text-white">
+                              <ThumbsDown className="w-3.5 h-3.5" />
+                            </button>
+                          </>
+                        )}
+                      </div>
+                      <span className={`text-xs ${message.type === 'user' ? 'text-white/70' : 'text-white/50'}`}>
+                        {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    </div>
+                  </div>
+                  
                   {/* Avatar for User */}
                   {message.type === 'user' && (
-                    <div className="w-12 h-12 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center order-2 shadow-lg flex-shrink-0 ring-2 ring-emerald-200/50">
+                    <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center order-2 shadow-lg flex-shrink-0">
                       <User className="w-5 h-5 text-white" />
                     </div>
                   )}
-                  
-                  {/* Message Card - Fixed with explicit styling */}
-                  <div 
-                    className={`px-6 py-5 rounded-2xl shadow-lg border-0 ${
-                      message.type === 'user' 
-                        ? 'bg-gradient-to-r from-emerald-600 to-teal-600' 
-                        : 'mentor-card'
-                    }`}
-                    style={{
-                      maxWidth: '100%',
-                      wordBreak: 'break-word',
-                      backgroundColor: message.type === 'user' ? undefined : undefined
-                    }}
-                  >
-                    {/* Message Content - Most Important Fix */}
-                    <div 
-                      className={message.type === 'user' ? 'text-white' : 'text-gray-900'}
-                      style={{
-                        color: message.type === 'user' ? '#ffffff' : '#111827',
-                        fontSize: '14px',
-                        lineHeight: '1.75',
-                        whiteSpace: 'pre-wrap',
-                        fontFamily: 'inherit',
-                        backgroundColor: 'transparent',
-                        opacity: 1,
-                        visibility: 'visible'
-                      }}
-                    >
-                      {message.content}
-                    </div>
-                    
-                    {/* Assistant Message Actions */}
-                    {message.type === 'assistant' && (
-                      <div 
-                        className="flex items-center justify-between mt-3 pt-3" 
-                        style={{ borderTop: '1px solid #e5e7eb' }}
-                      >
-                        <div className="flex items-center space-x-2">
-                          <button
-                            onClick={() => copyMessage(message.content, message.id)}
-                            className="p-1.5 rounded hover:bg-gray-100 transition-colors"
-                            style={{ color: '#6b7280' }}
-                          >
-                            {copiedMessageId === message.id ? (
-                              <Check className="w-4 h-4" style={{ color: '#10b981' }} />
-                            ) : (
-                              <Copy className="w-4 h-4" />
-                            )}
-                          </button>
-                          <button
-                            onClick={() => handleSpeakMessage(message.content)}
-                            className="p-1.5 rounded hover:bg-gray-100 transition-colors"
-                            style={{ color: '#6b7280' }}
-                          >
-                            {isSpeaking ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-                          </button>
-                          <button 
-                            className="p-1.5 rounded hover:bg-gray-100 transition-colors" 
-                            style={{ color: '#6b7280' }}
-                          >
-                            <ThumbsUp className="w-4 h-4" />
-                          </button>
-                          <button 
-                            className="p-1.5 rounded hover:bg-gray-100 transition-colors" 
-                            style={{ color: '#6b7280' }}
-                          >
-                            <ThumbsDown className="w-4 h-4" />
-                          </button>
-                        </div>
-                        <span style={{ fontSize: '12px', color: '#9ca3af' }}>
-                          {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </span>
-                      </div>
-                    )}
-                    
-                    {/* User Message Timestamp */}
-                    {message.type === 'user' && (
-                      <div className="flex justify-end mt-2">
-                        <span style={{ fontSize: '12px', color: '#dbeafe', opacity: 0.9 }}>
-                          {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </span>
-                      </div>
-                    )}
-                  </div>
                 </div>
                 
                 {/* Suggestions */}
@@ -617,15 +520,10 @@ For detailed errors, check the browser console (Press F12).`,
                         size="sm"
                         onClick={() => handleQuickAction(suggestion)}
                         disabled={isTyping}
-                        className="text-xs rounded-full bg-gradient-to-r from-purple-50 to-indigo-50 hover:from-purple-100 hover:to-indigo-100 border-purple-200 hover:border-purple-300 shadow-md hover:shadow-lg transition-all duration-300 font-medium"
-                        style={{
-                          fontSize: '12px',
-                          padding: '6px 14px',
-                          color: '#7c3aed'
-                        }}
+                        className="text-xs rounded-full bg-violet-600/20 hover:bg-violet-600/30 border-violet-500/30 text-violet-300 hover:text-white transition-all duration-300"
                       >
                         <Sparkles className="w-3 h-3 mr-2" />
-                        <span style={{ color: '#1e40af' }}>{suggestion}</span>
+                        {suggestion}
                       </Button>
                     ))}
                   </div>
@@ -643,17 +541,17 @@ For detailed errors, check the browser console (Press F12).`,
                 exit={{ opacity: 0, y: -20 }}
                 className="flex items-start space-x-3"
               >
-                <div className="w-12 h-12 gradient-mentor rounded-2xl flex items-center justify-center text-sm shadow-lg ring-2 ring-purple-200/50">
+                <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl flex items-center justify-center text-lg shadow-lg">
                   {selectedMentor.avatar}
                 </div>
-                <div className="mentor-card px-6 py-5 rounded-2xl shadow-lg">
+                <div className="bg-white/10 backdrop-blur-lg border border-white/10 px-5 py-4 rounded-2xl shadow-xl">
                   <div className="flex items-center space-x-2">
                     <div className="flex space-x-1">
-                      <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" />
-                      <div className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '75ms' }} />
-                      <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                      <div className="w-2 h-2 bg-violet-400 rounded-full animate-bounce" />
+                      <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '75ms' }} />
+                      <div className="w-2 h-2 bg-pink-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
                     </div>
-                    <span className="text-xs text-gray-600 font-medium">AI is thinking...</span>
+                    <span className="text-xs text-gray-300 font-medium">AI is thinking...</span>
                   </div>
                 </div>
               </motion.div>
@@ -664,9 +562,9 @@ For detailed errors, check the browser console (Press F12).`,
         </div>
       </div>
 
-{/* Input Section */}
-      <div className="glass-mentor border-t border-purple-200/50 shadow-2xl">
-        <div className="max-w-6xl mx-auto px-6 py-5">
+      {/* Input Section */}
+      <div className="bg-black/20 backdrop-blur-xl border-t border-white/10">
+        <div className="max-w-4xl mx-auto px-6 py-5">
           <div className="flex items-end space-x-4">
             <div className="flex-1 relative">
               <Textarea
@@ -674,8 +572,8 @@ For detailed errors, check the browser console (Press F12).`,
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Ask me anything about your career... Press Shift+Enter for new line"
-                className="pr-12 py-4 text-gray-900 placeholder-gray-500 text-base rounded-2xl border-purple-200 focus:border-purple-400 focus:ring-2 focus:ring-purple-400/20 shadow-md resize-none min-h-[60px] max-h-32 bg-white/90 backdrop-blur-sm"
+                placeholder="Ask me anything about your career..."
+                className="pr-12 py-4 text-white placeholder-gray-400 text-sm rounded-2xl border-white/20 bg-white/10 backdrop-blur-lg focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 shadow-xl resize-none min-h-[56px] max-h-32"
                 rows={1}
                 disabled={isTyping}
               />
@@ -684,10 +582,10 @@ For detailed errors, check the browser console (Press F12).`,
                 size="sm"
                 onClick={handleVoiceToggle}
                 disabled={isTyping}
-                className={`absolute right-3 bottom-3 h-9 w-9 p-0 rounded-full ${
+                className={`absolute right-3 bottom-3 h-8 w-8 p-0 rounded-xl ${
                   isRecording 
-                    ? 'text-red-500 bg-red-50 hover:bg-red-100 shadow-md' 
-                    : 'text-purple-400 hover:text-purple-600 hover:bg-purple-50'
+                    ? 'text-red-400 bg-red-500/20 hover:bg-red-500/30' 
+                    : 'text-gray-400 hover:text-white hover:bg-white/10'
                 }`}
               >
                 {isRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
@@ -696,7 +594,7 @@ For detailed errors, check the browser console (Press F12).`,
             <Button 
               onClick={handleSendMessage} 
               disabled={!inputMessage.trim() || isTyping}
-              className="h-[60px] px-6 rounded-2xl btn-mentor shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="h-[56px] px-6 rounded-2xl bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isTyping ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
@@ -706,12 +604,12 @@ For detailed errors, check the browser console (Press F12).`,
             </Button>
           </div>
           <div className="flex items-center justify-between mt-4">
-            <p className="text-xs text-gray-600">
-              AI responses are based on your profile and current market data. Always verify important decisions.
+            <p className="text-xs text-gray-400">
+              AI responses are based on your profile and current market data.
             </p>
-            <div className="flex items-center space-x-2 text-xs text-purple-600 font-medium">
+            <div className="flex items-center space-x-2 text-xs text-violet-400 font-medium">
               <span>Powered by Gemini AI</span>
-              <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
             </div>
           </div>
         </div>

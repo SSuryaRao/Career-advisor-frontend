@@ -1,7 +1,7 @@
 // src/app/(auth)/signup/page.tsx
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import {
   User,
@@ -19,6 +19,8 @@ import {
   createUserWithEmailAndPassword,
   GoogleAuthProvider,
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   updateProfile,
 } from 'firebase/auth'
 import { auth } from '@/lib/firebase'
@@ -27,6 +29,7 @@ import { apiClient } from '@/lib/api'
 
 export default function SignupPage() {
   const [step, setStep] = useState(1)
+  const [isMounted, setIsMounted] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -41,6 +44,28 @@ export default function SignupPage() {
     receiveCareerUpdates: true,
   })
   const router = useRouter()
+
+  useEffect(() => {
+    setIsMounted(true)
+    
+    // Check for redirect result when component mounts
+    const handleRedirectResult = async () => {
+      try {
+        const result = await getRedirectResult(auth)
+        if (result) {
+          // Create basic profile in MongoDB for Google signup
+          await createBasicProfile()
+          toast.success('Account created successfully!')
+          router.push('/dashboard')
+        }
+      } catch (error: any) {
+        console.error('Redirect sign-up error:', error)
+        toast.error(error.message || 'Failed to complete Google sign-up')
+      }
+    }
+    
+    handleRedirectResult()
+  }, [])
 
   const handleNext = () => {
     if (step < 3) setStep(step + 1)
@@ -109,18 +134,72 @@ export default function SignupPage() {
   }
 
   const handleGoogleSignup = async () => {
+    // Check if we're on the client side and component is mounted
+    if (typeof window === 'undefined' || !isMounted) {
+      toast.error('Google sign-up is not available yet. Please wait a moment and try again.')
+      return
+    }
+
     const provider = new GoogleAuthProvider()
+    provider.addScope('email')
+    provider.addScope('profile')
+    
     try {
-      const result = await signInWithPopup(auth, provider)
-      if (result.user) {
-        // Create basic profile in MongoDB for Google signup
-        await createBasicProfile()
+      // Check if window.open is available at all
+      if (!window.open || typeof window.open !== 'function') {
+        console.log('window.open not available, using redirect method...')
+        toast.loading('Redirecting to Google sign-up...')
+        await signInWithRedirect(auth, provider)
+        return
       }
-      toast.success('Account created successfully!')
-      router.push('/dashboard')
+      
+      // Try popup first
+      try {
+        const result = await signInWithPopup(auth, provider)
+        if (result.user) {
+          // Create basic profile in MongoDB for Google signup
+          await createBasicProfile()
+        }
+        toast.success('Account created successfully!')
+        router.push('/dashboard')
+        return
+      } catch (popupError: any) {
+        console.error('Popup sign-up failed:', popupError)
+        
+        // If popup fails with window.open error or is blocked, try redirect
+        if (
+          popupError.message?.includes('window.open') ||
+          popupError.code === 'auth/popup-blocked' ||
+          popupError.code === 'auth/popup-closed-by-user' ||
+          popupError.message?.includes('popup')
+        ) {
+          console.log('Falling back to redirect method...')
+          toast.loading('Redirecting to Google sign-up...')
+          await signInWithRedirect(auth, provider)
+          // Note: signInWithRedirect will redirect away from this page
+          return
+        }
+        
+        // If it's not a popup-related error, re-throw it
+        throw popupError
+      }
     } catch (error: any) {
       console.error('Google signup error:', error)
-      toast.error(error.message || 'Failed to sign up with Google')
+      if (error.code === 'auth/popup-closed-by-user') {
+        toast.error('Sign-up was cancelled')
+      } else if (error.code === 'auth/popup-blocked') {
+        toast.error('Popup was blocked. Redirecting to Google sign-up...')
+        try {
+          await signInWithRedirect(auth, provider)
+          return
+        } catch (redirectError) {
+          toast.error('Failed to redirect to Google sign-up')
+        }
+      } else if (error.code === 'auth/cancelled-popup-request') {
+        toast.error('Sign-up request was cancelled. Please try again.')
+      } else {
+        toast.error(error.message || 'Failed to sign up with Google')
+      }
     }
   }
 

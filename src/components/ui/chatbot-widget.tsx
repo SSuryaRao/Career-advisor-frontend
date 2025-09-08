@@ -12,7 +12,13 @@ import {
   Minimize2,
   Bot,
   User,
-  Loader2
+  Loader2,
+  Sparkles,
+  Brain,
+  Zap,
+  Heart,
+  ChevronDown,
+  MoreHorizontal
 } from 'lucide-react'
 import { apiClient } from '@/lib/api'
 
@@ -138,7 +144,7 @@ export default function ChatbotWidget({ className = '' }: ChatbotWidgetProps) {
     // Add welcome message if no messages yet
     if (messages.length === 0) {
       setTimeout(() => {
-        addMessage("👋 Hi! I'm your career guide assistant. I can help you navigate features like Resume Analyzer, Career Roadmaps, ROI Calculator, Mock Interviews, and more. What would you like to know?", 'bot')
+        addMessage("✨ Hey there! I'm your AI Career Mentor, powered by advanced intelligence to guide your professional journey. I can help with resume optimization, career roadmaps, skill development, interview prep, and much more. What career goal can I help you achieve today?", 'bot')
       }, 500)
     }
   }
@@ -159,20 +165,24 @@ export default function ChatbotWidget({ className = '' }: ChatbotWidgetProps) {
             className="absolute bottom-20 right-0 mb-2"
           >
             <div 
-              className="bg-white rounded-2xl shadow-lg border border-gray-200 p-4 max-w-xs cursor-pointer hover:shadow-xl transition-shadow duration-300"
+              className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-5 max-w-xs cursor-pointer hover:shadow-3xl hover:scale-105 transition-all duration-300 group"
               onClick={openChat}
             >
               <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center flex-shrink-0">
-                  <Bot className="w-4 h-4 text-white" />
+                <div className="w-10 h-10 bg-gradient-to-br from-purple-500 via-violet-500 to-indigo-600 rounded-full flex items-center justify-center flex-shrink-0 shadow-lg group-hover:scale-110 transition-transform duration-300">
+                  <Brain className="w-5 h-5 text-white" />
+                  <div className="absolute inset-0 bg-gradient-to-br from-purple-400 to-indigo-500 rounded-full opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-900">Career Guide</p>
-                  <p className="text-sm text-gray-600">👋 Hi! How can I help you today?</p>
+                  <div className="flex items-center space-x-1">
+                    <p className="text-sm font-semibold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">AI Career Mentor</p>
+                    <Sparkles className="w-3 h-3 text-purple-500 animate-pulse" />
+                  </div>
+                  <p className="text-sm text-gray-700">✨ Ready to boost your career?</p>
                 </div>
               </div>
-              {/* Small arrow pointing to the chatbot button */}
-              <div className="absolute -bottom-2 right-8 w-4 h-4 bg-white border-b border-r border-gray-200 transform rotate-45"></div>
+              {/* Enhanced arrow with gradient */}
+              <div className="absolute -bottom-2 right-8 w-4 h-4 bg-white/95 border-b border-r border-white/20 transform rotate-45 shadow-sm"></div>
             </div>
           </motion.div>
         )}
@@ -185,28 +195,48 @@ export default function ChatbotWidget({ className = '' }: ChatbotWidgetProps) {
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            transition={{ duration: 0.2, ease: 'easeOut' }}
-            className="absolute bottom-20 right-0 w-96 h-[500px]"
+            transition={{ duration: 0.3, ease: 'easeOut' }}
+            className="absolute bottom-20 right-0 w-96 h-[520px]"
           >
-            <Card className="w-full h-full bg-white border-0 shadow-2xl rounded-2xl overflow-hidden">
+            <Card className="w-full h-full bg-gradient-to-b from-slate-50/95 to-white/95 backdrop-blur-xl border-0 shadow-2xl rounded-3xl overflow-hidden ring-1 ring-white/20">
               {/* Header */}
-              <div className="bg-gradient-to-r from-blue-500 to-indigo-600 p-4 text-white">
-                <div className="flex items-center justify-between">
+              <div className="relative bg-gradient-to-br from-purple-600 via-violet-600 to-indigo-700 p-5 text-white overflow-hidden">
+                {/* Background Pattern */}
+                <div className="absolute inset-0 opacity-10">
+                  <div className="absolute inset-0 bg-gradient-to-br from-purple-400 to-indigo-600 mix-blend-multiply"></div>
+                  <div className="absolute top-0 left-0 w-full h-full" 
+                       style={{
+                         backgroundImage: `radial-gradient(circle at 20% 50%, white 0%, transparent 50%), radial-gradient(circle at 80% 80%, white 0%, transparent 50%)`,
+                         backgroundSize: '100px 100px'
+                       }}>
+                  </div>
+                </div>
+                
+                <div className="relative flex items-center justify-between">
                   <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
-                      <Bot className="w-4 h-4" />
+                    <div className="relative">
+                      <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg">
+                        <Brain className="w-5 h-5 text-white" />
+                      </div>
+                      <div className="absolute -top-1 -right-1 w-4 h-4 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full border-2 border-white/30 animate-pulse"></div>
                     </div>
                     <div>
-                      <h3 className="font-semibold text-white">Career Guide</h3>
-                      <p className="text-xs text-blue-100">Always here to help</p>
+                      <div className="flex items-center space-x-2">
+                        <h3 className="font-bold text-white text-lg">AI Career Mentor</h3>
+                        <Sparkles className="w-4 h-4 text-yellow-300 animate-pulse" />
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                        <p className="text-sm text-purple-100">Online • Ready to help</p>
+                      </div>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-1">
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={closeChat}
-                      className="text-white hover:bg-white/20 p-1 h-8 w-8"
+                      className="text-white hover:bg-white/20 p-2 h-9 w-9 rounded-xl transition-all duration-200 hover:scale-110"
                     >
                       <Minimize2 className="w-4 h-4" />
                     </Button>
@@ -214,7 +244,7 @@ export default function ChatbotWidget({ className = '' }: ChatbotWidgetProps) {
                       variant="ghost"
                       size="sm"
                       onClick={closeChat}
-                      className="text-white hover:bg-white/20 p-1 h-8 w-8"
+                      className="text-white hover:bg-white/20 hover:bg-red-500/20 p-2 h-9 w-9 rounded-xl transition-all duration-200 hover:scale-110"
                     >
                       <X className="w-4 h-4" />
                     </Button>
@@ -223,70 +253,126 @@ export default function ChatbotWidget({ className = '' }: ChatbotWidgetProps) {
               </div>
 
               {/* Messages */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-4 h-[360px] bg-gray-50">
-                {messages.map((message) => (
-                  <div
+              <div className="flex-1 overflow-y-auto p-5 space-y-4 h-[380px] bg-gradient-to-b from-slate-50/50 to-white/80 backdrop-blur-sm">
+                {messages.map((message, index) => (
+                  <motion.div
                     key={message.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
                     className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
-                    <div
-                      className={`max-w-[80%] p-3 rounded-2xl ${
-                        message.sender === 'user'
-                          ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white'
-                          : 'bg-white border border-gray-200 text-gray-900 shadow-sm'
-                      }`}
-                    >
+                    <div className={`max-w-[85%] ${message.sender === 'user' ? 'ml-12' : 'mr-12'}`}>
                       {message.sender === 'bot' && (
-                        <div className="flex items-center mb-1">
-                          <Bot className="w-3 h-3 text-blue-500 mr-1" />
-                          <span className="text-xs text-gray-500 font-medium">Career Guide</span>
+                        <div className="flex items-center mb-2 ml-1">
+                          <div className="w-6 h-6 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-lg flex items-center justify-center mr-2 shadow-sm">
+                            <Brain className="w-3 h-3 text-white" />
+                          </div>
+                          <span className="text-xs text-purple-600 font-semibold">AI Career Mentor</span>
+                          <Zap className="w-3 h-3 text-yellow-500 ml-1" />
                         </div>
                       )}
-                      <p className="text-sm leading-relaxed">{message.text}</p>
-                      <p className={`text-xs mt-1 ${
-                        message.sender === 'user' ? 'text-blue-100' : 'text-gray-400'
-                      }`}>
-                        {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </p>
+                      
+                      <div
+                        className={`p-4 rounded-2xl shadow-sm backdrop-blur-sm transition-all duration-200 hover:shadow-md ${
+                          message.sender === 'user'
+                            ? 'bg-gradient-to-br from-purple-500 via-violet-500 to-indigo-600 text-white shadow-purple-500/20'
+                            : 'bg-white/90 border border-white/40 text-gray-800 shadow-gray-200/50'
+                        } ${message.sender === 'user' ? 'rounded-br-md' : 'rounded-bl-md'}`}
+                      >
+                        <p className="text-sm leading-relaxed font-medium">{message.text}</p>
+                        <div className="flex items-center justify-between mt-2">
+                          <p className={`text-xs ${
+                            message.sender === 'user' ? 'text-purple-100' : 'text-gray-500'
+                          }`}>
+                            {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </p>
+                          {message.sender === 'bot' && (
+                            <Heart className="w-3 h-3 text-pink-400 opacity-60" />
+                          )}
+                        </div>
+                      </div>
                     </div>
-                  </div>
+                  </motion.div>
                 ))}
 
                 {/* Typing Indicator */}
                 {isTyping && (
-                  <div className="flex justify-start">
-                    <div className="bg-white border border-gray-200 rounded-2xl p-3 shadow-sm">
-                      <div className="flex items-center space-x-1">
-                        <Bot className="w-3 h-3 text-blue-500" />
-                        <Loader2 className="w-3 h-3 text-gray-400 animate-spin" />
-                        <span className="text-xs text-gray-500">Career Guide is typing...</span>
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="flex justify-start mr-12"
+                  >
+                    <div className="bg-white/90 backdrop-blur-sm border border-white/40 rounded-2xl rounded-bl-md p-4 shadow-sm">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-6 h-6 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-lg flex items-center justify-center shadow-sm">
+                          <Brain className="w-3 h-3 text-white" />
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <div className="flex space-x-1">
+                            <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></div>
+                            <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
+                            <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></div>
+                          </div>
+                          <span className="text-xs text-purple-600 font-medium">AI is thinking...</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  </motion.div>
                 )}
                 
                 <div ref={messagesEndRef} />
               </div>
 
               {/* Input */}
-              <div className="p-4 bg-white border-t border-gray-200">
-                <div className="flex space-x-2">
-                  <Input
-                    ref={inputRef}
-                    value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                    placeholder="Ask me about resume tips, roadmaps, jobs..."
-                    className="flex-1 border-gray-300 focus:border-blue-500 focus:ring-blue-500/20 rounded-xl"
-                    disabled={isTyping}
-                  />
+              <div className="p-5 bg-gradient-to-r from-white/80 to-slate-50/80 backdrop-blur-sm border-t border-white/30">
+                <div className="flex space-x-3">
+                  <div className="flex-1 relative">
+                    <Input
+                      ref={inputRef}
+                      value={inputValue}
+                      onChange={(e) => setInputValue(e.target.value)}
+                      onKeyPress={handleKeyPress}
+                      placeholder="✨ Ask about careers, skills, roadmaps..."
+                      className="w-full pl-4 pr-12 py-3 bg-white/80 backdrop-blur-sm border border-white/40 rounded-2xl focus:border-purple-400 focus:ring-4 focus:ring-purple-400/20 text-gray-800 placeholder-gray-500 shadow-sm transition-all duration-200"
+                      disabled={isTyping}
+                    />
+                    {!inputValue.trim() && (
+                      <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                        <Sparkles className="w-4 h-4 text-purple-400 animate-pulse" />
+                      </div>
+                    )}
+                  </div>
                   <Button
                     onClick={sendMessage}
                     disabled={!inputValue.trim() || isTyping}
-                    className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-2 w-10 h-10 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
+                    className="bg-gradient-to-br from-purple-500 via-violet-500 to-indigo-600 hover:from-purple-600 hover:via-violet-600 hover:to-indigo-700 disabled:from-gray-300 disabled:to-gray-400 text-white p-3 w-12 h-12 rounded-2xl shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200 group"
                   >
-                    <Send className="w-4 h-4" />
+                    {isTyping ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                      <Send className="w-5 h-5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-200" />
+                    )}
                   </Button>
+                </div>
+                
+                {/* Quick Actions */}
+                <div className="flex items-center space-x-2 mt-3">
+                  <span className="text-xs text-gray-500 font-medium">Quick:</span>
+                  {[
+                    { icon: Zap, text: "Resume tips", color: "from-yellow-400 to-orange-500" },
+                    { icon: Brain, text: "Career path", color: "from-purple-400 to-indigo-500" },
+                    { icon: Heart, text: "Interview prep", color: "from-pink-400 to-rose-500" }
+                  ].map((action, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setInputValue(action.text)}
+                      className="flex items-center space-x-1 px-3 py-1.5 bg-white/60 hover:bg-white/80 backdrop-blur-sm rounded-full text-xs font-medium text-gray-700 border border-white/40 hover:border-purple-300 transition-all duration-200 hover:scale-105"
+                    >
+                      <action.icon className={`w-3 h-3 bg-gradient-to-r ${action.color} text-transparent bg-clip-text`} />
+                      <span>{action.text}</span>
+                    </button>
+                  ))}
                 </div>
               </div>
             </Card>
@@ -296,17 +382,40 @@ export default function ChatbotWidget({ className = '' }: ChatbotWidgetProps) {
 
       {/* Floating Button */}
       <motion.div
-        whileHover={{ scale: 1.05 }}
+        whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.95 }}
+        className="relative"
       >
         <Button
           onClick={openChat}
-          className={`w-14 h-14 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 border-0 ${
+          className={`w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 via-violet-500 to-indigo-600 hover:from-purple-600 hover:via-violet-600 hover:to-indigo-700 text-white shadow-2xl hover:shadow-purple-500/25 transition-all duration-300 border-0 ring-4 ring-white/20 backdrop-blur-sm ${
             isOpen ? 'hidden' : 'flex'
-          } items-center justify-center`}
+          } items-center justify-center group relative overflow-hidden`}
         >
-          <MessageCircle className="w-6 h-6" />
+          {/* Background glow effect */}
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-400 to-indigo-500 opacity-0 group-hover:opacity-30 transition-opacity duration-300 rounded-full"></div>
+          
+          {/* Pulsing rings */}
+          <div className="absolute inset-0 rounded-full animate-ping bg-purple-400 opacity-20"></div>
+          <div className="absolute inset-0 rounded-full animate-pulse bg-violet-400 opacity-10"></div>
+          
+          {/* Icon */}
+          <div className="relative z-10 flex items-center justify-center">
+            <Brain className="w-7 h-7 group-hover:scale-110 transition-transform duration-200" />
+          </div>
+          
+          {/* Notification badge */}
+          <div className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full border-2 border-white flex items-center justify-center">
+            <Sparkles className="w-3 h-3 text-white" />
+          </div>
         </Button>
+        
+        {/* Floating label */}
+        <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+          <div className="bg-black/80 text-white text-xs font-medium px-3 py-1 rounded-full whitespace-nowrap">
+            AI Career Mentor
+          </div>
+        </div>
       </motion.div>
     </div>
   )

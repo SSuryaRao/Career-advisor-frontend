@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import Navbar from '@/components/layout/navbar'
 import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
+import { useAuth } from '@/components/auth-provider'
 import {
   BookOpen, FileText, Video, Headphones, Download, Calendar,
   Clock, User, Star, Search, Filter, ChevronRight, Play,
@@ -40,19 +41,27 @@ export default function ResourcesPage() {
   const [userProgress, setUserProgress] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
   
-  // Mock user ID - in real app, get from auth context
-  const userId = '6746d123456789abcdef0123'
+  // Get authenticated user
+  const { user } = useAuth()
   
   useEffect(() => {
-    fetchUserProgress()
-  }, [])
+    if (user) {
+      fetchUserProgress()
+    } else {
+      setIsLoading(false)
+    }
+  }, [user])
   
   const fetchUserProgress = async () => {
+    if (!user) {
+      setIsLoading(false)
+      return
+    }
+    
     try {
       setIsLoading(true)
-      // Mock API call - replace with actual API endpoint
       const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
-      const response = await fetch(`${API_BASE_URL}/api/progress/user/${userId}`)
+      const response = await fetch(`${API_BASE_URL}/api/progress/user/${user.uid}`)
       if (response.ok) {
         const data = await response.json()
         setUserProgress(data.data.progress)
@@ -67,10 +76,15 @@ export default function ResourcesPage() {
   }
   
   const handleResourceComplete = async (resourceId: number, isCompleted: boolean) => {
+    if (!user) {
+      console.error('User not authenticated')
+      return
+    }
+    
     try {
       const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
       const endpoint = isCompleted ? 'complete' : 'uncomplete'
-      const response = await fetch(`${API_BASE_URL}/api/progress/user/${userId}/${endpoint}`, {
+      const response = await fetch(`${API_BASE_URL}/api/progress/user/${user.uid}/${endpoint}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -222,8 +236,8 @@ export default function ResourcesPage() {
               {[
                 { label: 'Resources Available', value: `${featuredResources.length}` },
                 { label: 'Learning Platforms', value: `${learningPlatforms.length}` },
-                { label: 'Your Progress', value: userProgress ? `${Math.round((completedResources.length / featuredResources.length) * 100)}%` : '0%' },
-                { label: 'Completed Resources', value: `${completedResources.length}/${featuredResources.length}` },
+                { label: 'Your Progress', value: user && userProgress ? `${Math.round((completedResources.length / featuredResources.length) * 100)}%` : user ? '0%' : 'Sign in' },
+                { label: 'Completed Resources', value: user ? `${completedResources.length}/${featuredResources.length}` : 'Sign in to track' },
               ].map((stat, index) => (
                 <motion.div
                   key={index}
@@ -239,7 +253,7 @@ export default function ResourcesPage() {
             </div>
 
             {/* Progress Bar */}
-            {userProgress && (
+            {user && userProgress && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -268,6 +282,34 @@ export default function ResourcesPage() {
                     <span>{userProgress.achievements?.length || 0} achievements</span>
                   </div>
                 </div>
+              </motion.div>
+            )}
+            
+            {user && !userProgress && !isLoading && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                className="mt-8 max-w-md mx-auto text-center"
+              >
+                <p className="text-gray-300">Start marking resources as complete to track your progress!</p>
+              </motion.div>
+            )}
+            
+            {!user && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                className="mt-8 max-w-md mx-auto text-center"
+              >
+                <p className="text-gray-300 mb-4">Sign in to track your learning progress and unlock achievements!</p>
+                <Button 
+                  className="bg-gradient-to-r from-purple-500 to-blue-500 text-white px-6 py-2"
+                  onClick={() => window.location.href = '/login'}
+                >
+                  Sign In
+                </Button>
               </motion.div>
             )}
           </motion.div>
@@ -545,27 +587,33 @@ export default function ResourcesPage() {
                               ))}
                             </div>
                             <div className="flex items-center space-x-3">
-                              <div className="flex items-center space-x-2">
-                                <Checkbox
-                                  id={`resource-${resource.id}`}
-                                  checked={completedResources.includes(resource.id)}
-                                  onCheckedChange={(checked) => handleResourceComplete(resource.id, checked as boolean)}
-                                  className="w-5 h-5"
-                                />
-                                <label 
-                                  htmlFor={`resource-${resource.id}`} 
-                                  className="text-sm font-medium text-gray-700 cursor-pointer flex items-center space-x-1"
-                                >
-                                  {completedResources.includes(resource.id) ? (
-                                    <>
-                                      <CheckCircle2 className="w-4 h-4 text-green-600" />
-                                      <span className="text-green-700">Completed</span>
-                                    </>
-                                  ) : (
-                                    <span>Mark Complete</span>
-                                  )}
-                                </label>
-                              </div>
+                              {user ? (
+                                <div className="flex items-center space-x-2">
+                                  <Checkbox
+                                    id={`resource-${resource.id}`}
+                                    checked={completedResources.includes(resource.id)}
+                                    onCheckedChange={(checked) => handleResourceComplete(resource.id, checked as boolean)}
+                                    className="w-5 h-5"
+                                  />
+                                  <label 
+                                    htmlFor={`resource-${resource.id}`} 
+                                    className="text-sm font-medium text-gray-700 cursor-pointer flex items-center space-x-1"
+                                  >
+                                    {completedResources.includes(resource.id) ? (
+                                      <>
+                                        <CheckCircle2 className="w-4 h-4 text-green-600" />
+                                        <span className="text-green-700">Completed</span>
+                                      </>
+                                    ) : (
+                                      <span>Mark Complete</span>
+                                    )}
+                                  </label>
+                                </div>
+                              ) : (
+                                <div className="text-sm text-gray-500">
+                                  <span>Sign in to track progress</span>
+                                </div>
+                              )}
                               <Button 
                                 className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
                                 onClick={() => handleExternalLink(resource.externalUrl)}
@@ -609,7 +657,7 @@ export default function ResourcesPage() {
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Progress Summary */}
-            {userProgress && (
+            {user && userProgress && (
               <Card className="p-6 bg-gradient-to-br from-blue-50 to-purple-50 border-blue-200">
                 <h3 className="text-lg font-semibold mb-4 flex items-center">
                   <Trophy className="w-5 h-5 mr-2 text-blue-500" />
@@ -644,6 +692,24 @@ export default function ResourcesPage() {
                     </div>
                   </div>
                 </div>
+              </Card>
+            )}
+            
+            {!user && (
+              <Card className="p-6 bg-gradient-to-br from-gray-50 to-blue-50 border-gray-200">
+                <h3 className="text-lg font-semibold mb-4 flex items-center">
+                  <Trophy className="w-5 h-5 mr-2 text-gray-400" />
+                  Track Your Progress
+                </h3>
+                <p className="text-sm text-gray-600 mb-4">
+                  Sign in to start tracking your learning progress and unlock achievements!
+                </p>
+                <Button 
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                  onClick={() => window.location.href = '/login'}
+                >
+                  Sign In
+                </Button>
               </Card>
             )}
 

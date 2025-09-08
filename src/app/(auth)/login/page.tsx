@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Mail, Lock, Chrome, ArrowRight, Sparkles, Home } from 'lucide-react'
 import Link from 'next/link'
@@ -9,6 +9,8 @@ import {
   signInWithEmailAndPassword,
   GoogleAuthProvider,
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
 } from 'firebase/auth'
 import { auth } from '@/lib/firebase'
 import toast from 'react-hot-toast'
@@ -17,7 +19,28 @@ export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [isMounted, setIsMounted] = useState(false)
   const router = useRouter()
+
+  useEffect(() => {
+    setIsMounted(true)
+    
+    // Check for redirect result when component mounts
+    const handleRedirectResult = async () => {
+      try {
+        const result = await getRedirectResult(auth)
+        if (result) {
+          toast.success('Successfully signed in!')
+          router.push('/dashboard')
+        }
+      } catch (error: any) {
+        console.error('Redirect sign-in error:', error)
+        toast.error(error.message || 'Failed to complete Google sign-in')
+      }
+    }
+    
+    handleRedirectResult()
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -33,12 +56,72 @@ export default function LoginPage() {
   }
 
   const handleGoogleLogin = async () => {
+    // Check if we're on the client side and component is mounted
+    if (typeof window === 'undefined' || !isMounted) {
+      toast.error('Google sign-in is not available yet. Please wait a moment and try again.')
+      return
+    }
+
     const provider = new GoogleAuthProvider()
+    provider.addScope('email')
+    provider.addScope('profile')
+    
     try {
-      await signInWithPopup(auth, provider)
-      router.push('/dashboard')
+      setIsLoading(true)
+      
+      // Check if window.open is available at all
+      if (!window.open || typeof window.open !== 'function') {
+        console.log('window.open not available, using redirect method...')
+        toast.loading('Redirecting to Google sign-in...')
+        await signInWithRedirect(auth, provider)
+        return
+      }
+      
+      // Try popup first
+      try {
+        await signInWithPopup(auth, provider)
+        toast.success('Successfully signed in!')
+        router.push('/dashboard')
+        return
+      } catch (popupError: any) {
+        console.error('Popup sign-in failed:', popupError)
+        
+        // If popup fails with window.open error or is blocked, try redirect
+        if (
+          popupError.message?.includes('window.open') ||
+          popupError.code === 'auth/popup-blocked' ||
+          popupError.code === 'auth/popup-closed-by-user' ||
+          popupError.message?.includes('popup')
+        ) {
+          console.log('Falling back to redirect method...')
+          toast.loading('Redirecting to Google sign-in...')
+          await signInWithRedirect(auth, provider)
+          // Note: signInWithRedirect will redirect away from this page
+          return
+        }
+        
+        // If it's not a popup-related error, re-throw it
+        throw popupError
+      }
     } catch (error: any) {
-      toast.error(error.message)
+      console.error('Google sign-in error:', error)
+      if (error.code === 'auth/popup-closed-by-user') {
+        toast.error('Sign-in was cancelled')
+      } else if (error.code === 'auth/popup-blocked') {
+        toast.error('Popup was blocked. Redirecting to Google sign-in...')
+        try {
+          await signInWithRedirect(auth, provider)
+          return
+        } catch (redirectError) {
+          toast.error('Failed to redirect to Google sign-in')
+        }
+      } else if (error.code === 'auth/cancelled-popup-request') {
+        toast.error('Sign-in request was cancelled. Please try again.')
+      } else {
+        toast.error(error.message || 'Failed to sign in with Google')
+      }
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -170,10 +253,17 @@ export default function LoginPage() {
             <div className="mt-6">
               <button
                 onClick={handleGoogleLogin}
-                className="w-full flex items-center justify-center px-4 py-3 bg-white/10 border border-white/20 rounded-lg hover:bg-white/20 transition"
+                disabled={isLoading || !isMounted}
+                className="w-full flex items-center justify-center px-4 py-3 bg-white/10 border border-white/20 rounded-lg hover:bg-white/20 transition disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <Chrome className="w-5 h-5 text-white" />
-                <span className="ml-2 text-white">Google</span>
+                {isLoading ? (
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <Chrome className="w-5 h-5 text-white" />
+                )}
+                <span className="ml-2 text-white">
+                  {isLoading ? 'Signing in...' : 'Google'}
+                </span>
               </button>
             </div>
           </div>
