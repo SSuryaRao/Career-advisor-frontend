@@ -27,6 +27,8 @@ import {
   MapPin,
   Award,
   MessageSquareText,
+  FileEdit,
+  BarChart3,
 } from 'lucide-react'
 import { useAuth } from '../auth-provider'
 import { auth } from '@/lib/firebase'
@@ -45,6 +47,7 @@ const navigation = [
       //   icon: Target,
       // },
       { name: 'Resume Analyzer', href: '/features/resume-analyzer', icon: FileSearch },
+      { name: 'Resume Builder', href: '/features/resume-builder', icon: FileEdit },
       // { name: 'Skill Analysis', href: '/features/skills', icon: TrendingUp },
       { name: 'Scholarship & Internship Finder', href: '/features/scholarships', icon: Award },
     ],
@@ -200,9 +203,16 @@ export default function Navbar() {
                         <Settings className="w-4 h-4 text-blue-400" />
                         <span className="text-gray-300 hover:text-white">Dashboard</span>
                       </Link>
+                      <Link
+                        href="/admin/insights"
+                        className="flex items-center space-x-3 px-4 py-3 hover:bg-white/10 transition-colors border-t border-white/5"
+                      >
+                        <BarChart3 className="w-4 h-4 text-purple-400" />
+                        <span className="text-gray-300 hover:text-white">Analytics Insights</span>
+                      </Link>
                       <button
                         onClick={handleLogout}
-                        className="w-full flex items-center space-x-3 px-4 py-3 hover:bg-white/10 transition-colors text-left"
+                        className="w-full flex items-center space-x-3 px-4 py-3 hover:bg-white/10 transition-colors text-left border-t border-white/5"
                       >
                         <LogOut className="w-4 h-4 text-red-400" />
                         <span className="text-gray-300 hover:text-white">Logout</span>
@@ -295,6 +305,12 @@ export default function Navbar() {
                       <Button variant="outline" className="w-full flex items-center justify-center">
                         <Settings className="w-4 h-4 mr-2" />
                         Dashboard
+                      </Button>
+                    </Link>
+                    <Link href="/admin/insights" passHref>
+                      <Button variant="outline" className="w-full flex items-center justify-center bg-purple-500/10 border-purple-500/30 hover:bg-purple-500/20">
+                        <BarChart3 className="w-4 h-4 mr-2" />
+                        Analytics Insights
                       </Button>
                     </Link>
                     <Button

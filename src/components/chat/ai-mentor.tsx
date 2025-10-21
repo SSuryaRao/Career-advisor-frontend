@@ -10,7 +10,7 @@ import {
   Zap, Brain, Target, BookOpen, Users, AlertCircle,
   Check, Loader2, ChevronDown
 } from 'lucide-react'
-import { geminiAI, type MentorContext, type ChatMessage } from '@/lib/gemini'
+import { apiClient } from '@/lib/api'
 
 interface Message {
   id: string
@@ -144,8 +144,26 @@ function MentorDropdown({
 }
 
 export default function AIMentor() {
-  const [messages, setMessages] = useState<Message[]>([
-    {
+  const [messages, setMessages] = useState<Message[]>([])
+  const [inputMessage, setInputMessage] = useState('')
+  const [isRecording, setIsRecording] = useState(false)
+  const [selectedMentor, setSelectedMentor] = useState(mentorPersonas[0])
+  const [selectedLanguage, setSelectedLanguage] = useState(languages[0])
+  const [isSpeaking, setIsSpeaking] = useState(false)
+  const [isTyping, setIsTyping] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null)
+  const [mentorDropdownOpen, setMentorDropdownOpen] = useState(false)
+  const [mounted, setMounted] = useState(false)
+
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLTextAreaElement>(null)
+  const recognitionRef = useRef<any>(null)
+
+  // Initialize welcome message on client side only (avoid hydration mismatch)
+  useEffect(() => {
+    setMounted(true)
+    setMessages([{
       id: '1',
       type: 'assistant',
       content: 'Hello! I\'m your AI Career Mentor. I can help you with career planning, skill development, and job search strategies. What would you like to explore today?',
@@ -156,21 +174,8 @@ export default function AIMentor() {
         'Create a learning roadmap',
         'Prepare for interviews'
       ]
-    }
-  ])
-  const [inputMessage, setInputMessage] = useState('')
-  const [isRecording, setIsRecording] = useState(false)
-  const [selectedMentor, setSelectedMentor] = useState(mentorPersonas[0])
-  const [selectedLanguage, setSelectedLanguage] = useState(languages[0])
-  const [isSpeaking, setIsSpeaking] = useState(false)
-  const [isTyping, setIsTyping] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null)
-  const [mentorDropdownOpen, setMentorDropdownOpen] = useState(false)
-  
-  const messagesEndRef = useRef<HTMLDivElement>(null)
-  const inputRef = useRef<HTMLTextAreaElement>(null)
-  const recognitionRef = useRef<any>(null)
+    }])
+  }, [])
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -221,39 +226,44 @@ export default function AIMentor() {
     setError(null)
 
     try {
-      // Create context for Gemini API
-      const context: MentorContext = {
-        mentorName: selectedMentor.name,
-        specialty: selectedMentor.specialty,
-        personality: selectedMentor.personality,
-        language: selectedLanguage.name
-      }
-
-      // Convert message history to ChatMessage format
-      const chatHistory: ChatMessage[] = messages.map(msg => ({
-        role: msg.type === 'user' ? 'user' : 'assistant',
-        content: msg.content
-      }))
-
-      // Use Gemini AI for response generation
-      const response = await geminiAI.generateResponse(
+      // Send message to backend API with personalized context
+      const response = await apiClient.sendMentorMessage(
         currentInput,
-        context,
-        chatHistory
+        {
+          id: selectedMentor.id,
+          name: selectedMentor.name,
+          specialty: selectedMentor.specialty,
+          personality: selectedMentor.personality
+        },
+        selectedLanguage.name
       )
+
+      if (!response.success || !response.data) {
+        throw new Error(response.error || 'Failed to get response from AI mentor')
+      }
 
       const aiResponse: Message = {
         id: (Date.now() + 1).toString(),
         type: 'assistant',
-        content: response.content,
+        content: response.data.response,
         timestamp: new Date(),
-        suggestions: response.suggestions || []
+        suggestions: response.data.suggestions || []
       }
 
       setMessages(prev => [...prev, aiResponse])
     } catch (error: any) {
       console.error('Error generating AI response:', error)
       setError(error.message || 'Something went wrong. Please try again.')
+
+      // Show fallback message if backend is unavailable
+      const fallbackMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        type: 'assistant',
+        content: "I'm having trouble connecting to the server right now. Please try again in a moment. In the meantime, feel free to explore other features of the platform!",
+        timestamp: new Date(),
+        suggestions: []
+      }
+      setMessages(prev => [...prev, fallbackMessage])
     } finally {
       setIsTyping(false)
     }
@@ -465,9 +475,11 @@ export default function AIMentor() {
                             </>
                           )}
                         </div>
-                        <span className={`text-xs ${message.type === 'user' ? 'text-white/70' : 'text-white/50'}`}>
-                          {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </span>
+                        {mounted && (
+                          <span className={`text-xs ${message.type === 'user' ? 'text-white/70' : 'text-white/50'}`}>
+                            {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        )}
                       </div>
                     </div>
                     
@@ -574,10 +586,10 @@ export default function AIMentor() {
             </div>
             <div className="flex items-center justify-between mt-4">
               <p className="text-xs text-gray-400">
-                AI responses are based on your profile and current market data.
+                AI responses are personalized based on your profile, skills, and career goals.
               </p>
               <div className="flex items-center space-x-2 text-xs text-violet-400 font-medium">
-                <span>Powered by Gemini AI</span>
+                <span>Powered by Vertex AI</span>
                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
               </div>
             </div>

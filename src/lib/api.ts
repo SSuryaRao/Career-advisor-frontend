@@ -162,6 +162,124 @@ class ApiClient {
     return this.request('/api/chatbot/health')
   }
 
+  // AI Mentor Methods
+  async sendMentorMessage(message: string, mentorPersona: any, language = 'English'): Promise<ApiResponse<any>> {
+    return this.request('/api/mentor/message', {
+      method: 'POST',
+      body: JSON.stringify({ message, mentorPersona, language })
+    })
+  }
+
+  async getMentorConversations(): Promise<ApiResponse<any>> {
+    return this.request('/api/mentor/conversations')
+  }
+
+  async getMentorConversationHistory(mentorId: string): Promise<ApiResponse<any>> {
+    return this.request(`/api/mentor/conversation/${mentorId}`)
+  }
+
+  async getMentorProgressAnalysis(): Promise<ApiResponse<any>> {
+    return this.request('/api/mentor/progress')
+  }
+
+  async generateLearningPath(targetRole?: string, timeframe = '3 months'): Promise<ApiResponse<any>> {
+    return this.request('/api/mentor/learning-path', {
+      method: 'POST',
+      body: JSON.stringify({ targetRole, timeframe })
+    })
+  }
+
+  async getCareerGuidance(situation: string): Promise<ApiResponse<any>> {
+    return this.request('/api/mentor/career-guidance', {
+      method: 'POST',
+      body: JSON.stringify({ situation })
+    })
+  }
+
+  // Scholarship Methods
+  async getAllScholarships(params?: { category?: string; domain?: string; trending?: boolean; limit?: number; page?: number }): Promise<ApiResponse<any>> {
+    const queryParams = new URLSearchParams()
+    if (params?.category) queryParams.append('category', params.category)
+    if (params?.domain) queryParams.append('domain', params.domain)
+    if (params?.trending !== undefined) queryParams.append('trending', String(params.trending))
+    if (params?.limit) queryParams.append('limit', String(params.limit))
+    if (params?.page) queryParams.append('page', String(params.page))
+
+    const queryString = queryParams.toString()
+    return this.request(`/api/scholarships${queryString ? `?${queryString}` : ''}`)
+  }
+
+  async getPersonalizedScholarships(): Promise<ApiResponse<any>> {
+    return this.request('/api/scholarships/personalized', {
+      method: 'POST'
+    })
+  }
+
+  async getTrendingScholarships(): Promise<ApiResponse<any>> {
+    return this.request('/api/scholarships/trending')
+  }
+
+  async getScholarshipById(id: string): Promise<ApiResponse<any>> {
+    return this.request(`/api/scholarships/${id}`)
+  }
+
+  // Job Methods
+  async getAllJobs(params?: {
+    page?: number
+    limit?: number
+    search?: string
+    tags?: string[]
+    company?: string
+    jobType?: string
+    experienceLevel?: string
+    sortBy?: string
+    sortOrder?: string
+    daysOld?: number
+  }): Promise<ApiResponse<any>> {
+    const queryParams = new URLSearchParams()
+    if (params?.page) queryParams.append('page', String(params.page))
+    if (params?.limit) queryParams.append('limit', String(params.limit))
+    if (params?.search) queryParams.append('search', params.search)
+    if (params?.tags) params.tags.forEach(tag => queryParams.append('tags', tag))
+    if (params?.company) queryParams.append('company', params.company)
+    if (params?.jobType) queryParams.append('jobType', params.jobType)
+    if (params?.experienceLevel) queryParams.append('experienceLevel', params.experienceLevel)
+    if (params?.sortBy) queryParams.append('sortBy', params.sortBy)
+    if (params?.daysOld) queryParams.append('daysOld', String(params.daysOld))
+    if (params?.sortOrder) queryParams.append('sortOrder', params.sortOrder)
+
+    const queryString = queryParams.toString()
+    return this.request(`/api/jobs${queryString ? `?${queryString}` : ''}`)
+  }
+
+  async getJobById(jobId: string): Promise<ApiResponse<any>> {
+    return this.request(`/api/jobs/${jobId}`)
+  }
+
+  async getFeaturedJobs(limit = 6): Promise<ApiResponse<any>> {
+    return this.request(`/api/jobs/featured?limit=${limit}`)
+  }
+
+  async getJobStats(): Promise<ApiResponse<any>> {
+    return this.request('/api/jobs/stats')
+  }
+
+  async searchJobs(query: string, limit = 10): Promise<ApiResponse<any>> {
+    return this.request(`/api/jobs/search?q=${encodeURIComponent(query)}&limit=${limit}`)
+  }
+
+  async getJobRecommendations(params?: {
+    limit?: number
+    minMatchScore?: number
+  }): Promise<ApiResponse<any>> {
+    const queryParams = new URLSearchParams()
+    if (params?.limit) queryParams.append('limit', String(params.limit))
+    if (params?.minMatchScore) queryParams.append('minMatchScore', String(params.minMatchScore))
+
+    const queryString = queryParams.toString()
+    return this.request(`/api/jobs/recommendations${queryString ? `?${queryString}` : ''}`)
+  }
+
   // Health check
   async healthCheck(): Promise<ApiResponse<any>> {
     return this.request('/api/health')

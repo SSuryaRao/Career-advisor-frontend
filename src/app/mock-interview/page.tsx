@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import Navbar from '@/components/layout/navbar'
 import { Card } from '@/components/ui/card'
@@ -9,14 +9,15 @@ import { Badge } from '@/components/ui/badge'
 import { Select } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { Progress } from '@/components/ui/progress'
-import { 
-  MessageSquareText, 
-  BrainCircuit, 
-  Target, 
-  PlayCircle, 
-  Mic, 
+import { useAuth } from '@/components/auth-provider'
+import {
+  MessageSquareText,
+  BrainCircuit,
+  Target,
+  PlayCircle,
+  Mic,
   MicOff,
-  ArrowRight, 
+  ArrowRight,
   ArrowLeft,
   CheckCircle,
   Clock,
@@ -25,8 +26,12 @@ import {
   Zap,
   Users,
   Award,
-  BarChart3
+  BarChart3,
+  XCircle
 } from 'lucide-react'
+import { questionPools, AptitudeQuestion } from '@/data/aptitude-questions'
+import { getRandomQuestions, calculateScore, formatTime, getCategoryKey, getQuestionPoolKey, getTestMetadata } from '@/lib/aptitude-utils'
+import { IntelligentInterviewMain } from '@/components/intelligent-interview/IntelligentInterviewMain'
 
 // Mock data
 const domains = [
@@ -101,16 +106,12 @@ const aptitudeTestSets = [
   },
 ]
 
-const sampleAptitudeQuestion = {
-  question: "If a train travels 120 km in 2 hours, what is its average speed?",
-  options: ["50 km/h", "60 km/h", "70 km/h", "80 km/h"],
-  correctAnswer: 1
-}
 
 type Mode = 'selection' | 'interview' | 'aptitude'
-type TabMode = 'interview-tab' | 'aptitude-tab'
+type TabMode = 'interview-tab' | 'aptitude-tab' | 'intelligent-tab'
 
 export default function MockInterviewPage() {
+  const { user } = useAuth()
   const [mode, setMode] = useState<Mode>('selection')
   const [activeTab, setActiveTab] = useState<TabMode>('interview-tab')
   const [selectedDomain, setSelectedDomain] = useState('')
@@ -119,13 +120,36 @@ export default function MockInterviewPage() {
   const [userAnswer, setUserAnswer] = useState('')
   const [answers, setAnswers] = useState<string[]>([])
   const [isRecording, setIsRecording] = useState(false)
+
+  // Aptitude test state
   const [selectedAptitudeTest, setSelectedAptitudeTest] = useState<number | null>(null)
-  const [selectedOption, setSelectedOption] = useState<number | null>(null)
-  const [aptitudeAnswers, setAptitudeAnswers] = useState<number[]>([])
+  const [testQuestions, setTestQuestions] = useState<AptitudeQuestion[]>([])
   const [currentAptitudeQuestion, setCurrentAptitudeQuestion] = useState(0)
+  const [aptitudeAnswers, setAptitudeAnswers] = useState<(number | null)[]>([])
   const [showResults, setShowResults] = useState(false)
+  const [timeRemaining, setTimeRemaining] = useState(0)
+  const [timeTaken, setTimeTaken] = useState(0)
 
   const availableRoles = selectedDomain ? rolesByDomain[selectedDomain] || [] : []
+  const currentTestQuestion = testQuestions[currentAptitudeQuestion]
+  const selectedOption = aptitudeAnswers[currentAptitudeQuestion] ?? null
+
+  // Timer effect for aptitude test
+  useEffect(() => {
+    if (mode === 'aptitude' && !showResults && timeRemaining > 0) {
+      const timer = setInterval(() => {
+        setTimeRemaining(prev => {
+          if (prev <= 1) {
+            handleSubmitTest()
+            return 0
+          }
+          return prev - 1
+        })
+      }, 1000)
+
+      return () => clearInterval(timer)
+    }
+  }, [mode, showResults, timeRemaining])
 
   const handleStartInterview = () => {
     if (selectedDomain && selectedRole) {
@@ -136,17 +160,51 @@ export default function MockInterviewPage() {
     }
   }
 
+  const saveInterviewSession = async () => {
+    if (!user) return;
+
+    try {
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+      const response = await fetch(`${API_BASE_URL}/api/mock-interview/interview-session`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          userId: user.uid,
+          domain: selectedDomain,
+          role: selectedRole,
+          questionsAnswered: answers.filter(a => a.trim()).length,
+          totalQuestions: mockInterviewQuestions.length,
+          answers: mockInterviewQuestions.map((q, i) => ({
+            question: q,
+            answer: answers[i] || '',
+            timestamp: new Date()
+          }))
+        })
+      })
+
+      if (response.ok) {
+        console.log('Interview session saved successfully')
+      }
+    } catch (error) {
+      console.error('Error saving interview session:', error)
+    }
+  }
+
   const handleNextQuestion = () => {
     const newAnswers = [...answers]
     newAnswers[currentQuestionIndex] = userAnswer
     setAnswers(newAnswers)
-    
+
     if (currentQuestionIndex < mockInterviewQuestions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1)
       setUserAnswer('')
     } else {
-      // Interview complete
-      alert('Interview completed! In a real implementation, this would provide feedback.')
+      // Interview complete - save results
+      saveInterviewSession()
+      alert('Interview completed! Your responses have been saved.')
+      resetToSelection()
     }
   }
 
@@ -158,24 +216,114 @@ export default function MockInterviewPage() {
   }
 
   const handleStartAptitudeTest = (testId: number) => {
+    const metadata = getTestMetadata(testId)
+    const poolKey = getQuestionPoolKey(testId)
+    const randomQuestions = getRandomQuestions(questionPools[poolKey], metadata.questionCount)
+
     setSelectedAptitudeTest(testId)
-    setMode('aptitude')
+    setTestQuestions(randomQuestions)
     setCurrentAptitudeQuestion(0)
-    setAptitudeAnswers([])
-    setSelectedOption(null)
+    setAptitudeAnswers(new Array(randomQuestions.length).fill(null))
     setShowResults(false)
+    setTimeRemaining(metadata.duration)
+    setTimeTaken(0)
+    setMode('aptitude')
   }
 
-  const handleAptitudeNext = () => {
-    if (selectedOption !== null) {
-      const newAnswers = [...aptitudeAnswers]
-      newAnswers[currentAptitudeQuestion] = selectedOption
-      setAptitudeAnswers(newAnswers)
-      
-      // For demo, we only have 1 sample question
-      setShowResults(true)
-      setSelectedOption(null)
+  const handleSelectOption = (optionIndex: number) => {
+    const newAnswers = [...aptitudeAnswers]
+    newAnswers[currentAptitudeQuestion] = optionIndex
+    setAptitudeAnswers(newAnswers)
+  }
+
+  const handleNextAptitudeQuestion = () => {
+    if (currentAptitudeQuestion < testQuestions.length - 1) {
+      setCurrentAptitudeQuestion(currentAptitudeQuestion + 1)
     }
+  }
+
+  const handlePreviousAptitudeQuestion = () => {
+    if (currentAptitudeQuestion > 0) {
+      setCurrentAptitudeQuestion(currentAptitudeQuestion - 1)
+    }
+  }
+
+  const saveAptitudeTestResult = async (timeTaken: number) => {
+    if (!user) return;
+
+    try {
+      const score = calculateScore(testQuestions, aptitudeAnswers)
+
+      // Get test metadata
+      const testSet = aptitudeTestSets.find(t => t.id === selectedAptitudeTest)
+      if (!testSet) {
+        console.error('Test set not found')
+        return
+      }
+
+      // Calculate topic performance
+      const topicPerformance: { [topic: string]: { correct: number; total: number } } = {}
+      testQuestions.forEach((q, index) => {
+        if (!topicPerformance[q.topic]) {
+          topicPerformance[q.topic] = { correct: 0, total: 0 }
+        }
+        topicPerformance[q.topic].total++
+        if (aptitudeAnswers[index] === q.correctAnswer) {
+          topicPerformance[q.topic].correct++
+        }
+      })
+
+      const topicPerformanceArray = Object.keys(topicPerformance).map(topic => ({
+        topic,
+        correct: topicPerformance[topic].correct,
+        total: topicPerformance[topic].total,
+        percentage: Math.round((topicPerformance[topic].correct / topicPerformance[topic].total) * 100)
+      }))
+
+      const payload = {
+        userId: user.uid,
+        testId: selectedAptitudeTest!,
+        testType: getCategoryKey(selectedAptitudeTest!),
+        testTitle: testSet.title,
+        score: score.correctCount,
+        percentage: score.percentage,
+        timeTaken: timeTaken,
+        totalQuestions: testQuestions.length,
+        correctAnswers: score.correctCount,
+        incorrectAnswers: score.incorrectCount,
+        unanswered: aptitudeAnswers.filter(a => a === null).length,
+        topicPerformance: topicPerformanceArray
+      }
+
+      console.log('📤 Sending aptitude test result:', payload)
+
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+      const response = await fetch(`${API_BASE_URL}/api/mock-interview/aptitude-result`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      })
+
+      if (response.ok) {
+        console.log('Aptitude test result saved successfully')
+        const data = await response.json()
+        console.log('Saved result:', data)
+      } else {
+        console.error('Failed to save test result:', await response.text())
+      }
+    } catch (error) {
+      console.error('Error saving aptitude test result:', error)
+    }
+  }
+
+  const handleSubmitTest = () => {
+    const metadata = getTestMetadata(selectedAptitudeTest!)
+    const taken = metadata.duration - timeRemaining
+    setTimeTaken(taken)
+    setShowResults(true)
+    saveAptitudeTestResult(taken)
   }
 
   const toggleRecording = () => {
@@ -252,6 +400,18 @@ export default function MockInterviewPage() {
               >
                 <div className="flex bg-white rounded-2xl p-2 shadow-lg border border-gray-200">
                   <Button
+                    onClick={() => setActiveTab('intelligent-tab')}
+                    variant={activeTab === 'intelligent-tab' ? 'default' : 'ghost'}
+                    className={`transition-all duration-300 ${
+                      activeTab === 'intelligent-tab'
+                        ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-md'
+                        : 'text-gray-600 hover:text-indigo-600 hover:bg-indigo-50'
+                    }`}
+                  >
+                    <Zap className="w-4 h-4 mr-2" />
+                    AI Interview
+                  </Button>
+                  <Button
                     onClick={() => setActiveTab('interview-tab')}
                     variant={activeTab === 'interview-tab' ? 'default' : 'ghost'}
                     className={`transition-all duration-300 ${
@@ -261,7 +421,7 @@ export default function MockInterviewPage() {
                     }`}
                   >
                     <MessageSquareText className="w-4 h-4 mr-2" />
-                    Mock Interview
+                    Basic Interview
                   </Button>
                   <Button
                     onClick={() => setActiveTab('aptitude-tab')}
@@ -286,6 +446,17 @@ export default function MockInterviewPage() {
       <div className="max-w-7xl mx-auto px-4 pb-20">
         {mode === 'selection' && (
           <>
+            {/* Intelligent AI Interview Section */}
+            {activeTab === 'intelligent-tab' && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 }}
+              >
+                <IntelligentInterviewMain />
+              </motion.div>
+            )}
+
             {/* Mock Interview Section */}
             {activeTab === 'interview-tab' && (
               <>
@@ -586,7 +757,7 @@ export default function MockInterviewPage() {
         )}
 
         {/* Aptitude Test Mode */}
-        {mode === 'aptitude' && !showResults && (
+        {mode === 'aptitude' && !showResults && testQuestions.length > 0 && (
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
             {/* Test Progress Panel */}
             <div className="lg:col-span-1">
@@ -602,15 +773,49 @@ export default function MockInterviewPage() {
                   <div>
                     <div className="flex justify-between text-sm text-gray-600 mb-2">
                       <span>Question</span>
-                      <span>1/1</span> {/* Demo: only 1 question */}
+                      <span>{currentAptitudeQuestion + 1}/{testQuestions.length}</span>
                     </div>
-                    <Progress value={100} className="h-3" />
+                    <Progress value={((currentAptitudeQuestion + 1) / testQuestions.length) * 100} className="h-3" />
                   </div>
 
                   <div className="pt-4 border-t border-gray-200">
                     <div className="text-center">
-                      <div className="text-2xl font-bold text-indigo-600 mb-1">15:00</div>
+                      <div className={`text-2xl font-bold mb-1 ${timeRemaining < 60 ? 'text-red-600 animate-pulse' : 'text-indigo-600'}`}>
+                        {formatTime(timeRemaining)}
+                      </div>
                       <div className="text-sm text-gray-500">Time Remaining</div>
+                    </div>
+                  </div>
+
+                  {/* Question Navigation Grid */}
+                  <div className="pt-4 border-t border-gray-200">
+                    <div className="text-xs text-gray-600 mb-2 font-semibold">Quick Navigation</div>
+                    <div className="grid grid-cols-5 gap-2">
+                      {testQuestions.map((_, index) => (
+                        <button
+                          key={index}
+                          onClick={() => setCurrentAptitudeQuestion(index)}
+                          className={`w-full h-8 rounded-lg text-xs font-semibold transition-all ${
+                            index === currentAptitudeQuestion
+                              ? 'bg-indigo-600 text-white ring-2 ring-indigo-300'
+                              : aptitudeAnswers[index] !== null
+                              ? 'bg-green-100 text-green-700 border border-green-300'
+                              : 'bg-gray-100 text-gray-600 border border-gray-300 hover:bg-gray-200'
+                          }`}
+                        >
+                          {index + 1}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="flex items-center justify-between text-xs text-gray-500 mt-3">
+                      <div className="flex items-center">
+                        <div className="w-3 h-3 bg-green-100 border border-green-300 rounded mr-1"></div>
+                        <span>Answered</span>
+                      </div>
+                      <div className="flex items-center">
+                        <div className="w-3 h-3 bg-gray-100 border border-gray-300 rounded mr-1"></div>
+                        <span>Unanswered</span>
+                      </div>
                     </div>
                   </div>
 
@@ -629,22 +834,27 @@ export default function MockInterviewPage() {
             <div className="lg:col-span-3">
               <Card className="p-8 bg-white/90 backdrop-blur-sm border-0 shadow-xl">
                 <div className="mb-6">
-                  <Badge className="px-3 py-1 bg-purple-100 text-purple-800 border border-purple-300 mb-4">
-                    Question 1 of 1
-                  </Badge>
-                  
+                  <div className="flex items-center justify-between mb-4">
+                    <Badge className="px-3 py-1 bg-purple-100 text-purple-800 border border-purple-300">
+                      Question {currentAptitudeQuestion + 1} of {testQuestions.length}
+                    </Badge>
+                    <Badge className="px-3 py-1 bg-blue-100 text-blue-800 border border-blue-300">
+                      {currentTestQuestion?.topic.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                    </Badge>
+                  </div>
+
                   <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-2xl p-6 border border-purple-200">
                     <h2 className="text-xl font-semibold text-gray-900 leading-relaxed">
-                      {sampleAptitudeQuestion.question}
+                      {currentTestQuestion?.question}
                     </h2>
                   </div>
                 </div>
 
-                <div className="space-y-4">
-                  {sampleAptitudeQuestion.options.map((option, index) => (
+                <div className="space-y-4 mb-8">
+                  {currentTestQuestion?.options.map((option, index) => (
                     <div
                       key={index}
-                      onClick={() => setSelectedOption(index)}
+                      onClick={() => handleSelectOption(index)}
                       className={`p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${
                         selectedOption === index
                           ? 'border-indigo-500 bg-indigo-50 ring-2 ring-indigo-200'
@@ -665,14 +875,38 @@ export default function MockInterviewPage() {
                   ))}
                 </div>
 
-                <div className="flex justify-end mt-8">
+                <div className="flex justify-between items-center">
                   <Button
-                    onClick={handleAptitudeNext}
-                    disabled={selectedOption === null}
-                    className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-8"
+                    onClick={handlePreviousAptitudeQuestion}
+                    disabled={currentAptitudeQuestion === 0}
+                    variant="outline"
+                    className="flex items-center space-x-2"
                   >
-                    Submit Test
+                    <ArrowLeft className="w-4 h-4" />
+                    <span>Previous</span>
                   </Button>
+
+                  <div className="text-sm text-gray-600">
+                    {aptitudeAnswers.filter(a => a !== null).length} / {testQuestions.length} answered
+                  </div>
+
+                  {currentAptitudeQuestion < testQuestions.length - 1 ? (
+                    <Button
+                      onClick={handleNextAptitudeQuestion}
+                      className="flex items-center space-x-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white"
+                    >
+                      <span>Next Question</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={handleSubmitTest}
+                      className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-8"
+                    >
+                      <CheckCircle className="w-4 h-4 mr-2" />
+                      Submit Test
+                    </Button>
+                  )}
                 </div>
               </Card>
             </div>
@@ -680,38 +914,142 @@ export default function MockInterviewPage() {
         )}
 
         {/* Aptitude Test Results */}
-        {mode === 'aptitude' && showResults && (
-          <div className="max-w-4xl mx-auto">
-            <Card className="p-8 bg-white/90 backdrop-blur-sm border-0 shadow-xl text-center">
-              <div className="mb-6">
-                <div className="w-20 h-20 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+        {mode === 'aptitude' && showResults && testQuestions.length > 0 && (
+          <div className="max-w-6xl mx-auto">
+            <Card className="p-8 bg-white/90 backdrop-blur-sm border-0 shadow-xl">
+              <div className="text-center mb-8">
+                <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg ${
+                  calculateScore(testQuestions, aptitudeAnswers).percentage >= 50
+                    ? 'bg-gradient-to-r from-green-500 to-emerald-600'
+                    : 'bg-gradient-to-r from-orange-500 to-red-600'
+                }`}>
                   <CheckCircle className="w-10 h-10 text-white" />
                 </div>
                 <h2 className="text-3xl font-bold text-gray-900 mb-2">Test Completed!</h2>
-                <p className="text-xl text-gray-600">Here are your results</p>
+                <p className="text-xl text-gray-600">Here are your detailed results</p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                 <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-200">
-                  <div className="text-3xl font-bold text-blue-600 mb-2">1/1</div>
-                  <div className="text-sm text-gray-600">Questions Answered</div>
+                  <div className="text-3xl font-bold text-blue-600 mb-2">
+                    {calculateScore(testQuestions, aptitudeAnswers).correctCount}/{testQuestions.length}
+                  </div>
+                  <div className="text-sm text-gray-600">Correct Answers</div>
                 </div>
                 <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-6 border border-green-200">
                   <div className="text-3xl font-bold text-green-600 mb-2">
-                    {selectedOption === sampleAptitudeQuestion.correctAnswer ? '100%' : '0%'}
+                    {calculateScore(testQuestions, aptitudeAnswers).percentage}%
                   </div>
                   <div className="text-sm text-gray-600">Accuracy</div>
                 </div>
                 <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-6 border border-purple-200">
-                  <div className="text-3xl font-bold text-purple-600 mb-2">2:30</div>
+                  <div className="text-3xl font-bold text-purple-600 mb-2">{formatTime(timeTaken)}</div>
                   <div className="text-sm text-gray-600">Time Taken</div>
+                </div>
+                <div className="bg-gradient-to-r from-orange-50 to-amber-50 rounded-2xl p-6 border border-orange-200">
+                  <div className="text-3xl font-bold text-orange-600 mb-2">
+                    {aptitudeAnswers.filter(a => a === null).length}
+                  </div>
+                  <div className="text-sm text-gray-600">Unanswered</div>
                 </div>
               </div>
 
-              <div className="space-y-4">
+              {/* Detailed Question Review */}
+              <div className="mb-8">
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">Question Review</h3>
+                <div className="space-y-4">
+                  {testQuestions.map((question, index) => {
+                    const userAnswer = aptitudeAnswers[index]
+                    const isCorrect = userAnswer === question.correctAnswer
+                    const wasAnswered = userAnswer !== null
+
+                    return (
+                      <Card key={question.id} className={`p-6 border-2 ${
+                        !wasAnswered
+                          ? 'border-gray-300 bg-gray-50'
+                          : isCorrect
+                          ? 'border-green-300 bg-green-50'
+                          : 'border-red-300 bg-red-50'
+                      }`}>
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="flex items-center space-x-3">
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-white ${
+                              !wasAnswered
+                                ? 'bg-gray-400'
+                                : isCorrect
+                                ? 'bg-green-600'
+                                : 'bg-red-600'
+                            }`}>
+                              {index + 1}
+                            </div>
+                            <Badge className={`${
+                              !wasAnswered
+                                ? 'bg-gray-100 text-gray-700'
+                                : isCorrect
+                                ? 'bg-green-100 text-green-700'
+                                : 'bg-red-100 text-red-700'
+                            }`}>
+                              {!wasAnswered ? 'Not Answered' : isCorrect ? 'Correct' : 'Incorrect'}
+                            </Badge>
+                            <Badge className="bg-blue-100 text-blue-700">
+                              {question.topic.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                            </Badge>
+                          </div>
+                        </div>
+
+                        <h4 className="text-lg font-semibold text-gray-900 mb-4">{question.question}</h4>
+
+                        <div className="space-y-2 mb-4">
+                          {question.options.map((option, optIndex) => {
+                            const isUserAnswer = userAnswer === optIndex
+                            const isCorrectAnswer = question.correctAnswer === optIndex
+
+                            return (
+                              <div
+                                key={optIndex}
+                                className={`p-3 rounded-lg border-2 flex items-center ${
+                                  isCorrectAnswer
+                                    ? 'border-green-500 bg-green-100'
+                                    : isUserAnswer
+                                    ? 'border-red-500 bg-red-100'
+                                    : 'border-gray-200 bg-white'
+                                }`}
+                              >
+                                {isCorrectAnswer && <CheckCircle className="w-5 h-5 text-green-600 mr-3" />}
+                                {isUserAnswer && !isCorrectAnswer && <XCircle className="w-5 h-5 text-red-600 mr-3" />}
+                                <span className={`${
+                                  isCorrectAnswer ? 'font-semibold text-green-900' : 'text-gray-800'
+                                }`}>
+                                  {option}
+                                </span>
+                                {isCorrectAnswer && <span className="ml-auto text-sm text-green-700 font-semibold">Correct Answer</span>}
+                                {isUserAnswer && !isCorrectAnswer && <span className="ml-auto text-sm text-red-700 font-semibold">Your Answer</span>}
+                              </div>
+                            )
+                          })}
+                        </div>
+
+                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                          <div className="flex items-start">
+                            <div className="p-2 bg-blue-600 rounded-lg mr-3">
+                              <BookOpen className="w-4 h-4 text-white" />
+                            </div>
+                            <div>
+                              <h5 className="font-semibold text-blue-900 mb-1">Explanation</h5>
+                              <p className="text-blue-800">{question.explanation}</p>
+                            </div>
+                          </div>
+                        </div>
+                      </Card>
+                    )
+                  })}
+                </div>
+              </div>
+
+              <div className="flex justify-center space-x-4">
                 <Button
                   onClick={() => handleStartAptitudeTest(selectedAptitudeTest!)}
-                  className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white mr-4"
+                  className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white"
                 >
                   Retake Test
                 </Button>

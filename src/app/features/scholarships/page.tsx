@@ -18,8 +18,22 @@ import {
   TrendingUp,
   IndianRupee,
   DollarSign,
+  Sparkles,
+  Target,
+  CheckCircle2,
+  AlertCircle,
+  ArrowRight,
 } from 'lucide-react'
 import Navbar from '@/components/layout/navbar'
+import { apiClient } from '@/lib/api'
+
+interface AIRecommendation {
+  matchScore: number
+  matchReason: string
+  eligibilityStatus: 'Eligible' | 'MayBeEligible' | 'CheckDetails'
+  actionSteps: string[]
+  priority: 'High' | 'Medium' | 'Low'
+}
 
 interface Scholarship {
   _id?: string
@@ -32,6 +46,7 @@ interface Scholarship {
   category?: string
   domain?: string
   trending?: boolean
+  aiRecommendation?: AIRecommendation
 }
 
 interface Internship {
@@ -52,13 +67,16 @@ interface Internship {
 
 export default function ScholarshipsPage() {
   const [activeTab, setActiveTab] = useState<'scholarships' | 'internships'>('scholarships')
+  const [viewMode, setViewMode] = useState<'all' | 'personalized'>('all')
   const [scholarships, setScholarships] = useState<Scholarship[]>([])
-  const [internships, setInternships] = useState<Internship[]>([])
+  const [internships, setInternships] = useState<Scholarship[]>([])
   const [loading, setLoading] = useState(true)
+  const [personalizedLoading, setPersonalizedLoading] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('all')
   const [domainFilter, setDomainFilter] = useState('all')
   const [showFilters, setShowFilters] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     fetchData()
@@ -66,42 +84,72 @@ export default function ScholarshipsPage() {
 
   const fetchData = async () => {
     setLoading(true)
+    setError(null)
+    setViewMode('all') // Reset to all view when switching tabs
+
     try {
-      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
-      const endpoint = activeTab === 'scholarships' 
-        ? `${API_BASE_URL}/api/scholarships` 
-        : `${API_BASE_URL}/api/internships`
-      
-      const response = await fetch(endpoint)
-      const data = await response.json()
-      
-      if (data.success) {
+      // Unified API: Use category filter to get scholarships OR internships
+      const category = activeTab === 'scholarships'
+        ? undefined  // Get all scholarship categories (UG, PG, Research, etc.)
+        : 'Internship'  // Get only internships
+
+      const response = await apiClient.getAllScholarships({ category })
+
+      if (response.success) {
+        const data = response.data || []
+
         if (activeTab === 'scholarships') {
-          setScholarships(data.data)
+          // Filter out internships from scholarships tab
+          setScholarships(data.filter((item: Scholarship) => item.category !== 'Internship'))
         } else {
-          setInternships(data.data)
+          // Show only internships in internships tab
+          setInternships(data.filter((item: Scholarship) => item.category === 'Internship'))
         }
+      } else {
+        setError(response.error || `Failed to fetch ${activeTab}`)
       }
     } catch (error) {
       console.error(`Error fetching ${activeTab}:`, error)
+      setError(`Error fetching ${activeTab}. Please try again.`)
     } finally {
       setLoading(false)
     }
   }
 
-  const filteredData = activeTab === 'scholarships' 
-    ? scholarships.filter(item => 
+  const fetchPersonalizedScholarships = async () => {
+    setPersonalizedLoading(true)
+    setError(null)
+
+    try {
+      const response = await apiClient.getPersonalizedScholarships()
+
+      if (response.success) {
+        setScholarships(response.data || [])
+        setViewMode('personalized')
+      } else {
+        setError(response.error || 'Failed to generate personalized recommendations')
+      }
+    } catch (error) {
+      console.error('Error fetching personalized scholarships:', error)
+      setError('Error generating recommendations. Please ensure you are logged in and have uploaded a resume.')
+    } finally {
+      setPersonalizedLoading(false)
+    }
+  }
+
+  const filteredData = activeTab === 'scholarships'
+    ? scholarships.filter(item =>
         item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         item.provider.toLowerCase().includes(searchTerm.toLowerCase())
-      ).filter(item => 
+      ).filter(item =>
         categoryFilter === 'all' || item.category === categoryFilter
-      ).filter(item => 
+      ).filter(item =>
         domainFilter === 'all' || item.domain === domainFilter
       )
-    : internships.filter(item => 
+    : internships.filter(item =>
         item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.company.toLowerCase().includes(searchTerm.toLowerCase())
-      ).filter(item => 
+        item.provider.toLowerCase().includes(searchTerm.toLowerCase())
+      ).filter(item =>
         domainFilter === 'all' || item.domain === domainFilter
       )
 
@@ -172,7 +220,7 @@ export default function ScholarshipsPage() {
           transition={{ duration: 0.6, delay: 0.3 }}
           className="mb-8"
         >
-          <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+          <div className="flex flex-col md:flex-row gap-4 items-center justify-between mb-4">
             <div className="relative flex-1 max-w-md">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <Input
@@ -182,15 +230,59 @@ export default function ScholarshipsPage() {
                 className="pl-10 bg-gray-800 border-gray-700 text-white placeholder-gray-400"
               />
             </div>
-            <Button
-              variant="outline"
-              onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center space-x-2"
-            >
-              <Filter className="w-4 h-4" />
-              <span>Filters</span>
-            </Button>
+            <div className="flex gap-2">
+              {activeTab === 'scholarships' && (
+                <>
+                  <Button
+                    onClick={() => {
+                      setViewMode('all')
+                      fetchData()
+                    }}
+                    className={`flex items-center space-x-2 ${
+                      viewMode === 'all'
+                        ? 'bg-gradient-to-r from-blue-600 to-purple-600'
+                        : 'bg-gray-700 hover:bg-gray-600'
+                    }`}
+                  >
+                    <Award className="w-4 h-4" />
+                    <span>Show All</span>
+                  </Button>
+                  <Button
+                    onClick={fetchPersonalizedScholarships}
+                    disabled={personalizedLoading}
+                    className="flex items-center space-x-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                  >
+                    <Sparkles className="w-4 h-4" />
+                    <span>{personalizedLoading ? 'Loading...' : 'Get Personalized'}</span>
+                  </Button>
+                </>
+              )}
+              <Button
+                variant="outline"
+                onClick={() => setShowFilters(!showFilters)}
+                className="flex items-center space-x-2"
+              >
+                <Filter className="w-4 h-4" />
+                <span>Filters</span>
+              </Button>
+            </div>
           </div>
+
+          {/* Error Message */}
+          {error && (
+            <div className="mb-4 p-4 bg-red-900/20 border border-red-500/50 rounded-lg flex items-center space-x-2 text-red-400">
+              <AlertCircle className="w-5 h-5" />
+              <span>{error}</span>
+            </div>
+          )}
+
+          {/* Personalized Mode Info */}
+          {viewMode === 'personalized' && activeTab === 'scholarships' && !error && (
+            <div className="mb-4 p-4 bg-purple-900/20 border border-purple-500/50 rounded-lg flex items-center space-x-2 text-purple-300">
+              <Sparkles className="w-5 h-5" />
+              <span>Showing personalized recommendations based on your profile and resume</span>
+            </div>
+          )}
 
           {showFilters && (
             <motion.div
@@ -256,11 +348,32 @@ export default function ScholarshipsPage() {
             ) : (
               filteredData.map((item, index) => (
                 <div
-                  key={activeTab === 'scholarships' ? (item as Scholarship)._id || index : (item as Internship).id}
+                  key={(item as Scholarship)._id || index}
                   className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700 hover:border-blue-500/50 transition-all group"
                 >
+                  {/* AI Match Score & Priority - Personalized Mode */}
+                  {activeTab === 'scholarships' && viewMode === 'personalized' && (item as Scholarship).aiRecommendation && (
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center space-x-2">
+                        <Target className="w-5 h-5 text-purple-400" />
+                        <span className="text-lg font-bold text-purple-400">
+                          {(item as Scholarship).aiRecommendation!.matchScore}% Match
+                        </span>
+                      </div>
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        (item as Scholarship).aiRecommendation!.priority === 'High'
+                          ? 'bg-red-500/20 text-red-400'
+                          : (item as Scholarship).aiRecommendation!.priority === 'Medium'
+                          ? 'bg-yellow-500/20 text-yellow-400'
+                          : 'bg-blue-500/20 text-blue-400'
+                      }`}>
+                        {(item as Scholarship).aiRecommendation!.priority} Priority
+                      </span>
+                    </div>
+                  )}
+
                   {/* Trending Badge */}
-                  {item.trending && (
+                  {item.trending && !(activeTab === 'scholarships' && viewMode === 'personalized') && (
                     <div className="flex items-center space-x-1 text-yellow-400 mb-3">
                       <TrendingUp className="w-4 h-4" />
                       <span className="text-sm font-medium">Trending</span>
@@ -274,23 +387,66 @@ export default function ScholarshipsPage() {
                   <div className="flex items-center space-x-2 text-gray-400 mb-3">
                     <Building2 className="w-4 h-4" />
                     <span className="text-sm">
-                      {activeTab === 'scholarships' 
-                        ? (item as Scholarship).provider 
-                        : (item as Internship).company}
+                      {(item as Scholarship).provider}
                     </span>
+                  </div>
+
+                  <div className="flex items-center space-x-2 text-green-400 mb-3">
+                    <IndianRupee className="w-4 h-4" />
+                    <span className="font-medium">{(item as Scholarship).amount}</span>
                   </div>
 
                   {activeTab === 'scholarships' ? (
                     <>
-                      <div className="flex items-center space-x-2 text-green-400 mb-3">
-                        <IndianRupee className="w-4 h-4" />
-                        <span className="font-medium">{(item as Scholarship).amount}</span>
-                      </div>
-                      
-                      <p className="text-gray-300 text-sm mb-4 line-clamp-2">
-                        {(item as Scholarship).eligibility}
-                      </p>
-                      
+                      {/* AI Match Reason - Personalized Mode */}
+                      {viewMode === 'personalized' && (item as Scholarship).aiRecommendation && (
+                        <div className="bg-purple-900/20 border border-purple-500/30 rounded-lg p-3 mb-3">
+                          <p className="text-sm text-purple-200 mb-2">
+                            <span className="font-semibold">Why this matches:</span> {(item as Scholarship).aiRecommendation!.matchReason}
+                          </p>
+                          <div className="flex items-center space-x-2 text-xs">
+                            {(item as Scholarship).aiRecommendation!.eligibilityStatus === 'Eligible' ? (
+                              <>
+                                <CheckCircle2 className="w-4 h-4 text-green-400" />
+                                <span className="text-green-400">Eligible</span>
+                              </>
+                            ) : (item as Scholarship).aiRecommendation!.eligibilityStatus === 'MayBeEligible' ? (
+                              <>
+                                <AlertCircle className="w-4 h-4 text-yellow-400" />
+                                <span className="text-yellow-400">May Be Eligible</span>
+                              </>
+                            ) : (
+                              <>
+                                <AlertCircle className="w-4 h-4 text-gray-400" />
+                                <span className="text-gray-400">Check Details</span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Action Steps - Personalized Mode */}
+                      {viewMode === 'personalized' && (item as Scholarship).aiRecommendation?.actionSteps && (item as Scholarship).aiRecommendation!.actionSteps.length > 0 && (
+                        <div className="mb-3">
+                          <p className="text-sm font-semibold text-gray-300 mb-2">Next Steps:</p>
+                          <ul className="space-y-1">
+                            {(item as Scholarship).aiRecommendation!.actionSteps.slice(0, 3).map((step, idx) => (
+                              <li key={idx} className="flex items-start space-x-2 text-xs text-gray-400">
+                                <ArrowRight className="w-3 h-3 mt-0.5 flex-shrink-0 text-purple-400" />
+                                <span>{step}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {/* Regular eligibility - All Mode */}
+                      {viewMode === 'all' && (
+                        <p className="text-gray-300 text-sm mb-4 line-clamp-2">
+                          {(item as Scholarship).eligibility}
+                        </p>
+                      )}
+
                       <div className="flex items-center space-x-2 text-gray-400 mb-4">
                         <Calendar className="w-4 h-4" />
                         <span className="text-sm">Deadline: {formatDate((item as Scholarship).deadline)}</span>
@@ -298,19 +454,15 @@ export default function ScholarshipsPage() {
                     </>
                   ) : (
                     <>
-                      <div className="flex items-center space-x-2 text-gray-400 mb-3">
-                        <MapPin className="w-4 h-4" />
-                        <span className="text-sm">{(item as Internship).location}</span>
-                      </div>
-                      
-                      <div className="flex items-center space-x-2 text-green-400 mb-3">
-                        <DollarSign className="w-4 h-4" />
-                        <span className="font-medium">{(item as Internship).stipend}</span>
-                      </div>
-                      
-                      <p className="text-gray-300 text-sm mb-4 line-clamp-2">
-                        {(item as Internship).description}
+                      {/* Internship details - using Scholarship model fields */}
+                      <p className="text-gray-300 text-sm mb-4 line-clamp-3">
+                        {(item as Scholarship).eligibility}
                       </p>
+
+                      <div className="flex items-center space-x-2 text-gray-400 mb-4">
+                        <Calendar className="w-4 h-4" />
+                        <span className="text-sm">Deadline: {formatDate((item as Scholarship).deadline)}</span>
+                      </div>
                     </>
                   )}
 

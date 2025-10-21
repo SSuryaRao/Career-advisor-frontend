@@ -8,13 +8,15 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import Navbar from '@/components/layout/navbar'
 import Footer from '@/components/layout/footer'
-import { jobService, Job } from '@/services/jobService'
-import { authService, User } from '@/services/authService'
+import { apiClient } from '@/lib/api'
+import { useAuth } from '@/components/auth-provider'
+import toast from 'react-hot-toast'
 import {
-  Search, Filter, MapPin, Clock, DollarSign, TrendingUp, 
+  Search, Filter, MapPin, Clock, DollarSign, TrendingUp,
   Users, Briefcase, Calendar, Star, ChevronRight, Heart,
-  Building, Award, BookOpen, Bell, Sparkles, Loader2
+  Building, Award, BookOpen, Bell, Sparkles, Loader2, X, Globe
 } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
 interface JobCategory {
   name: string;
@@ -24,14 +26,7 @@ interface JobCategory {
   gradient: string;
 }
 
-interface JobStats {
-  totalJobs: number;
-  totalCompanies: number;
-  recentJobs: number;
-  topTags: Array<{ name: string; count: number }>;
-}
-
-const getJobCategories = (jobStats: JobStats | null): JobCategory[] => {
+const getJobCategories = (jobs: any[]): JobCategory[] => {
   const defaultCategories: JobCategory[] = [
     { name: 'Technology', count: 1247, icon: Briefcase, color: 'bg-blue-500', gradient: 'from-blue-400 to-blue-600' },
     { name: 'Healthcare', count: 856, icon: Heart, color: 'bg-red-500', gradient: 'from-rose-400 to-red-600' },
@@ -41,17 +36,30 @@ const getJobCategories = (jobStats: JobStats | null): JobCategory[] => {
     { name: 'Design', count: 314, icon: Award, color: 'bg-pink-500', gradient: 'from-pink-400 to-pink-600' },
   ]
 
-  if (!jobStats?.topTags) return defaultCategories
+  if (!jobs || jobs.length === 0) return defaultCategories
 
-  const tagCategories = jobStats.topTags.slice(0, 6).map((tag: { name: string; count: number }, index: number) => ({
+  // Count tags from jobs
+  const tagCounts: { [key: string]: number } = {}
+  jobs.forEach((job: any) => {
+    job.tags?.forEach((tag: string) => {
+      tagCounts[tag] = (tagCounts[tag] || 0) + 1
+    })
+  })
+
+  const topTags = Object.entries(tagCounts)
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 6)
+
+  if (topTags.length === 0) return defaultCategories
+
+  return topTags.map((tag, index) => ({
     name: tag.name.charAt(0).toUpperCase() + tag.name.slice(1),
     count: tag.count,
     icon: defaultCategories[index]?.icon || Briefcase,
     color: defaultCategories[index]?.color || 'bg-blue-500',
     gradient: defaultCategories[index]?.gradient || 'from-blue-400 to-blue-600'
   }))
-
-  return tagCategories.length > 0 ? tagCategories : defaultCategories
 }
 
 const careerInsights = [
@@ -82,147 +90,206 @@ const careerInsights = [
 ]
 
 export default function CareersPage() {
+  const router = useRouter()
+  const { user } = useAuth()
   const [searchTerm, setSearchTerm] = useState('')
+  const [locationFilter, setLocationFilter] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
-  const [savedJobs, setSavedJobs] = useState<string[]>([])
-  const [jobs, setJobs] = useState<Job[]>([])
-  const [jobStats, setJobStats] = useState<JobStats | null>(null)
+  const [bookmarkedJobs, setBookmarkedJobs] = useState<string[]>([])
+  const [jobs, setJobs] = useState<any[]>([])
+  const [filteredJobs, setFilteredJobs] = useState<any[]>([])
+  const [recommendations, setRecommendations] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [isLoadingRecommendations, setIsLoadingRecommendations] = useState(false)
+  const [showRecommendations, setShowRecommendations] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [currentPage, setCurrentPage] = useState(1)
-  const [totalPages, setTotalPages] = useState(1)
   const [searchLoading, setSearchLoading] = useState(false)
-  const [user, setUser] = useState<User | null>(null)
-  const [savingJob, setSavingJob] = useState<string | null>(null)
   const [isConnectedToBackend, setIsConnectedToBackend] = useState(false)
+  const [sortBy, setSortBy] = useState('relevant')
+  const [showFilters, setShowFilters] = useState(false)
+  const [page, setPage] = useState(1)
+  const [hasMore, setHasMore] = useState(true)
+  const [totalJobs, setTotalJobs] = useState(0)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const jobsPerPage = 12
+  const daysToShow = 30
 
-  const toggleSaveJob = async (jobId: string) => {
+  const toggleBookmark = (jobId: string) => {
     if (!user) {
-      alert('Please sign in to save jobs');
-      return;
+      toast.error('Please login to bookmark jobs')
+      return
     }
-
-    if (savingJob) return;
-
-    try {
-      setSavingJob(jobId);
-      
-      if (savedJobs.includes(jobId)) {
-        await jobService.unsaveJob(jobId);
-        setSavedJobs(prev => prev.filter(id => id !== jobId));
-      } else {
-        await jobService.saveJob(jobId);
-        setSavedJobs(prev => [...prev, jobId]);
-      }
-    } catch (error) {
-      console.error('Error saving job:', error);
-      alert('Failed to save job. Please try again.');
-    } finally {
-      setSavingJob(null);
-    }
+    setBookmarkedJobs(prev =>
+      prev.includes(jobId)
+        ? prev.filter(id => id !== jobId)
+        : [...prev, jobId]
+    )
   }
 
   useEffect(() => {
     loadInitialData()
-    
-    const unsubscribe = authService.onAuthStateChange((user) => {
-      setUser(user);
-      if (user) {
-        loadUserSavedJobs();
-      } else {
-        setSavedJobs([]);
-      }
-    });
-
-    return unsubscribe;
   }, [])
 
-  const loadUserSavedJobs = async () => {
-    try {
-      const response = await jobService.getSavedJobs(1, 100);
-      const savedJobIds = response.data.jobs.map(job => job.id);
-      setSavedJobs(savedJobIds);
-    } catch (error) {
-      console.error('Error loading saved jobs:', error);
-    }
-  }
+  useEffect(() => {
+    filterJobs()
+  }, [jobs, searchTerm, locationFilter, selectedCategory, sortBy])
 
   const loadInitialData = async () => {
     try {
       setLoading(true)
       setError(null)
       setIsConnectedToBackend(false)
-      
-      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
-      const healthResponse = await fetch(`${API_BASE_URL}/api/health`)
-      if (!healthResponse.ok) {
-        throw new Error('Backend server is not responding')
+      setPage(1)
+
+      const response = await apiClient.getAllJobs({
+        page: 1,
+        limit: jobsPerPage,
+        daysOld: daysToShow
+      })
+
+      if (response.success && response.data) {
+        setJobs(response.data.jobs || [])
+        setTotalJobs(response.data.pagination?.totalJobs || 0)
+        setHasMore(response.data.pagination?.hasNext || false)
+        setIsConnectedToBackend(true)
+        console.log(`✅ Loaded ${response.data.jobs.length} jobs from last ${daysToShow} days`)
+        console.log(`📊 Total available: ${response.data.pagination?.totalJobs || 0} jobs`)
       }
-      
-      setIsConnectedToBackend(true)
-      
-      const [jobsResponse, statsResponse] = await Promise.all([
-        jobService.getAllJobs({ page: 1, limit: 12 }),
-        jobService.getJobStats()
-      ])
-      
-      setJobs(jobsResponse.data.jobs)
-      setTotalPages(jobsResponse.data.pagination.totalPages)
-      setJobStats(statsResponse.data)
-      
-      console.log(`✅ Loaded ${jobsResponse.data.jobs.length} jobs from backend`)
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to load jobs'
       setError(errorMessage)
       console.error('Error loading initial data:', err)
-      
-      if (errorMessage.includes('Backend server')) {
-        setError('⚠️ Backend server is not running. Please start the backend at http://localhost:5000')
-      }
+      toast.error('Failed to load jobs')
     } finally {
       setLoading(false)
     }
   }
 
-  const handleSearch = async () => {
-    if (!searchTerm.trim()) {
-      loadInitialData()
+  const loadMoreJobs = async () => {
+    if (!hasMore || loadingMore) return
+
+    try {
+      setLoadingMore(true)
+      const nextPage = page + 1
+
+      const response = await apiClient.getAllJobs({
+        page: nextPage,
+        limit: jobsPerPage,
+        daysOld: daysToShow
+      })
+
+      if (response.success && response.data) {
+        const newJobs = response.data.jobs || []
+        setJobs(prevJobs => [...prevJobs, ...newJobs])
+        setPage(nextPage)
+        setHasMore(response.data.pagination?.hasNext || false)
+        console.log(`✅ Loaded ${newJobs.length} more jobs (Page ${nextPage})`)
+        toast.success(`Loaded ${newJobs.length} more jobs!`)
+      }
+    } catch (err) {
+      console.error('Error loading more jobs:', err)
+      toast.error('Failed to load more jobs')
+    } finally {
+      setLoadingMore(false)
+    }
+  }
+
+  const fetchRecommendations = async () => {
+    if (!user) {
+      toast.error('Please login to get personalized recommendations')
       return
     }
 
     try {
-      setSearchLoading(true)
-      const response = await jobService.getAllJobs({ 
-        search: searchTerm,
-        page: 1,
-        limit: 20
+      setIsLoadingRecommendations(true)
+      const response = await apiClient.getJobRecommendations({
+        limit: 10,
+        minMatchScore: 50
       })
-      
-      setJobs(response.data.jobs)
-      setCurrentPage(1)
-      setTotalPages(response.data.pagination.totalPages)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Search failed')
+
+      if (response.success && response.data) {
+        setRecommendations(response.data)
+        setShowRecommendations(true)
+        toast.success(`Found ${response.data.length} personalized job recommendations!`)
+      } else {
+        toast.error(response.message || 'Failed to get recommendations. Please complete your profile and upload a resume.')
+      }
+    } catch (error) {
+      console.error('Error fetching recommendations:', error)
+      toast.error('Failed to load recommendations')
     } finally {
-      setSearchLoading(false)
+      setIsLoadingRecommendations(false)
     }
   }
 
-  const loadMoreJobs = async () => {
-    if (currentPage >= totalPages) return
-    
-    try {
-      const response = await jobService.getAllJobs({ 
-        page: currentPage + 1,
-        limit: 8,
-        search: searchTerm || undefined
-      })
-      
-      setJobs(prev => [...prev, ...response.data.jobs])
-      setCurrentPage(prev => prev + 1)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load more jobs')
+  const filterJobs = () => {
+    let filtered = jobs.filter((job: any) => {
+      const matchesSearch = job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           job.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           (job.description && job.description.toLowerCase().includes(searchTerm.toLowerCase()))
+
+      const matchesLocation = !locationFilter ||
+                             (job.location && job.location.toLowerCase().includes(locationFilter.toLowerCase()))
+
+      const matchesCategory = selectedCategory === 'all' ||
+                             (job.tags && job.tags.some((tag: string) =>
+                               tag.toLowerCase() === selectedCategory.toLowerCase()))
+
+      return matchesSearch && matchesLocation && matchesCategory
+    })
+
+    // Apply sorting
+    const sorted = [...filtered].sort((a, b) => {
+      switch (sortBy) {
+        case 'latest':
+          return new Date(b.postedAt).getTime() - new Date(a.postedAt).getTime()
+
+        case 'salary-high':
+          const salaryA = a.salary?.max || a.salary?.min || 0
+          const salaryB = b.salary?.max || b.salary?.min || 0
+          return salaryB - salaryA
+
+        case 'salary-low':
+          const salaryAMin = a.salary?.min || a.salary?.max || 999999999
+          const salaryBMin = b.salary?.min || b.salary?.max || 999999999
+          return salaryAMin - salaryBMin
+
+        case 'relevant':
+        default:
+          // Most relevant: featured jobs first, then by date
+          if (a.featured && !b.featured) return -1
+          if (!a.featured && b.featured) return 1
+          return new Date(b.postedAt).getTime() - new Date(a.postedAt).getTime()
+      }
+    })
+
+    setFilteredJobs(sorted)
+  }
+
+  const handleSearch = () => {
+    // The filtering is already handled by the useEffect
+    // This just triggers a re-filter
+    filterJobs()
+  }
+
+  const formatSalary = (salary: any) => {
+    if (!salary) return 'Not specified'
+    if (salary.min && salary.max) {
+      return `₹${salary.min.toLocaleString()} - ₹${salary.max.toLocaleString()}`
     }
+    return 'Competitive'
+  }
+
+  const formatDate = (date: string) => {
+    const now = new Date()
+    const posted = new Date(date)
+    const diffTime = Math.abs(now.getTime() - posted.getTime())
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+
+    if (diffDays === 1) return 'Posted today'
+    if (diffDays < 7) return `Posted ${diffDays} days ago`
+    if (diffDays < 30) return `Posted ${Math.floor(diffDays / 7)} weeks ago`
+    return `Posted ${Math.floor(diffDays / 30)} months ago`
   }
 
   return (
@@ -253,10 +320,31 @@ export default function CareersPage() {
               Find Your Dream Career
             </h1>
             <p className="text-xl text-gray-300 max-w-3xl mx-auto mb-8">
-              Discover opportunities that match your skills, interests, and career goals. 
+              Discover opportunities that match your skills, interests, and career goals.
               Get AI-powered recommendations tailored just for you.
             </p>
-            
+
+            {/* AI Recommendations Button */}
+            <div className="mb-8">
+              <Button
+                onClick={fetchRecommendations}
+                disabled={isLoadingRecommendations}
+                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-8 py-6 text-lg shadow-xl hover:shadow-2xl transition-all"
+              >
+                {isLoadingRecommendations ? (
+                  <>
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                    Generating Recommendations...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-5 h-5 mr-2" />
+                    Get AI-Powered Recommendations
+                  </>
+                )}
+              </Button>
+            </div>
+
             <div className="max-w-4xl mx-auto glass-career rounded-3xl p-3 shadow-2xl backdrop-blur-2xl">
               <div className="flex flex-col lg:flex-row gap-3">
                 <div className="relative flex-1">
@@ -291,10 +379,15 @@ export default function CareersPage() {
 
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
               {[
-                { label: 'Active Jobs', value: jobStats ? jobStats.totalJobs.toLocaleString() + '+' : '4,500+', color: 'text-blue-300', bg: 'bg-blue-500/10' },
-                { label: 'Companies', value: jobStats ? jobStats.totalCompanies.toLocaleString() + '+' : '1,200+', color: 'text-purple-300', bg: 'bg-purple-500/10' },
-                { label: 'Recent Jobs', value: jobStats ? jobStats.recentJobs.toLocaleString() + '+' : '25,000+', color: 'text-cyan-300', bg: 'bg-cyan-500/10' },
-                { label: 'Remote Opportunities', value: '95%', color: 'text-emerald-300', bg: 'bg-emerald-500/10' },
+                { label: 'Active Jobs', value: jobs.length.toString(), color: 'text-blue-300', bg: 'bg-blue-500/10' },
+                { label: 'Filtered Jobs', value: filteredJobs.length.toString(), color: 'text-purple-300', bg: 'bg-purple-500/10' },
+                { label: 'AI Recommendations', value: recommendations.length.toString(), color: 'text-cyan-300', bg: 'bg-cyan-500/10' },
+                { label: 'New This Week', value: jobs.filter((j: any) => {
+                  const posted = new Date(j.postedAt)
+                  const weekAgo = new Date()
+                  weekAgo.setDate(weekAgo.getDate() - 7)
+                  return posted >= weekAgo
+                }).length.toString(), color: 'text-emerald-300', bg: 'bg-emerald-500/10' },
               ].map((stat, index) => (
                 <motion.div
                   key={index}
@@ -330,7 +423,7 @@ export default function CareersPage() {
             </Button>
           </div>
           <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-5">
-            {getJobCategories(jobStats).map((category, index) => (
+            {getJobCategories(jobs).map((category, index) => (
               <motion.div
                 key={category.name}
                 initial={{ opacity: 0, y: 20 }}
@@ -352,6 +445,167 @@ export default function CareersPage() {
           </div>
         </section>
 
+        {/* AI Recommendations Section */}
+        {showRecommendations && recommendations.length > 0 && (
+          <div className="mb-12">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center">
+                <Sparkles className="w-6 h-6 text-purple-600 mr-2" />
+                <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                  AI-Powered Recommendations for You
+                </h2>
+              </div>
+              <Button
+                variant="outline"
+                onClick={() => setShowRecommendations(false)}
+                className="border-purple-300 text-purple-700 hover:bg-purple-50"
+              >
+                Hide Recommendations
+              </Button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+              {recommendations.map((job: any, index: number) => (
+                <motion.div
+                  key={job._id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.05 * index }}
+                >
+                  <Card className="p-6 hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-purple-50 to-blue-50 border-2 border-purple-200 cursor-pointer h-full">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex-1">
+                        <h3 className="text-xl font-semibold text-gray-900 hover:text-purple-600 transition-colors mb-2">
+                          {job.title}
+                        </h3>
+                        <div className="flex items-center text-gray-600 mb-2">
+                          <Building className="w-4 h-4 mr-2" />
+                          <span>{job.company}</span>
+                        </div>
+                      </div>
+                      {/* Match Score Circle */}
+                      <div className="ml-4">
+                        <div className="relative w-20 h-20">
+                          <svg className="transform -rotate-90 w-20 h-20">
+                            <circle cx="40" cy="40" r="36" stroke="#e5e7eb" strokeWidth="6" fill="none" />
+                            <circle
+                              cx="40"
+                              cy="40"
+                              r="36"
+                              stroke={
+                                (job.matchScore || 50) >= 80 ? '#22c55e' :
+                                (job.matchScore || 50) >= 60 ? '#3b82f6' : '#eab308'
+                              }
+                              strokeWidth="6"
+                              fill="none"
+                              strokeDasharray={`${((job.matchScore || 50) / 100) * 226} 226`}
+                              strokeLinecap="round"
+                            />
+                          </svg>
+                          <div className="absolute inset-0 flex flex-col items-center justify-center">
+                            <span className="text-2xl font-bold text-gray-800">{job.matchScore || 50}%</span>
+                            <span className="text-xs text-gray-600">Match</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* AI Reason */}
+                    {job.matchReason && (
+                      <div className={`mb-4 p-3 bg-white rounded-lg border ${
+                        job.matchReason.includes('Basic recommendation')
+                          ? 'border-orange-200 bg-orange-50'
+                          : 'border-purple-200'
+                      }`}>
+                        <div className="flex items-start">
+                          <Sparkles className={`w-4 h-4 mr-2 mt-0.5 flex-shrink-0 ${
+                            job.matchReason.includes('Basic recommendation')
+                              ? 'text-orange-600'
+                              : 'text-purple-600'
+                          }`} />
+                          <div className="flex-1">
+                            <p className="text-sm text-gray-700">{job.matchReason}</p>
+                            {job.matchReason.includes('Basic recommendation') && (
+                              <p className="text-xs text-orange-600 mt-1">
+                                💡 Complete your profile and upload a resume for personalized AI recommendations
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="space-y-2 mb-4">
+                      <div className="flex items-center text-gray-600 text-sm">
+                        <MapPin className="w-4 h-4 mr-2" />
+                        <span>{job.location || 'Remote'}</span>
+                      </div>
+                      <div className="flex items-center text-gray-600 text-sm">
+                        <DollarSign className="w-4 h-4 mr-2" />
+                        <span>{formatSalary(job.salary)}</span>
+                      </div>
+                      <div className="flex items-center text-gray-600 text-sm">
+                        <Clock className="w-4 h-4 mr-2" />
+                        <span>{formatDate(job.postedAt)}</span>
+                      </div>
+                    </div>
+
+                    {/* Strengths */}
+                    {job.strengths && job.strengths.length > 0 && (
+                      <div className="mb-4">
+                        <p className="text-xs text-gray-500 mb-2 font-medium">Your Strengths:</p>
+                        <div className="flex flex-wrap gap-1">
+                          {job.strengths.slice(0, 3).map((strength: string, idx: number) => (
+                            <Badge key={idx} className="text-xs bg-green-100 text-green-800">
+                              {strength}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Skill Gaps */}
+                    {job.skillGaps && job.skillGaps.length > 0 && (
+                      <div className="mb-4">
+                        <p className="text-xs text-gray-500 mb-2 font-medium">Skills to Learn:</p>
+                        <div className="flex flex-wrap gap-1">
+                          {job.skillGaps.slice(0, 3).map((skill: string, idx: number) => (
+                            <Badge key={idx} variant="outline" className="text-xs text-orange-700 border-orange-300">
+                              {skill}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Apply Now Button */}
+                    <div className="mt-auto pt-4 border-t border-purple-200">
+                      <Button
+                        className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-medium"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          if (job.applicationUrl) {
+                            window.open(job.applicationUrl, '_blank')
+                          } else if (job.applyUrl) {
+                            window.open(job.applyUrl, '_blank')
+                          } else {
+                            toast.error('Application link not available for this job')
+                          }
+                        }}
+                      >
+                        Apply Now
+                        <ChevronRight className="w-4 h-4 ml-2" />
+                      </Button>
+                    </div>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+            <div className="border-t border-gray-300 pt-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">All Available Jobs</h2>
+            </div>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
           {/* Enhanced Job Listings */}
           <div className="lg:col-span-2">
@@ -371,11 +625,18 @@ export default function CareersPage() {
                 )}
               </div>
               <div className="flex items-center space-x-3">
-                <Button className="bg-gradient-to-r from-violet-50 to-purple-50 hover:from-violet-100 hover:to-purple-100 text-purple-700 border border-purple-200 rounded-xl font-semibold shadow-sm hover:shadow-md transition-all">
+                <Button
+                  onClick={() => setShowFilters(!showFilters)}
+                  className="bg-gradient-to-r from-violet-50 to-purple-50 hover:from-violet-100 hover:to-purple-100 text-purple-700 border border-purple-200 rounded-xl font-semibold shadow-sm hover:shadow-md transition-all"
+                >
                   <Filter className="w-4 h-4 mr-2" />
-                  Filter
+                  {showFilters ? 'Hide Filters' : 'Show Filters'}
                 </Button>
-                <select className="bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm hover:border-indigo-300 transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 text-gray-700 font-semibold shadow-sm">
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm hover:border-indigo-300 transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 text-gray-700 font-semibold shadow-sm"
+                >
                   <option value="relevant">Most Relevant</option>
                   <option value="latest">Latest</option>
                   <option value="salary-high">Salary: High to Low</option>
@@ -383,6 +644,77 @@ export default function CareersPage() {
                 </select>
               </div>
             </div>
+
+            {/* Collapsible Filter Panel */}
+            {showFilters && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="mb-8 bg-gradient-to-br from-purple-50 to-blue-50 rounded-2xl p-6 border border-purple-200"
+              >
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Search Jobs
+                    </label>
+                    <Input
+                      type="text"
+                      placeholder="Job title, company, keywords..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="bg-white border-purple-200 focus:border-purple-400"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Location
+                    </label>
+                    <Input
+                      type="text"
+                      placeholder="City, state, or remote"
+                      value={locationFilter}
+                      onChange={(e) => setLocationFilter(e.target.value)}
+                      className="bg-white border-purple-200 focus:border-purple-400"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Category
+                    </label>
+                    <select
+                      value={selectedCategory}
+                      onChange={(e) => setSelectedCategory(e.target.value)}
+                      className="w-full bg-white border border-purple-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                    >
+                      <option value="all">All Categories</option>
+                      {getJobCategories(jobs).map((cat) => (
+                        <option key={cat.name} value={cat.name.toLowerCase()}>
+                          {cat.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                <div className="mt-4 flex items-center justify-between">
+                  <div className="text-sm text-gray-600">
+                    <span className="font-semibold text-purple-700">{filteredJobs.length}</span> jobs found
+                  </div>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setSearchTerm('')
+                      setLocationFilter('')
+                      setSelectedCategory('all')
+                    }}
+                    className="border-purple-300 text-purple-700 hover:bg-purple-100"
+                  >
+                    <X className="w-4 h-4 mr-2" />
+                    Clear All Filters
+                  </Button>
+                </div>
+              </motion.div>
+            )}
 
             {loading ? (
               <div className="flex items-center justify-center py-20 bg-white rounded-3xl shadow-sm">
@@ -410,9 +742,9 @@ export default function CareersPage() {
               </div>
             ) : (
               <div className="space-y-8">
-                {jobs.map((job, index) => (
+                {filteredJobs.map((job, index) => (
                 <motion.div
-                  key={job.id}
+                  key={job._id || job.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 * (index % 5) }}
@@ -438,9 +770,11 @@ export default function CareersPage() {
                               ⭐ Featured
                             </Badge>
                           )}
-                          <Badge className="bg-gradient-to-r from-emerald-400 to-green-500 text-white border-0 font-semibold px-3 py-1 shadow-md">
-                            {job.remoteLevel === 'fully-remote' ? '🌍 Remote' : job.remoteLevel}
-                          </Badge>
+                          {(job.isRemote || job.jobType === 'Remote') && (
+                            <Badge className="bg-gradient-to-r from-emerald-400 to-green-500 text-white border-0 font-semibold px-3 py-1 shadow-md">
+                              🌍 Remote
+                            </Badge>
+                          )}
                         </div>
                         <div className="flex flex-wrap items-center gap-4 text-gray-600 mb-4 text-sm">
                           <div className="flex items-center font-semibold">
@@ -459,16 +793,16 @@ export default function CareersPage() {
                             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-100 to-amber-100 flex items-center justify-center mr-2">
                               <Clock className="w-4 h-4 text-orange-600" />
                             </div>
-                            <span className="font-medium">{jobService.formatTimeAgo(job.postedAt)}</span>
+                            <span className="font-medium">{formatDate(job.postedAt)}</span>
                           </div>
                         </div>
                         <div className="flex flex-wrap gap-2 mb-6">
-                          {job.tags.slice(0, 5).map((tag, tagIndex) => (
+                          {job.tags?.slice(0, 5).map((tag: string, tagIndex: number) => (
                             <Badge key={`${tag}-${tagIndex}`} className="bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-700 hover:from-indigo-100 hover:to-purple-100 transition-all cursor-pointer border border-indigo-200 font-semibold px-3 py-1.5 rounded-full shadow-sm">
                               {tag}
                             </Badge>
                           ))}
-                          {job.tags.length > 5 && (
+                          {job.tags && job.tags.length > 5 && (
                             <Badge className="bg-gray-100 text-gray-600 border border-gray-200 px-3 py-1.5 rounded-full font-semibold">
                               +{job.tags.length - 5} more
                             </Badge>
@@ -476,22 +810,20 @@ export default function CareersPage() {
                         </div>
                       </div>
                       <button
-                        onClick={() => toggleSaveJob(job.id)}
-                        disabled={savingJob === job.id}
-                        className="p-3 hover:bg-gradient-to-br hover:from-red-50 hover:to-pink-50 rounded-2xl transition-all duration-300 disabled:opacity-50 group/heart"
-                        title={user ? (savedJobs.includes(job.id) ? 'Remove from saved jobs' : 'Save this job') : 'Sign in to save jobs'}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          toggleBookmark(job._id || job.id)
+                        }}
+                        className="p-3 hover:bg-gradient-to-br hover:from-red-50 hover:to-pink-50 rounded-2xl transition-all duration-300 group/heart"
+                        title={user ? (bookmarkedJobs.includes(job._id || job.id) ? 'Remove bookmark' : 'Bookmark this job') : 'Sign in to bookmark jobs'}
                       >
-                        {savingJob === job.id ? (
-                          <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
-                        ) : (
-                          <Heart 
-                            className={`w-6 h-6 transition-all duration-300 ${
-                              savedJobs.includes(job.id) 
-                                ? 'fill-red-500 text-red-500 scale-110' 
-                                : 'text-gray-400 group-hover/heart:text-red-500 group-hover/heart:scale-110'
-                            }`} 
-                          />
-                        )}
+                        <Heart
+                          className={`w-6 h-6 transition-all duration-300 ${
+                            bookmarkedJobs.includes(job._id || job.id)
+                              ? 'fill-red-500 text-red-500 scale-110'
+                              : 'text-gray-400 group-hover/heart:text-red-500 group-hover/heart:scale-110'
+                          }`}
+                        />
                       </button>
                     </div>
                     
@@ -499,20 +831,32 @@ export default function CareersPage() {
                       <div className="flex flex-wrap items-center gap-3 text-sm">
                         <div className="flex items-center font-bold bg-gradient-to-r from-emerald-50 to-green-50 text-emerald-700 px-4 py-2.5 rounded-xl border border-emerald-200 shadow-sm">
                           <DollarSign className="w-4 h-4 mr-1.5" />
-                          <span>{jobService.formatSalary(job)}</span>
+                          <span>{formatSalary(job.salary)}</span>
                         </div>
-                        <div className="flex items-center bg-gradient-to-r from-purple-50 to-violet-50 text-purple-700 px-4 py-2.5 rounded-xl border border-purple-200 font-semibold shadow-sm">
-                          <Briefcase className="w-4 h-4 mr-1.5" />
-                          <span>{jobService.getJobTypeLabel(job.jobType)}</span>
-                        </div>
-                        <div className="flex items-center bg-gradient-to-r from-amber-50 to-orange-50 text-amber-700 px-4 py-2.5 rounded-xl border border-amber-200 font-semibold shadow-sm">
-                          <Award className="w-4 h-4 mr-1.5" />
-                          <span>{jobService.getExperienceLevelLabel(job.experienceLevel)}</span>
-                        </div>
+                        {job.jobType && (
+                          <div className="flex items-center bg-gradient-to-r from-purple-50 to-violet-50 text-purple-700 px-4 py-2.5 rounded-xl border border-purple-200 font-semibold shadow-sm">
+                            <Briefcase className="w-4 h-4 mr-1.5" />
+                            <span>{job.jobType}</span>
+                          </div>
+                        )}
+                        {job.experienceLevel && (
+                          <div className="flex items-center bg-gradient-to-r from-amber-50 to-orange-50 text-amber-700 px-4 py-2.5 rounded-xl border border-amber-200 font-semibold shadow-sm">
+                            <Award className="w-4 h-4 mr-1.5" />
+                            <span>{job.experienceLevel}</span>
+                          </div>
+                        )}
                       </div>
-                      <Button 
+                      <Button
                         className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-8 py-4 rounded-2xl font-bold text-base shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
-                        onClick={() => window.open(job.applicationUrl, '_blank')}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          const url = job.applicationUrl || job.applyUrl
+                          if (url) {
+                            window.open(url, '_blank')
+                          } else {
+                            toast.error('Application URL not available')
+                          }
+                        }}
                       >
                         Apply Now
                         <ChevronRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
@@ -524,14 +868,73 @@ export default function CareersPage() {
               </div>
             )}
 
-            {!loading && !error && currentPage < totalPages && (
-              <div className="text-center mt-12">
-                <Button 
-                  size="lg"
-                  className="bg-gradient-to-r from-gray-700 to-gray-900 hover:from-gray-800 hover:to-black text-white font-bold px-8 py-4 rounded-2xl shadow-lg hover:shadow-xl transition-all"
-                  onClick={loadMoreJobs}
+            {/* Load More Button */}
+            {!loading && !error && filteredJobs.length > 0 && hasMore && (
+              <div className="mt-12 text-center">
+                <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-2xl p-8 border border-purple-200">
+                  <div className="mb-4">
+                    <p className="text-sm text-gray-600 mb-1">
+                      Showing <span className="font-bold text-purple-700">{jobs.length}</span> of{' '}
+                      <span className="font-bold text-purple-700">{totalJobs}</span> jobs
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      Latest jobs from the past {daysToShow} days
+                    </p>
+                  </div>
+                  <Button
+                    onClick={loadMoreJobs}
+                    disabled={loadingMore}
+                    className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-6 text-base font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all"
+                  >
+                    {loadingMore ? (
+                      <>
+                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                        Loading More Jobs...
+                      </>
+                    ) : (
+                      <>
+                        Load More Jobs
+                        <ChevronRight className="w-5 h-5 ml-2" />
+                      </>
+                    )}
+                  </Button>
+                  <p className="text-xs text-gray-500 mt-3">
+                    💡 {totalJobs - jobs.length} more jobs available
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* No More Jobs Message */}
+            {!loading && !error && filteredJobs.length > 0 && !hasMore && (
+              <div className="mt-12 text-center">
+                <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-6 border border-green-200">
+                  <div className="flex items-center justify-center mb-2">
+                    <Star className="w-5 h-5 text-green-600 mr-2" />
+                    <p className="text-sm font-semibold text-green-800">
+                      You've seen all {totalJobs} available jobs!
+                    </p>
+                  </div>
+                  <p className="text-xs text-gray-600">
+                    Check back later for new opportunities or adjust your filters
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {filteredJobs.length === 0 && !loading && !error && (
+              <div className="text-center py-16">
+                <Briefcase className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                <p className="text-gray-500 text-lg mb-4">No jobs found matching your criteria.</p>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setSearchTerm('')
+                    setLocationFilter('')
+                    setSelectedCategory('all')
+                  }}
                 >
-                  Load More Jobs
+                  Clear Filters
                 </Button>
               </div>
             )}

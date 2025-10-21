@@ -31,15 +31,6 @@ export interface BackendResumeAnalysis {
     }
     strengths: string[]
     weaknesses: string[]
-    industryMatch: {
-      detectedIndustry: string
-      matchScore: number
-      recommendations: Array<{
-        industry: string
-        score: number
-        reason: string
-      }>
-    }
   }
   metadata: {
     processingTime: number
@@ -90,7 +81,7 @@ export const uploadAndAnalyzeResume = async (
   onProgress?: (progress: number) => void
 ): Promise<BackendResumeAnalysis> => {
   const token = await getAuthToken()
-  
+
   const formData = new FormData()
   formData.append('resume', file)
   formData.append('uploadMethod', uploadMethod)
@@ -207,7 +198,7 @@ export const deleteResume = async (resumeId: string): Promise<void> => {
 // Get analytics data
 export const getAnalytics = async (): Promise<AnalyticsData> => {
   const token = await getAuthToken()
-  
+
   const response = await fetch(`${API_BASE_URL}/api/resume/analytics`, {
     headers: {
       'Authorization': `Bearer ${token}`,
@@ -218,6 +209,85 @@ export const getAnalytics = async (): Promise<AnalyticsData> => {
   if (!response.ok) {
     const error = await response.json()
     throw new Error(error.message || 'Failed to fetch analytics')
+  }
+
+  const data = await response.json()
+  return data.data
+}
+
+// Improve resume based on analysis suggestions
+export interface ImproveResumeResponse {
+  resumeId: string
+  improvement: {
+    originalScore: number
+    improvedScore: number
+    scoreIncrease: number
+    percentageIncrease: number
+  }
+  download: {
+    url: string
+    filename: string
+  }
+  appliedSuggestions: number
+  processingTime: number
+}
+
+export const improveResume = async (
+  resumeId: string,
+  onProgress?: (status: string) => void
+): Promise<ImproveResumeResponse> => {
+  const token = await getAuthToken()
+
+  if (onProgress) onProgress('Generating improved content...')
+
+  const response = await fetch(`${API_BASE_URL}/api/resume/${resumeId}/improve`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    }
+  })
+
+  if (!response.ok) {
+    const error = await response.json()
+    throw new Error(error.message || 'Failed to improve resume')
+  }
+
+  const data = await response.json()
+
+  if (onProgress) onProgress('Improvement complete!')
+
+  return data.data
+}
+
+// Get improvement status/history for a resume
+export interface ImprovementStatus {
+  hasImprovement: boolean
+  improvement: {
+    originalScore: number
+    improvedScore: number
+    scoreIncrease: number
+    improvedResumeUrl: string
+    appliedSuggestions: number
+    generatedAt: string
+    processingTime: number
+  } | null
+  originalScore: number
+}
+
+export const getImprovementStatus = async (resumeId: string): Promise<ImprovementStatus> => {
+  const token = await getAuthToken()
+
+  const response = await fetch(`${API_BASE_URL}/api/resume/${resumeId}/improvement`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    }
+  })
+
+  if (!response.ok) {
+    const error = await response.json()
+    throw new Error(error.message || 'Failed to fetch improvement status')
   }
 
   const data = await response.json()

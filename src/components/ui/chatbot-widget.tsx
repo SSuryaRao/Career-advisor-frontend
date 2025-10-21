@@ -1,14 +1,15 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { 
-  MessageCircle, 
-  X, 
-  Send, 
+import {
+  MessageCircle,
+  X,
+  Send,
   Minimize2,
   Bot,
   User,
@@ -34,13 +35,14 @@ interface ChatbotWidgetProps {
 }
 
 export default function ChatbotWidget({ className = '' }: ChatbotWidgetProps) {
+  const router = useRouter()
   const [isOpen, setIsOpen] = useState(false)
   const [showGreeting, setShowGreeting] = useState(false)
   const [messages, setMessages] = useState<Message[]>([])
   const [inputValue, setInputValue] = useState('')
   const [isTyping, setIsTyping] = useState(false)
   const [sessionId] = useState(() => `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`)
-  
+
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -90,32 +92,27 @@ export default function ChatbotWidget({ className = '' }: ChatbotWidgetProps) {
 
     const userMessage = inputValue.trim()
     setInputValue('')
-    
+
     // Add user message
     addMessage(userMessage, 'user')
-    
+
     // Show typing indicator
     setIsTyping(true)
 
     try {
-      const response = await fetch('/api/chatbot/message', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          message: userMessage,
-          sessionId: sessionId
-        })
-      })
+      // Use apiClient for proper API URL handling
+      const data = await apiClient.sendChatbotMessage(userMessage, sessionId)
 
-      const data = await response.json()
-      
       // Simulate typing delay
       setTimeout(() => {
         setIsTyping(false)
-        if (data.success && data.data.response) {
+        if (data.success && data.data?.response) {
           addMessage(data.data.response, 'bot')
+
+          // Handle special actions from Dialogflow
+          if (data.data.action) {
+            handleBotAction(data.data)
+          }
         } else {
           addMessage('Sorry, I couldn\'t process your request. Please try again later.', 'bot')
         }
@@ -127,6 +124,37 @@ export default function ChatbotWidget({ className = '' }: ChatbotWidgetProps) {
         setIsTyping(false)
         addMessage('I\'m having trouble connecting right now. Please check our navigation menu for quick access to features like Resume Analyzer, Career Roadmaps, and Mock Interviews.', 'bot')
       }, 1000)
+    }
+  }
+
+  const handleBotAction = (responseData: any) => {
+    const { action, redirectTo, mentorPersona, filters, features } = responseData
+
+    switch (action) {
+      case 'redirect':
+        // Redirect user to the specified page
+        if (redirectTo) {
+          setTimeout(() => {
+            router.push(redirectTo)
+            closeChat()
+          }, 2000) // Give user time to read the response first
+        }
+        break
+
+      case 'show_features':
+        // Could display features in a modal or panel
+        // For now, just log it (you can enhance this later)
+        console.log('Available features:', features)
+        break
+
+      case 'open_modal':
+        // Could trigger a modal to open
+        console.log('Open modal for:', responseData.modalType)
+        break
+
+      default:
+        // No special action needed
+        break
     }
   }
 

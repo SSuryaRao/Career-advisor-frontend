@@ -9,9 +9,13 @@
 !.yarn/plugins
 !.yarn/releases
 !.yarn/versions
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
 
 # testing
 /coverage
+.nyc_output/
 
 # next.js
 /.next/
@@ -19,10 +23,15 @@
 
 # production
 /build
+/dist
 
 # misc
 .DS_Store
+Thumbs.db
 *.pem
+*.key
+*.p12
+*.pfx
 
 # debug
 npm-debug.log*
@@ -30,8 +39,38 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+# Environment Variables & Secrets
+.env
+.env.*
+!.env.example
+.env.local
+.env.development
+.env.production
+.env.test
+
+# Credentials & Service Accounts
+credentials/
+secrets/
+*.json
+!package.json
+!package-lock.json
+!tsconfig.json
+!next.config.json
+service-account*.json
+firebase-adminsdk*.json
+gcp-service-account*.json
+*.secret
+.secrets
+
+# API Keys
+config/secrets.js
+config/secrets.ts
+
+# Logs
+logs/
+*.log
+combined.log
+error.log
 
 # vercel
 .vercel
@@ -39,3 +78,33 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Editor & OS
+.vscode/
+.idea/
+*.sublime-*
+*.swp
+*.swo
+*~
+.project
+
+# Deployment Scripts (may contain sensitive info)
+*.sh
+*.bat
+deploy*.sh
+deploy*.bat
+setup*.sh
+setup*.bat
+
+# Temporary Files
+tmp/
+temp/
+*.tmp
+*.bak
+.cache/
+.parcel-cache/
+
+# Database
+*.sqlite
+*.db
+*.sql

@@ -1,18 +1,107 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import Navbar from '@/components/layout/navbar'
 import { Roadmap } from '@/components/ui/roadmap'
 import { RecommendedRoadmaps } from '@/components/ui/recommended-roadmaps'
+import { PersonalizedRecommendationBanner } from '@/components/ui/personalized-roadmap-banner'
 import { MapPin, Target, BookOpen } from 'lucide-react'
 import { Card } from '@/components/ui/card'
+import { useAuth } from '@/components/auth-provider'
 
 export default function RoadmapPage() {
+  const { user } = useAuth()
   const roadmapGeneratorRef = useRef<HTMLDivElement>(null)
   const [prefilledDomain, setPrefilledDomain] = useState<string>('')
   const [prefilledSkillLevel, setPrefilledSkillLevel] = useState<string>('')
+  const [resumeRecommendations, setResumeRecommendations] = useState<any>(null)
+  const [showPersonalized, setShowPersonalized] = useState(false)
+  const [loadingRecommendations, setLoadingRecommendations] = useState(true)
   
+  // Fetch personalized recommendations when user is available
+  useEffect(() => {
+    let mounted = true
+
+    const loadRecommendations = async () => {
+      if (!mounted) return
+
+      if (user) {
+        await fetchPersonalizedRecommendations()
+      } else {
+        // User not logged in, stop loading
+        setLoadingRecommendations(false)
+      }
+    }
+
+    loadRecommendations()
+
+    return () => {
+      mounted = false
+    }
+  }, [user])
+
+  const fetchPersonalizedRecommendations = async () => {
+    try {
+      setLoadingRecommendations(true)
+
+      if (!user) {
+        console.log('ℹ️ No user logged in, skipping personalized recommendations')
+        setLoadingRecommendations(false)
+        return
+      }
+
+      console.log('🔄 Fetching personalized recommendations for:', user.email)
+
+      const token = await user.getIdToken()
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+
+      const response = await fetch(`${API_BASE_URL}/api/roadmap/personalized`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+      }
+
+      const data = await response.json()
+      console.log('📥 Response received:', { success: data.success, hasResume: data.hasResume })
+
+      if (data.success && data.hasResume && data.data) {
+        setResumeRecommendations(data.data)
+        setShowPersonalized(true)
+        console.log('✅ Personalized recommendations loaded:', data.data.recommendedDomain)
+      } else {
+        console.log('ℹ️ No resume found for personalized recommendations')
+        setShowPersonalized(false)
+      }
+    } catch (error: any) {
+      console.error('❌ Failed to fetch personalized recommendations:', error.message)
+      setShowPersonalized(false)
+    } finally {
+      setLoadingRecommendations(false)
+    }
+  }
+
+  const handleApplyPersonalizedRoadmap = () => {
+    if (!resumeRecommendations) return
+
+    // Set the prefilled values from AI recommendations
+    setPrefilledDomain(resumeRecommendations.recommendedDomain)
+    setPrefilledSkillLevel(resumeRecommendations.skillLevel)
+
+    // Scroll to the roadmap generator
+    setTimeout(() => {
+      roadmapGeneratorRef.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      })
+    }, 100)
+  }
+
   const generateRoadmap = async (career_domain: string, skill_level: string) => {
     try {
       const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
@@ -135,6 +224,31 @@ export default function RoadmapPage() {
             </motion.div>
           </motion.div>
         </div>
+      </div>
+
+      {/* Personalized Recommendation Banner */}
+      <div className="max-w-7xl mx-auto px-4 pt-8">
+        {loadingRecommendations && user && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 rounded-3xl shadow-2xl p-8 mb-10"
+          >
+            <div className="text-center">
+              <div className="w-16 h-16 border-4 border-white/30 border-t-white rounded-full animate-spin mx-auto mb-4"></div>
+              <h3 className="text-2xl font-bold text-white mb-2">Analyzing Your Resume</h3>
+              <p className="text-purple-100">
+                Our AI is generating personalized career recommendations based on your resume...
+              </p>
+            </div>
+          </motion.div>
+        )}
+        {!loadingRecommendations && showPersonalized && resumeRecommendations && (
+          <PersonalizedRecommendationBanner
+            recommendations={resumeRecommendations}
+            onApply={handleApplyPersonalizedRoadmap}
+          />
+        )}
       </div>
 
       {/* Features Section */}
