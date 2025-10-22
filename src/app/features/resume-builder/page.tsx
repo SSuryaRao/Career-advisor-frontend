@@ -25,6 +25,7 @@ import { getUserProfile } from '@/lib/api/user'
 import { generateProfessionalSummary, createResumeFromProfile } from '@/lib/api/resumeBuilder'
 import { resumeTemplates } from '@/lib/resumeTemplates'
 import toast from 'react-hot-toast'
+import Navbar from '@/components/layout/navbar'
 
 interface WorkExperience {
   company: string
@@ -386,7 +387,8 @@ export default function ResumeBuilderPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <Navbar variant="light" />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 mt-20">
         {/* Header */}
         <div className="text-center mb-12">
           <div className="flex items-center justify-center mb-6">

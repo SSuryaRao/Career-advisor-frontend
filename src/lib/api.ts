@@ -28,11 +28,16 @@ class ApiClient {
     endpoint: string,
     options: RequestInit = {}
   ): Promise<ApiResponse<T>> {
+    // Create abort controller for timeout
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 30000) // 30 second timeout
+
     try {
       const token = await this.getAuthToken()
-      
+
       const config: RequestInit = {
         ...options,
+        signal: controller.signal,
         headers: {
           'Content-Type': 'application/json',
           ...(token && { Authorization: `Bearer ${token}` }),
@@ -41,6 +46,8 @@ class ApiClient {
       }
 
       const response = await fetch(`${API_BASE_URL}${endpoint}`, config)
+      clearTimeout(timeoutId)
+
       const data = await response.json()
 
       if (!response.ok) {
@@ -49,6 +56,17 @@ class ApiClient {
 
       return data
     } catch (error) {
+      clearTimeout(timeoutId)
+
+      // Handle timeout errors specifically
+      if (error instanceof Error && error.name === 'AbortError') {
+        console.error('API request timeout:', endpoint)
+        return {
+          success: false,
+          error: 'Request timed out. Please check your connection and try again.'
+        }
+      }
+
       console.error('API request error:', error)
       return {
         success: false,

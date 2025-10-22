@@ -8,6 +8,7 @@ import { uploadAndAnalyzeResume, type BackendResumeAnalysis } from '@/lib/api/re
 import { validatePDFFile } from '@/lib/pdf-utils'
 import jsPDF from 'jspdf'
 import ImproveResumeButton from '@/components/resume/ImproveResumeButton'
+import Navbar from '@/components/layout/navbar'
 
 interface ProcessingStep {
   id: number
@@ -369,7 +370,8 @@ export default function ResumeAnalyzerPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <Navbar variant="light" />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 mt-20">
         {/* Header */}
         <div className="text-center mb-16">
           <div className="flex items-center justify-center mb-6">

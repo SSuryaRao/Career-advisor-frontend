@@ -66,7 +66,11 @@ const navigation = [
   { name: 'Pricing', href: '/pricing' },
 ]
 
-export default function Navbar() {
+interface NavbarProps {
+  variant?: 'dark' | 'light'
+}
+
+export default function Navbar({ variant = 'dark' }: NavbarProps) {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null)
@@ -95,7 +99,11 @@ export default function Navbar() {
     <nav
       className={cn(
         'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
-        isScrolled
+        variant === 'light'
+          ? isScrolled
+            ? 'bg-white/90 backdrop-blur-xl border-b border-gray-200 shadow-sm'
+            : 'bg-white/80 backdrop-blur-sm border-b border-gray-100'
+          : isScrolled
           ? 'bg-black/80 backdrop-blur-xl border-b border-white/10'
           : 'bg-transparent'
       )}
@@ -106,11 +114,17 @@ export default function Navbar() {
           <Link href="/" className="flex items-center space-x-2 group">
             <div className="relative">
               <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg blur-lg opacity-75 group-hover:opacity-100 transition-opacity" />
-              <div className="relative bg-black rounded-lg p-2">
+              <div className={cn(
+                "relative rounded-lg p-2",
+                variant === 'light' ? 'bg-gradient-to-r from-blue-600 to-purple-600' : 'bg-black'
+              )}>
                 <Sparkles className="w-6 h-6 text-white" />
               </div>
             </div>
-            <span className="text-lg sm:text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400">
+            <span className={cn(
+              "text-lg sm:text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r",
+              variant === 'light' ? 'from-blue-600 to-purple-600' : 'from-blue-400 to-purple-400'
+            )}>
               CareerCraft AI
             </span>
           </Link>
@@ -126,7 +140,12 @@ export default function Navbar() {
               >
                 <Link
                   href={item.href}
-                  className="flex items-center space-x-1 text-gray-300 hover:text-white transition-colors"
+                  className={cn(
+                    "flex items-center space-x-1 transition-colors",
+                    variant === 'light'
+                      ? 'text-gray-700 hover:text-blue-600'
+                      : 'text-gray-300 hover:text-white'
+                  )}
                 >
                   <span>{item.name}</span>
                   {item.dropdown && <ChevronDown className="w-4 h-4" />}
@@ -140,17 +159,31 @@ export default function Navbar() {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
                       transition={{ duration: 0.2 }}
-                      className="absolute top-full left-0 mt-2 w-64 bg-gray-900/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl overflow-hidden"
+                      className={cn(
+                        "absolute top-full left-0 mt-2 w-64 backdrop-blur-xl rounded-xl shadow-2xl overflow-hidden",
+                        variant === 'light'
+                          ? 'bg-white border border-gray-200'
+                          : 'bg-gray-900/95 border border-white/10'
+                      )}
                     >
                       {item.dropdown.map((subItem) => (
                         <Link
                           key={subItem.name}
                           href={subItem.href}
-                          className="flex items-center space-x-3 px-4 py-3 hover:bg-white/10 transition-colors"
+                          className={cn(
+                            "flex items-center space-x-3 px-4 py-3 transition-colors",
+                            variant === 'light'
+                              ? 'hover:bg-blue-50'
+                              : 'hover:bg-white/10'
+                          )}
                           onClick={() => setActiveDropdown(null)}
                         >
                           <subItem.icon className="w-5 h-5 text-blue-400" />
-                          <span className="text-gray-300 hover:text-white">
+                          <span className={cn(
+                            variant === 'light'
+                              ? 'text-gray-700 hover:text-blue-600'
+                              : 'text-gray-300 hover:text-white'
+                          )}>
                             {subItem.name}
                           </span>
                         </Link>
@@ -172,13 +205,18 @@ export default function Navbar() {
               >
                 <Button
                   variant="ghost"
-                  className="text-gray-300 hover:text-white text-sm lg:text-base flex items-center space-x-2"
+                  className={cn(
+                    "text-sm lg:text-base flex items-center space-x-2",
+                    variant === 'light'
+                      ? 'text-gray-700 hover:text-blue-600'
+                      : 'text-gray-300 hover:text-white'
+                  )}
                 >
                   <User className="w-4 h-4" />
                   <span>Profile</span>
                   <ChevronDown className="w-4 h-4" />
                 </Button>
-                
+
                 {/* Profile Dropdown */}
                 <AnimatePresence>
                   {profileDropdownOpen && (
@@ -187,35 +225,72 @@ export default function Navbar() {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
                       transition={{ duration: 0.2 }}
-                      className="absolute top-full right-0 mt-2 w-48 bg-gray-900/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl overflow-hidden"
+                      className={cn(
+                        "absolute top-full right-0 mt-2 w-48 backdrop-blur-xl rounded-xl shadow-2xl overflow-hidden",
+                        variant === 'light'
+                          ? 'bg-white border border-gray-200'
+                          : 'bg-gray-900/95 border border-white/10'
+                      )}
                     >
                       <Link
                         href="/profile"
-                        className="flex items-center space-x-3 px-4 py-3 hover:bg-white/10 transition-colors"
+                        className={cn(
+                          "flex items-center space-x-3 px-4 py-3 transition-colors",
+                          variant === 'light' ? 'hover:bg-blue-50' : 'hover:bg-white/10'
+                        )}
                       >
                         <User className="w-4 h-4 text-blue-400" />
-                        <span className="text-gray-300 hover:text-white">My Profile</span>
+                        <span className={cn(
+                          variant === 'light'
+                            ? 'text-gray-700 hover:text-blue-600'
+                            : 'text-gray-300 hover:text-white'
+                        )}>My Profile</span>
                       </Link>
                       <Link
                         href="/dashboard"
-                        className="flex items-center space-x-3 px-4 py-3 hover:bg-white/10 transition-colors"
+                        className={cn(
+                          "flex items-center space-x-3 px-4 py-3 transition-colors",
+                          variant === 'light' ? 'hover:bg-blue-50' : 'hover:bg-white/10'
+                        )}
                       >
                         <Settings className="w-4 h-4 text-blue-400" />
-                        <span className="text-gray-300 hover:text-white">Dashboard</span>
+                        <span className={cn(
+                          variant === 'light'
+                            ? 'text-gray-700 hover:text-blue-600'
+                            : 'text-gray-300 hover:text-white'
+                        )}>Dashboard</span>
                       </Link>
                       <Link
                         href="/admin/insights"
-                        className="flex items-center space-x-3 px-4 py-3 hover:bg-white/10 transition-colors border-t border-white/5"
+                        className={cn(
+                          "flex items-center space-x-3 px-4 py-3 transition-colors",
+                          variant === 'light'
+                            ? 'border-t border-gray-100 hover:bg-blue-50'
+                            : 'border-t border-white/5 hover:bg-white/10'
+                        )}
                       >
                         <BarChart3 className="w-4 h-4 text-purple-400" />
-                        <span className="text-gray-300 hover:text-white">Analytics Insights</span>
+                        <span className={cn(
+                          variant === 'light'
+                            ? 'text-gray-700 hover:text-blue-600'
+                            : 'text-gray-300 hover:text-white'
+                        )}>Analytics Insights</span>
                       </Link>
                       <button
                         onClick={handleLogout}
-                        className="w-full flex items-center space-x-3 px-4 py-3 hover:bg-white/10 transition-colors text-left border-t border-white/5"
+                        className={cn(
+                          "w-full flex items-center space-x-3 px-4 py-3 transition-colors text-left",
+                          variant === 'light'
+                            ? 'border-t border-gray-100 hover:bg-red-50'
+                            : 'border-t border-white/5 hover:bg-white/10'
+                        )}
                       >
                         <LogOut className="w-4 h-4 text-red-400" />
-                        <span className="text-gray-300 hover:text-white">Logout</span>
+                        <span className={cn(
+                          variant === 'light'
+                            ? 'text-gray-700 hover:text-red-600'
+                            : 'text-gray-300 hover:text-white'
+                        )}>Logout</span>
                       </button>
                     </motion.div>
                   )}
@@ -226,7 +301,12 @@ export default function Navbar() {
                 <Link href="/login">
                   <Button
                     variant="ghost"
-                    className="text-gray-300 hover:text-white text-sm lg:text-base"
+                    className={cn(
+                      "text-sm lg:text-base",
+                      variant === 'light'
+                        ? 'text-gray-700 hover:text-blue-600'
+                        : 'text-gray-300 hover:text-white'
+                    )}
                   >
                     <LogIn className="w-4 h-4 mr-2" />
                     Login
@@ -244,7 +324,10 @@ export default function Navbar() {
           {/* Mobile Menu Button */}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="md:hidden text-white"
+            className={cn(
+              "md:hidden",
+              variant === 'light' ? 'text-gray-700' : 'text-white'
+            )}
           >
             {isMobileMenuOpen ? (
               <X className="w-6 h-6" />
@@ -263,14 +346,24 @@ export default function Navbar() {
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3 }}
-            className="md:hidden bg-black/95 backdrop-blur-xl border-t border-white/10"
+            className={cn(
+              "md:hidden backdrop-blur-xl",
+              variant === 'light'
+                ? 'bg-white border-t border-gray-200'
+                : 'bg-black/95 border-t border-white/10'
+            )}
           >
             <div className="container mx-auto container-padding py-4">
               {navigation.map((item) => (
                 <div key={item.name} className="py-2">
                   <Link
                     href={item.href}
-                    className="block text-gray-300 hover:text-white transition-colors"
+                    className={cn(
+                      "block transition-colors",
+                      variant === 'light'
+                        ? 'text-gray-700 hover:text-blue-600'
+                        : 'text-gray-300 hover:text-white'
+                    )}
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     {item.name}
@@ -281,7 +374,12 @@ export default function Navbar() {
                         <Link
                           key={subItem.name}
                           href={subItem.href}
-                          className="flex items-center space-x-2 text-sm text-gray-400 hover:text-white transition-colors"
+                          className={cn(
+                            "flex items-center space-x-2 text-sm transition-colors",
+                            variant === 'light'
+                              ? 'text-gray-600 hover:text-blue-600'
+                              : 'text-gray-400 hover:text-white'
+                          )}
                           onClick={() => setIsMobileMenuOpen(false)}
                         >
                           <subItem.icon className="w-4 h-4" />
@@ -292,7 +390,10 @@ export default function Navbar() {
                   )}
                 </div>
               ))}
-              <div className="flex flex-col space-y-2 mt-4 pt-4 border-t border-white/10">
+              <div className={cn(
+                "flex flex-col space-y-2 mt-4 pt-4 border-t",
+                variant === 'light' ? 'border-gray-200' : 'border-white/10'
+              )}>
                 {user ? (
                   <>
                     <Link href="/profile" passHref>

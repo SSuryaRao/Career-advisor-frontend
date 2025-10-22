@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Download, Sparkles, TrendingUp, CheckCircle2, Loader2 } from 'lucide-react'
 import { improveResume, type ImproveResumeResponse } from '@/lib/api/resume'
+import { getAbsoluteResumeUrl } from '@/lib/utils/resumeUrl'
 import { Button } from '@/components/ui/button'
 import {
   Modal,
@@ -61,7 +62,10 @@ export default function ImproveResumeButton({
 
   const handleDownload = () => {
     if (improvementResult?.download.url) {
-      window.open(improvementResult.download.url, '_blank')
+      const absoluteUrl = getAbsoluteResumeUrl(improvementResult.download.url);
+      if (absoluteUrl) {
+        window.open(absoluteUrl, '_blank');
+      }
     }
   }
 

@@ -51,27 +51,51 @@ export default function DashboardPage() {
 
       console.log('📊 Fetching dashboard data for user:', user.uid)
 
-      // Fetch unified dashboard summary
-      const summaryResponse = await fetch(`${API_BASE_URL}/api/progress/dashboard/${user.uid}`)
-      if (summaryResponse.ok) {
-        const summaryData = await summaryResponse.json()
-        console.log('✅ Dashboard summary loaded:', summaryData.data)
-        console.log('🗺️ Roadmap data:', {
-          roadmaps: summaryData.data?.roadmaps?.roadmaps,
-          totalMilestones: summaryData.data?.roadmaps?.totalMilestones,
-          completedMilestones: summaryData.data?.roadmaps?.completedMilestones,
-          percentage: summaryData.data?.roadmaps?.percentage
-        })
-        setDashboardSummary(summaryData.data)
-      } else {
-        console.error('❌ Failed to fetch dashboard summary:', summaryResponse.status)
-      }
+      // Create abort controller for timeout
+      const controller = new AbortController()
+      const timeout = setTimeout(() => controller.abort(), 30000) // 30 second timeout
 
-      // Fetch detailed user progress for resources
-      const progressResponse = await fetch(`${API_BASE_URL}/api/progress/user/${user.uid}`)
-      if (progressResponse.ok) {
-        const progressData = await progressResponse.json()
-        setUserProgress(progressData.data.progress)
+      try {
+        // Fetch unified dashboard summary
+        const summaryResponse = await fetch(`${API_BASE_URL}/api/progress/dashboard/${user.uid}`, {
+          signal: controller.signal
+        })
+        clearTimeout(timeout)
+
+        if (summaryResponse.ok) {
+          const summaryData = await summaryResponse.json()
+          console.log('✅ Dashboard summary loaded:', summaryData.data)
+          console.log('🗺️ Roadmap data:', {
+            roadmaps: summaryData.data?.roadmaps?.roadmaps,
+            totalMilestones: summaryData.data?.roadmaps?.totalMilestones,
+            completedMilestones: summaryData.data?.roadmaps?.completedMilestones,
+            percentage: summaryData.data?.roadmaps?.percentage
+          })
+          setDashboardSummary(summaryData.data)
+        } else if (summaryResponse.status === 503) {
+          // Service temporarily unavailable - retry after a delay
+          console.warn('⚠️ Dashboard temporarily unavailable, retrying in 5 seconds...')
+          setTimeout(() => fetchDashboardData(), 5000)
+          return
+        } else {
+          console.error('❌ Failed to fetch dashboard summary:', summaryResponse.status)
+        }
+
+        // Fetch detailed user progress for resources
+        const progressResponse = await fetch(`${API_BASE_URL}/api/progress/user/${user.uid}`)
+        if (progressResponse.ok) {
+          const progressData = await progressResponse.json()
+          setUserProgress(progressData.data.progress)
+        }
+      } catch (fetchError) {
+        clearTimeout(timeout)
+        if (fetchError instanceof Error && fetchError.name === 'AbortError') {
+          console.error('⏱️ Dashboard request timed out, retrying...')
+          // Retry once after timeout
+          setTimeout(() => fetchDashboardData(), 2000)
+          return
+        }
+        throw fetchError
       }
     } catch (error) {
       console.error('Error fetching dashboard data:', error)
