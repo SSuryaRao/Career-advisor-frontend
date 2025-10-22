@@ -91,10 +91,15 @@ next-env.d.ts
 # Deployment Scripts (may contain sensitive info)
 *.sh
 *.bat
+*.ps1
 deploy*.sh
 deploy*.bat
+deploy*.ps1
 setup*.sh
 setup*.bat
+setup*.ps1
+.dockerignore
+Dockerfile
 
 # Temporary Files
 tmp/
