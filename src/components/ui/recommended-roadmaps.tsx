@@ -127,13 +127,13 @@ export function RecommendedRoadmaps({ onStartRoadmap }: RecommendedRoadmapsProps
 
   if (!user) {
     return (
-      <Card className="p-8 bg-gradient-to-br from-amber-50 to-orange-100 border border-amber-200">
+      <Card className="p-8 bg-gradient-to-br from-amber-50 to-orange-100 dark:from-amber-950/30 dark:to-orange-950/30 border border-amber-200 dark:border-amber-800/30">
         <div className="text-center">
-          <div className="w-16 h-16 bg-amber-500 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 bg-amber-500 dark:bg-amber-600 rounded-full flex items-center justify-center mx-auto mb-4">
             <Users className="w-8 h-8 text-white" />
           </div>
-          <h3 className="text-xl font-bold text-amber-900 mb-2">Sign In for Personalized Recommendations</h3>
-          <p className="text-amber-700">
+          <h3 className="text-xl font-bold text-amber-900 dark:text-amber-100 mb-2">Sign In for Personalized Recommendations</h3>
+          <p className="text-amber-700 dark:text-amber-300">
             Complete your profile to get AI-powered career roadmap recommendations tailored just for you!
           </p>
         </div>
@@ -143,11 +143,11 @@ export function RecommendedRoadmaps({ onStartRoadmap }: RecommendedRoadmapsProps
 
   if (loading) {
     return (
-      <Card className="p-8 bg-gradient-to-br from-indigo-50 to-purple-100 border-0 shadow-lg">
+      <Card className="p-8 bg-gradient-to-br from-indigo-50 to-purple-100 dark:from-indigo-950/30 dark:to-purple-950/30 border-0 dark:border dark:border-indigo-800/30 shadow-lg">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-indigo-400/30 border-t-indigo-400 rounded-full animate-spin mx-auto mb-4"></div>
-          <h3 className="text-xl font-bold text-indigo-900 mb-2">Analyzing Your Profile</h3>
-          <p className="text-indigo-700">
+          <div className="w-16 h-16 border-4 border-indigo-400/30 dark:border-indigo-500/30 border-t-indigo-400 dark:border-t-indigo-400 rounded-full animate-spin mx-auto mb-4"></div>
+          <h3 className="text-xl font-bold text-indigo-900 dark:text-indigo-100 mb-2">Analyzing Your Profile</h3>
+          <p className="text-indigo-700 dark:text-indigo-300">
             Our AI is generating personalized career recommendations...
           </p>
         </div>
@@ -157,22 +157,22 @@ export function RecommendedRoadmaps({ onStartRoadmap }: RecommendedRoadmapsProps
 
   if (error && profileCompleteness < 30) {
     return (
-      <Card className="p-8 bg-gradient-to-br from-blue-50 to-indigo-100 border border-blue-200">
+      <Card className="p-8 bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950/30 dark:to-indigo-950/30 border border-blue-200 dark:border-blue-800/30">
         <div className="text-center">
-          <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 bg-blue-500 dark:bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
             <Target className="w-8 h-8 text-white" />
           </div>
-          <h3 className="text-xl font-bold text-blue-900 mb-2">Complete Your Profile First</h3>
-          <p className="text-blue-700 mb-4">
+          <h3 className="text-xl font-bold text-blue-900 dark:text-blue-100 mb-2">Complete Your Profile First</h3>
+          <p className="text-blue-700 dark:text-blue-300 mb-4">
             To get personalized career recommendations, please add your skills and interests in your profile.
           </p>
-          <div className="w-full bg-blue-200 rounded-full h-3 mb-2">
-            <div 
-              className="bg-blue-500 h-3 rounded-full transition-all duration-500"
+          <div className="w-full bg-blue-200 dark:bg-blue-900/30 rounded-full h-3 mb-2">
+            <div
+              className="bg-blue-500 dark:bg-blue-400 h-3 rounded-full transition-all duration-500"
               style={{ width: `${profileCompleteness}%` }}
             />
           </div>
-          <p className="text-sm text-blue-600">Profile {profileCompleteness}% complete</p>
+          <p className="text-sm text-blue-600 dark:text-blue-400">Profile {profileCompleteness}% complete</p>
         </div>
       </Card>
     )
@@ -180,13 +180,13 @@ export function RecommendedRoadmaps({ onStartRoadmap }: RecommendedRoadmapsProps
 
   if (!recommendations.length) {
     return (
-      <Card className="p-8 bg-gradient-to-br from-purple-50 to-pink-100 border border-purple-200">
+      <Card className="p-8 bg-gradient-to-br from-purple-50 to-pink-100 dark:from-purple-950/30 dark:to-pink-950/30 border border-purple-200 dark:border-purple-800/30">
         <div className="text-center">
-          <div className="w-16 h-16 bg-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 bg-purple-500 dark:bg-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
             <Sparkles className="w-8 h-8 text-white" />
           </div>
-          <h3 className="text-xl font-bold text-purple-900 mb-2">No Recommendations Yet</h3>
-          <p className="text-purple-700 mb-4">
+          <h3 className="text-xl font-bold text-purple-900 dark:text-purple-100 mb-2">No Recommendations Yet</h3>
+          <p className="text-purple-700 dark:text-purple-300 mb-4">
             Complete your profile with skills and interests to get personalized career recommendations.
           </p>
           <Button
@@ -268,9 +268,9 @@ export function RecommendedRoadmaps({ onStartRoadmap }: RecommendedRoadmapsProps
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
           >
-            <Card className="group relative p-0 h-full border-0 shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-[1.02] overflow-hidden bg-white">
+            <Card className="group relative p-0 h-full border-0 dark:border dark:border-gray-700/50 shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-[1.02] overflow-hidden bg-white dark:bg-gray-900">
               {/* Gradient Background Accent */}
-              <div className="absolute inset-0 bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 opacity-50 group-hover:opacity-70 transition-opacity" />
+              <div className="absolute inset-0 bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 dark:from-indigo-950/20 dark:via-purple-950/20 dark:to-pink-950/20 opacity-50 group-hover:opacity-70 transition-opacity" />
 
               <div className="relative p-6 h-full flex flex-col">
                 {/* Match Score Badge with Animation */}
@@ -282,9 +282,9 @@ export function RecommendedRoadmaps({ onStartRoadmap }: RecommendedRoadmapsProps
                       <span className="ml-2 text-xs opacity-90">{getMatchScoreLabel(recommendation.matchScore)}</span>
                     </Badge>
                   </div>
-                  <div className="text-right bg-white/80 backdrop-blur-sm px-3 py-2 rounded-xl border border-gray-200 shadow-sm">
-                    <div className="text-xs text-gray-500 font-medium">Skill Level</div>
-                    <div className="text-sm font-bold text-gray-800 capitalize mt-0.5">
+                  <div className="text-right bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-600 shadow-sm">
+                    <div className="text-xs text-gray-500 dark:text-gray-400 font-medium">Skill Level</div>
+                    <div className="text-sm font-bold text-gray-800 dark:text-gray-200 capitalize mt-0.5">
                       {recommendation.skillLevel}
                     </div>
                   </div>
@@ -293,72 +293,72 @@ export function RecommendedRoadmaps({ onStartRoadmap }: RecommendedRoadmapsProps
                 {/* Title with Icon */}
                 <div className="mb-4">
                   <div className="flex items-center gap-2 mb-2">
-                    <div className="w-2 h-2 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full animate-pulse" />
-                    <h3 className="text-2xl font-bold bg-gradient-to-r from-gray-900 via-indigo-900 to-purple-900 bg-clip-text text-transparent group-hover:from-indigo-600 group-hover:via-purple-600 group-hover:to-pink-600 transition-all duration-300">
+                    <div className="w-2 h-2 bg-gradient-to-r from-indigo-500 to-purple-600 dark:from-indigo-400 dark:to-purple-500 rounded-full animate-pulse" />
+                    <h3 className="text-2xl font-bold bg-gradient-to-r from-gray-900 via-indigo-900 to-purple-900 dark:from-gray-100 dark:via-indigo-100 dark:to-purple-100 bg-clip-text text-transparent group-hover:from-indigo-600 group-hover:via-purple-600 group-hover:to-pink-600 dark:group-hover:from-indigo-400 dark:group-hover:via-purple-400 dark:group-hover:to-pink-400 transition-all duration-300">
                       {recommendation.title}
                     </h3>
                   </div>
                 </div>
 
               {/* ROI Summary with Enhanced Design */}
-              <div className="relative overflow-hidden bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 rounded-2xl p-5 mb-4 border-2 border-green-100 shadow-sm">
-                <div className="absolute top-0 right-0 w-20 h-20 bg-green-200/30 rounded-full blur-2xl" />
+              <div className="relative overflow-hidden bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-emerald-950/30 dark:via-green-950/30 dark:to-teal-950/30 rounded-2xl p-5 mb-4 border-2 border-green-100 dark:border-green-800/30 shadow-sm">
+                <div className="absolute top-0 right-0 w-20 h-20 bg-green-200/30 dark:bg-green-500/10 rounded-full blur-2xl" />
                 <div className="relative grid grid-cols-2 gap-4">
                   <div className="flex items-start space-x-3">
-                    <div className="p-2 bg-green-600/10 rounded-xl">
-                      <Clock className="w-5 h-5 text-green-700" />
+                    <div className="p-2 bg-green-600/10 dark:bg-green-400/10 rounded-xl">
+                      <Clock className="w-5 h-5 text-green-700 dark:text-green-400" />
                     </div>
                     <div>
-                      <div className="text-gray-600 text-xs font-medium mb-1">Duration</div>
-                      <div className="font-bold text-green-900 text-base">{recommendation.roi.time}</div>
+                      <div className="text-gray-600 dark:text-gray-400 text-xs font-medium mb-1">Duration</div>
+                      <div className="font-bold text-green-900 dark:text-green-100 text-base">{recommendation.roi.time}</div>
                     </div>
                   </div>
                   <div className="flex items-start space-x-3">
-                    <div className="p-2 bg-green-600/10 rounded-xl">
-                      <DollarSign className="w-5 h-5 text-green-700" />
+                    <div className="p-2 bg-green-600/10 dark:bg-green-400/10 rounded-xl">
+                      <DollarSign className="w-5 h-5 text-green-700 dark:text-green-400" />
                     </div>
                     <div>
-                      <div className="text-gray-600 text-xs font-medium mb-1">Expected Salary</div>
-                      <div className="font-bold text-green-900 text-base">{recommendation.roi.salary}</div>
+                      <div className="text-gray-600 dark:text-gray-400 text-xs font-medium mb-1">Expected Salary</div>
+                      <div className="font-bold text-green-900 dark:text-green-100 text-base">{recommendation.roi.salary}</div>
                     </div>
                   </div>
-                  <div className="col-span-2 pt-2 border-t border-green-200/50">
-                    <div className="text-xs text-gray-600 font-medium mb-1">Return on Investment</div>
-                    <div className="font-bold text-green-900 text-lg flex items-center gap-2">
+                  <div className="col-span-2 pt-2 border-t border-green-200/50 dark:border-green-700/30">
+                    <div className="text-xs text-gray-600 dark:text-gray-400 font-medium mb-1">Return on Investment</div>
+                    <div className="font-bold text-green-900 dark:text-green-100 text-lg flex items-center gap-2">
                       {recommendation.roi.roiFactor}
-                      <span className="text-xs text-green-700 font-normal bg-green-100 px-2 py-1 rounded-full">Great ROI</span>
+                      <span className="text-xs text-green-700 dark:text-green-300 font-normal bg-green-100 dark:bg-green-900/40 px-2 py-1 rounded-full">Great ROI</span>
                     </div>
                   </div>
                 </div>
               </div>
 
               {/* Job Trends with Better Design */}
-              <div className="mb-5 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-100">
+              <div className="mb-5 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 rounded-xl p-4 border border-blue-100 dark:border-blue-800/30">
                 <div className="flex items-center space-x-2 mb-3">
-                  <div className="p-1.5 bg-blue-600/10 rounded-lg">
-                    <TrendingUp className="w-4 h-4 text-blue-600" />
+                  <div className="p-1.5 bg-blue-600/10 dark:bg-blue-400/10 rounded-lg">
+                    <TrendingUp className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                   </div>
-                  <span className="text-sm font-bold text-gray-800">Market Trends</span>
+                  <span className="text-sm font-bold text-gray-800 dark:text-gray-200">Market Trends</span>
                 </div>
-                <p className="text-sm text-gray-700 leading-relaxed">
+                <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
                   {recommendation.trends}
                 </p>
               </div>
 
               {/* Preview Topics with Enhanced Badges */}
               <div className="mb-6">
-                <div className="text-sm font-bold text-gray-800 mb-3 flex items-center gap-2">
-                  <BookOpen className="w-4 h-4 text-indigo-600" />
+                <div className="text-sm font-bold text-gray-800 dark:text-gray-200 mb-3 flex items-center gap-2">
+                  <BookOpen className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
                   Key Learning Areas:
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {recommendation.previewTopics.slice(0, 3).map((topic, idx) => (
-                    <Badge key={idx} className="text-xs bg-gradient-to-r from-blue-500 to-indigo-600 text-white border-0 px-3 py-1.5 shadow-sm hover:shadow-md transition-shadow">
+                    <Badge key={idx} className="text-xs bg-gradient-to-r from-blue-500 to-indigo-600 dark:from-blue-400 dark:to-indigo-500 text-white border-0 px-3 py-1.5 shadow-sm hover:shadow-md transition-shadow">
                       {topic}
                     </Badge>
                   ))}
                   {recommendation.previewTopics.length > 3 && (
-                    <Badge className="text-xs bg-gray-100 text-gray-700 border border-gray-300 px-3 py-1.5 font-semibold">
+                    <Badge className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 px-3 py-1.5 font-semibold">
                       +{recommendation.previewTopics.length - 3} more
                     </Badge>
                   )}
@@ -367,16 +367,16 @@ export function RecommendedRoadmaps({ onStartRoadmap }: RecommendedRoadmapsProps
 
               {/* Matched Skills & Interests with Better Design */}
               {(recommendation.matchedSkills.length > 0 || recommendation.matchedInterests.length > 0) && (
-                <div className="mb-6 space-y-3 bg-gray-50/50 rounded-xl p-4 border border-gray-100">
+                <div className="mb-6 space-y-3 bg-gray-50/50 dark:bg-gray-800/30 rounded-xl p-4 border border-gray-100 dark:border-gray-700/30">
                   {recommendation.matchedSkills.length > 0 && (
                     <div>
-                      <div className="text-xs font-bold text-gray-700 mb-2 flex items-center gap-1.5">
-                        <div className="w-1.5 h-1.5 bg-green-600 rounded-full" />
+                      <div className="text-xs font-bold text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-1.5">
+                        <div className="w-1.5 h-1.5 bg-green-600 dark:bg-green-500 rounded-full" />
                         Matched Skills:
                       </div>
                       <div className="flex flex-wrap gap-2">
                         {recommendation.matchedSkills.slice(0, 3).map((skill, idx) => (
-                          <Badge key={idx} className="text-xs bg-gradient-to-r from-green-500 to-emerald-600 text-white border-0 px-3 py-1.5 shadow-sm">
+                          <Badge key={idx} className="text-xs bg-gradient-to-r from-green-500 to-emerald-600 dark:from-green-400 dark:to-emerald-500 text-white border-0 px-3 py-1.5 shadow-sm">
                             ✓ {skill}
                           </Badge>
                         ))}
@@ -385,13 +385,13 @@ export function RecommendedRoadmaps({ onStartRoadmap }: RecommendedRoadmapsProps
                   )}
                   {recommendation.matchedInterests.length > 0 && (
                     <div>
-                      <div className="text-xs font-bold text-gray-700 mb-2 flex items-center gap-1.5">
-                        <div className="w-1.5 h-1.5 bg-purple-600 rounded-full" />
+                      <div className="text-xs font-bold text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-1.5">
+                        <div className="w-1.5 h-1.5 bg-purple-600 dark:bg-purple-500 rounded-full" />
                         Matched Interests:
                       </div>
                       <div className="flex flex-wrap gap-2">
                         {recommendation.matchedInterests.slice(0, 2).map((interest, idx) => (
-                          <Badge key={idx} className="text-xs bg-gradient-to-r from-purple-500 to-pink-600 text-white border-0 px-3 py-1.5 shadow-sm">
+                          <Badge key={idx} className="text-xs bg-gradient-to-r from-purple-500 to-pink-600 dark:from-purple-400 dark:to-pink-500 text-white border-0 px-3 py-1.5 shadow-sm">
                             💜 {interest}
                           </Badge>
                         ))}

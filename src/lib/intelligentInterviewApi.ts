@@ -1,4 +1,4 @@
-import axios from 'axios';
+import { apiClient } from './apiInterceptor';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL
   ? `${process.env.NEXT_PUBLIC_API_URL}/api`
@@ -53,8 +53,8 @@ export interface AnalysisResult {
   speechAnalysis?: {
     wordsPerMinute: number;
     fillerWordCount: number;
-    fillerWordPercentage: string;
-    confidence: string;
+    fillerWordPercentage: number;
+    confidence: number;
     recommendations: string[];
   };
   bodyLanguageAnalysis?: {
@@ -107,7 +107,7 @@ class IntelligentInterviewApi {
     domains: Domain[];
     categories: { key: string; label: string }[];
   }> {
-    const response = await axios.get(`${API_URL}/intelligent-interview/domains`, {
+    const response = await apiClient.get(`${API_URL}/intelligent-interview/domains`, {
       params: { category }
     });
     return response.data.data;
@@ -117,7 +117,7 @@ class IntelligentInterviewApi {
    * Get domain details by ID
    */
   async getDomainDetails(domainId: string): Promise<Domain> {
-    const response = await axios.get(`${API_URL}/intelligent-interview/domains/${domainId}`);
+    const response = await apiClient.get(`${API_URL}/intelligent-interview/domains/${domainId}`);
     return response.data.data;
   }
 
@@ -129,7 +129,7 @@ class IntelligentInterviewApi {
     level: string,
     count: number = 5
   ): Promise<Question[]> {
-    const response = await axios.post(`${API_URL}/intelligent-interview/generate-questions`, {
+    const response = await apiClient.post(`${API_URL}/intelligent-interview/generate-questions`, {
       domainId,
       level,
       count
@@ -145,14 +145,17 @@ class IntelligentInterviewApi {
     domainId: string,
     level: string,
     questionCount: number = 5,
-    analysisMode: 'standard' | 'advanced' = 'standard'
+    analysisMode: 'standard' | 'advanced' = 'standard',
+    token?: string
   ): Promise<SessionData> {
-    const response = await axios.post(`${API_URL}/intelligent-interview/session/start`, {
+    const response = await apiClient.post(`${API_URL}/intelligent-interview/session/start`, {
       userId,
       domainId,
       level,
       questionCount,
       analysisMode
+    }, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {}
     });
     return response.data.data;
   }
@@ -167,7 +170,7 @@ class IntelligentInterviewApi {
     level: string,
     expectedKeywords?: string[]
   ): Promise<AnalysisResult> {
-    const response = await axios.post(`${API_URL}/intelligent-interview/analyze/standard`, {
+    const response = await apiClient.post(`${API_URL}/intelligent-interview/analyze/standard`, {
       questionText,
       responseText,
       domainId,
@@ -208,7 +211,7 @@ class IntelligentInterviewApi {
       formData.append('video', videoBlob, 'video.webm');
     }
 
-    const response = await axios.post(
+    const response = await apiClient.post(
       `${API_URL}/intelligent-interview/analyze/advanced`,
       formData,
       {
@@ -234,7 +237,7 @@ class IntelligentInterviewApi {
     averageScore: number;
     stats: any;
   }> {
-    const response = await axios.post(`${API_URL}/intelligent-interview/session/save`, {
+    const response = await apiClient.post(`${API_URL}/intelligent-interview/session/save`, {
       userId,
       sessionData,
       answers
@@ -249,7 +252,7 @@ class IntelligentInterviewApi {
     sessions: SessionSummary[];
     total: number;
   }> {
-    const response = await axios.get(
+    const response = await apiClient.get(
       `${API_URL}/intelligent-interview/session/history/${userId}`,
       { params: { limit } }
     );
@@ -260,7 +263,7 @@ class IntelligentInterviewApi {
    * Get session details
    */
   async getSessionDetails(userId: string, sessionId: string): Promise<any> {
-    const response = await axios.get(
+    const response = await apiClient.get(
       `${API_URL}/intelligent-interview/session/${userId}/${sessionId}`
     );
     return response.data.data;

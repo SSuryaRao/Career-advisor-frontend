@@ -33,6 +33,131 @@ export function SessionResults({ sessionData, answers, onRestart, onNewSession }
   const averageScore = answers.reduce((sum, a) => sum + a.analysis.score, 0) / answers.length
   const totalScore = averageScore.toFixed(2)
 
+  const handleDownloadReport = () => {
+    // Create a comprehensive text report
+    let reportContent = `AI INTERVIEW REPORT\n`
+    reportContent += `${'='.repeat(80)}\n\n`
+    reportContent += `Domain: ${sessionData.domain}\n`
+    reportContent += `Level: ${sessionData.level}\n`
+    reportContent += `Analysis Mode: ${sessionData.analysisMode === 'advanced' ? 'Advanced (AI+)' : 'Standard (AI)'}\n`
+    reportContent += `Date: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}\n`
+    reportContent += `Total Questions: ${answers.length}\n`
+    reportContent += `Overall Score: ${totalScore}/100\n\n`
+    reportContent += `${'='.repeat(80)}\n\n`
+
+    // Add detailed results for each question
+    answers.forEach((answer, idx) => {
+      reportContent += `QUESTION ${idx + 1}\n`
+      reportContent += `${'-'.repeat(80)}\n`
+      reportContent += `Question: ${answer.questionData.questionText}\n`
+      reportContent += `Category: ${answer.questionData.category}\n`
+      reportContent += `Difficulty: ${answer.questionData.difficulty}\n`
+      reportContent += `Keywords: ${answer.questionData.keywords.join(', ')}\n\n`
+
+      reportContent += `Score: ${answer.analysis.score.toFixed(2)}/100\n\n`
+
+      // Feedback metrics
+      reportContent += `FEEDBACK METRICS:\n`
+      reportContent += `  Technical Accuracy: ${answer.analysis.feedback.technicalAccuracy.toFixed(2)}%\n`
+      reportContent += `  Clarity: ${answer.analysis.feedback.clarity.toFixed(2)}%\n`
+      reportContent += `  Relevance: ${answer.analysis.feedback.relevance.toFixed(2)}%\n\n`
+
+      // Score breakdown for advanced mode
+      if (answer.analysis.scoreBreakdown) {
+        reportContent += `SCORE BREAKDOWN:\n`
+        reportContent += `  Content Quality: ${answer.analysis.scoreBreakdown.content.toFixed(2)}%\n`
+        reportContent += `  Delivery: ${answer.analysis.scoreBreakdown.delivery.toFixed(2)}%\n`
+        reportContent += `  Body Language: ${answer.analysis.scoreBreakdown.bodyLanguage.toFixed(2)}%\n\n`
+      }
+
+      // Strengths
+      reportContent += `STRENGTHS:\n`
+      answer.analysis.feedback.strengths.forEach((strength, i) => {
+        reportContent += `  ${i + 1}. ${strength.replace(/\*\*/g, '').replace(/\*/g, '')}\n`
+      })
+      reportContent += `\n`
+
+      // Areas for improvement
+      reportContent += `AREAS FOR IMPROVEMENT:\n`
+      answer.analysis.feedback.improvements.forEach((improvement, i) => {
+        reportContent += `  ${i + 1}. ${improvement.replace(/\*\*/g, '').replace(/\*/g, '')}\n`
+      })
+      reportContent += `\n`
+
+      // Overall assessment
+      reportContent += `OVERALL ASSESSMENT:\n`
+      reportContent += `${answer.analysis.overallAssessment.replace(/\*\*/g, '').replace(/\*/g, '')}\n\n`
+
+      // Domain-specific insights
+      if (answer.analysis.domainSpecificInsights) {
+        reportContent += `DOMAIN-SPECIFIC INSIGHTS:\n`
+        reportContent += `${answer.analysis.domainSpecificInsights.replace(/\*\*/g, '').replace(/\*/g, '')}\n\n`
+      }
+
+      // Speech analysis for advanced mode
+      if (answer.analysis.speechAnalysis) {
+        reportContent += `SPEECH ANALYSIS:\n`
+        reportContent += `  Words Per Minute: ${answer.analysis.speechAnalysis.wordsPerMinute}\n`
+        reportContent += `  Filler Word Count: ${answer.analysis.speechAnalysis.fillerWordCount}\n`
+        reportContent += `  Filler Word Percentage: ${typeof answer.analysis.speechAnalysis.fillerWordPercentage === 'number' ? answer.analysis.speechAnalysis.fillerWordPercentage.toFixed(2) : answer.analysis.speechAnalysis.fillerWordPercentage}%\n`
+        reportContent += `  Confidence: ${typeof answer.analysis.speechAnalysis.confidence === 'number' ? answer.analysis.speechAnalysis.confidence.toFixed(2) : answer.analysis.speechAnalysis.confidence}%\n`
+        if (answer.analysis.speechAnalysis.recommendations && answer.analysis.speechAnalysis.recommendations.length > 0) {
+          reportContent += `  Recommendations:\n`
+          answer.analysis.speechAnalysis.recommendations.forEach((rec, i) => {
+            reportContent += `    ${i + 1}. ${rec.replace(/\*\*/g, '').replace(/\*/g, '')}\n`
+          })
+        }
+        reportContent += `\n`
+      }
+
+      // Body language analysis for advanced mode
+      if (answer.analysis.bodyLanguageAnalysis) {
+        reportContent += `BODY LANGUAGE ANALYSIS:\n`
+        reportContent += `  Eye Contact: ${answer.analysis.bodyLanguageAnalysis.eyeContact}\n`
+        reportContent += `  Body Movement: ${answer.analysis.bodyLanguageAnalysis.bodyMovement}\n`
+        reportContent += `  Overall Presence: ${answer.analysis.bodyLanguageAnalysis.overallPresence}\n`
+        if (answer.analysis.bodyLanguageAnalysis.recommendations && answer.analysis.bodyLanguageAnalysis.recommendations.length > 0) {
+          reportContent += `  Recommendations:\n`
+          answer.analysis.bodyLanguageAnalysis.recommendations.forEach((rec, i) => {
+            reportContent += `    ${i + 1}. ${rec.replace(/\*\*/g, '').replace(/\*/g, '')}\n`
+          })
+        }
+        reportContent += `\n`
+      }
+
+      // Transcription for advanced mode
+      if (answer.transcription?.text) {
+        reportContent += `TRANSCRIPTION:\n`
+        reportContent += `"${answer.transcription.text}"\n`
+        reportContent += `  Word Count: ${answer.transcription.wordCount}\n`
+        reportContent += `  Duration: ${typeof answer.transcription.duration === 'number' ? answer.transcription.duration.toFixed(1) : parseFloat(answer.transcription.duration).toFixed(1)}s\n`
+        reportContent += `  Confidence: ${(answer.transcription.confidence * 100).toFixed(2)}%\n`
+        reportContent += `\n`
+      }
+
+      reportContent += `${'='.repeat(80)}\n\n`
+    })
+
+    // Summary
+    reportContent += `SUMMARY\n`
+    reportContent += `${'='.repeat(80)}\n`
+    reportContent += `This interview assessment provides a comprehensive evaluation of your performance.\n`
+    reportContent += `Focus on the areas for improvement to enhance your interview skills.\n\n`
+    reportContent += `Generated by CareerCraft AI - Intelligent Interview System\n`
+    reportContent += `Report Date: ${new Date().toLocaleString()}\n`
+
+    // Create and download the file
+    const blob = new Blob([reportContent], { type: 'text/plain' })
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `interview-report-${sessionData.domain.replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.txt`
+    document.body.appendChild(a)
+    a.click()
+    window.URL.revokeObjectURL(url)
+    document.body.removeChild(a)
+  }
+
   const getScoreGrade = (score: number) => {
     if (score >= 90) return {
       grade: 'A+',
@@ -141,15 +266,15 @@ export function SessionResults({ sessionData, answers, onRestart, onNewSession }
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
         >
-          <h2 className="text-5xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent mb-3">
+          <h2 className="text-5xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent mb-3">
             Interview Complete!
           </h2>
-          <p className="text-2xl font-semibold text-gray-700 mb-2">{scoreGrade.text}</p>
+          <p className="text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-2">{scoreGrade.text}</p>
           <div className="flex items-center justify-center gap-2">
-            <Award className="w-5 h-5 text-indigo-600" />
-            <p className="text-lg text-gray-600">
-              Overall Score: <span className="font-bold text-2xl text-indigo-600">{totalScore}</span>
-              <span className="text-gray-500">/100</span>
+            <Award className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+            <p className="text-lg text-gray-600 dark:text-gray-400">
+              Overall Score: <span className="font-bold text-2xl text-indigo-600 dark:text-indigo-400">{totalScore}</span>
+              <span className="text-gray-500 dark:text-gray-500">/100</span>
             </p>
           </div>
         </motion.div>
@@ -161,8 +286,8 @@ export function SessionResults({ sessionData, answers, onRestart, onNewSession }
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4 }}
       >
-        <h3 className="text-2xl font-bold text-gray-900 mb-4 flex items-center">
-          <Sparkles className="w-6 h-6 mr-2 text-indigo-600" />
+        <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+          <Sparkles className="w-6 h-6 mr-2 text-indigo-600 dark:text-indigo-400" />
           Session Summary
         </h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -220,8 +345,8 @@ export function SessionResults({ sessionData, answers, onRestart, onNewSession }
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
       >
-        <h3 className="text-2xl font-bold text-gray-900 mb-4 flex items-center">
-          <TrendingUp className="w-6 h-6 mr-2 text-indigo-600" />
+        <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+          <TrendingUp className="w-6 h-6 mr-2 text-indigo-600 dark:text-indigo-400" />
           Performance Overview
         </h3>
         <div className="space-y-4">
@@ -324,8 +449,8 @@ export function SessionResults({ sessionData, answers, onRestart, onNewSession }
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.7 }}
       >
-        <h3 className="text-2xl font-bold text-gray-900 mb-4 flex items-center">
-          <CheckCircle className="w-6 h-6 mr-2 text-indigo-600" />
+        <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+          <CheckCircle className="w-6 h-6 mr-2 text-indigo-600 dark:text-indigo-400" />
           Detailed Feedback
         </h3>
         <div className="space-y-8">
@@ -336,9 +461,9 @@ export function SessionResults({ sessionData, answers, onRestart, onNewSession }
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.8 + idx * 0.1 }}
             >
-              <Card className="overflow-hidden border-2 shadow-xl hover:shadow-2xl transition-shadow duration-300">
+              <Card className="overflow-hidden border-2 shadow-xl hover:shadow-2xl transition-shadow duration-300 dark:border-gray-700">
                 {/* Header Section */}
-                <div className={`p-6 bg-gradient-to-br ${scoreGrade.bgColor} ${scoreGrade.borderColor} border-b-2`}>
+                <div className={`p-6 bg-gradient-to-br ${scoreGrade.bgColor} dark:from-gray-800 dark:to-gray-900 ${scoreGrade.borderColor} dark:border-gray-700 border-b-2`}>
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-3">
@@ -352,7 +477,7 @@ export function SessionResults({ sessionData, answers, onRestart, onNewSession }
                           {answer.questionData.category}
                         </Badge>
                       </div>
-                      <h4 className="text-xl font-semibold text-gray-900 leading-relaxed">
+                      <h4 className="text-xl font-semibold text-gray-900 dark:text-white leading-relaxed">
                         {answer.questionData.questionText}
                       </h4>
                     </div>
@@ -362,15 +487,15 @@ export function SessionResults({ sessionData, answers, onRestart, onNewSession }
                       className={`ml-6 relative`}
                       whileHover={{ scale: 1.1, rotate: 10 }}
                     >
-                      <div className={`w-20 h-20 rounded-full flex items-center justify-center bg-white shadow-lg border-4 ${
-                        answer.analysis.score >= 70 ? 'border-green-500' :
-                        answer.analysis.score >= 50 ? 'border-blue-500' :
-                        'border-orange-500'
+                      <div className={`w-20 h-20 rounded-full flex items-center justify-center bg-white dark:bg-gray-800 shadow-lg border-4 ${
+                        answer.analysis.score >= 70 ? 'border-green-500 dark:border-green-400' :
+                        answer.analysis.score >= 50 ? 'border-blue-500 dark:border-blue-400' :
+                        'border-orange-500 dark:border-orange-400'
                       }`}>
                         <div className={`text-2xl font-bold ${
-                          answer.analysis.score >= 70 ? 'text-green-600' :
-                          answer.analysis.score >= 50 ? 'text-blue-600' :
-                          'text-orange-600'
+                          answer.analysis.score >= 70 ? 'text-green-600 dark:text-green-400' :
+                          answer.analysis.score >= 50 ? 'text-blue-600 dark:text-blue-400' :
+                          'text-orange-600 dark:text-orange-400'
                         }`}>
                           {answer.analysis.score.toFixed(2)}
                         </div>
@@ -380,7 +505,7 @@ export function SessionResults({ sessionData, answers, onRestart, onNewSession }
                 </div>
 
                 {/* Feedback Content */}
-                <div className="p-6 bg-white">
+                <div className="p-6 bg-white dark:bg-gray-800">
                   <FeedbackDisplay
                     analysis={answer.analysis}
                     questionText={answer.questionData.questionText}
@@ -403,7 +528,7 @@ export function SessionResults({ sessionData, answers, onRestart, onNewSession }
           onClick={onRestart}
           variant="outline"
           size="lg"
-          className="flex items-center gap-2 px-8 py-6 text-lg border-2 border-gray-300 hover:border-indigo-500 hover:bg-indigo-50 transition-all duration-300"
+          className="flex items-center gap-2 px-8 py-6 text-lg border-2 border-gray-300 dark:border-gray-600 hover:border-indigo-500 dark:hover:border-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all duration-300"
         >
           <RotateCcw className="w-5 h-5" />
           Retake This Interview
@@ -419,9 +544,10 @@ export function SessionResults({ sessionData, answers, onRestart, onNewSession }
         </Button>
 
         <Button
+          onClick={handleDownloadReport}
           variant="outline"
           size="lg"
-          className="flex items-center gap-2 px-8 py-6 text-lg border-2 border-gray-300 hover:border-green-500 hover:bg-green-50 transition-all duration-300"
+          className="flex items-center gap-2 px-8 py-6 text-lg border-2 border-gray-300 dark:border-gray-600 hover:border-green-500 dark:hover:border-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 transition-all duration-300"
         >
           <Download className="w-5 h-5" />
           Download Report

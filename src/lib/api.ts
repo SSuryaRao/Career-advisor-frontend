@@ -26,17 +26,22 @@ class ApiClient {
 
   private async request<T = any>(
     endpoint: string,
-    options: RequestInit = {}
+    options: RequestInit & { timeout?: number } = {}
   ): Promise<ApiResponse<T>> {
     // Create abort controller for timeout
+    // Use custom timeout if provided, otherwise default to 30 seconds
+    const timeoutDuration = options.timeout || 30000
     const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), 30000) // 30 second timeout
+    const timeoutId = setTimeout(() => controller.abort(), timeoutDuration)
 
     try {
       const token = await this.getAuthToken()
 
+      // Remove timeout from options before passing to fetch
+      const { timeout, ...fetchOptions } = options
+
       const config: RequestInit = {
-        ...options,
+        ...fetchOptions,
         signal: controller.signal,
         headers: {
           'Content-Type': 'application/json',
@@ -215,13 +220,15 @@ class ApiClient {
   }
 
   // Scholarship Methods
-  async getAllScholarships(params?: { category?: string; domain?: string; trending?: boolean; limit?: number; page?: number }): Promise<ApiResponse<any>> {
+  async getAllScholarships(params?: { category?: string; excludeCategory?: string; domain?: string; trending?: boolean; limit?: number; page?: number; sortBy?: string }): Promise<ApiResponse<any>> {
     const queryParams = new URLSearchParams()
     if (params?.category) queryParams.append('category', params.category)
+    if (params?.excludeCategory) queryParams.append('excludeCategory', params.excludeCategory)
     if (params?.domain) queryParams.append('domain', params.domain)
     if (params?.trending !== undefined) queryParams.append('trending', String(params.trending))
     if (params?.limit) queryParams.append('limit', String(params.limit))
     if (params?.page) queryParams.append('page', String(params.page))
+    if (params?.sortBy) queryParams.append('sortBy', params.sortBy)
 
     const queryString = queryParams.toString()
     return this.request(`/api/scholarships${queryString ? `?${queryString}` : ''}`)
@@ -229,7 +236,8 @@ class ApiClient {
 
   async getPersonalizedScholarships(): Promise<ApiResponse<any>> {
     return this.request('/api/scholarships/personalized', {
-      method: 'POST'
+      method: 'POST',
+      timeout: 120000 // 2 minutes timeout for AI generation
     })
   }
 
@@ -246,6 +254,7 @@ class ApiClient {
     page?: number
     limit?: number
     search?: string
+    location?: string
     tags?: string[]
     company?: string
     jobType?: string
@@ -258,6 +267,7 @@ class ApiClient {
     if (params?.page) queryParams.append('page', String(params.page))
     if (params?.limit) queryParams.append('limit', String(params.limit))
     if (params?.search) queryParams.append('search', params.search)
+    if (params?.location) queryParams.append('location', params.location)
     if (params?.tags) params.tags.forEach(tag => queryParams.append('tags', tag))
     if (params?.company) queryParams.append('company', params.company)
     if (params?.jobType) queryParams.append('jobType', params.jobType)
@@ -295,7 +305,10 @@ class ApiClient {
     if (params?.minMatchScore) queryParams.append('minMatchScore', String(params.minMatchScore))
 
     const queryString = queryParams.toString()
-    return this.request(`/api/jobs/recommendations${queryString ? `?${queryString}` : ''}`)
+    // Use 60 second timeout for AI recommendations (they take longer)
+    return this.request(`/api/jobs/recommendations${queryString ? `?${queryString}` : ''}`, {
+      timeout: 60000
+    })
   }
 
   // Health check

@@ -4,8 +4,9 @@ import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
+import ReactMarkdown from 'react-markdown'
 import {
-  Send, Mic, MicOff, Volume2, VolumeX, Bot, User, 
+  Send, Mic, MicOff, Volume2, VolumeX, Bot, User,
   Sparkles, ThumbsUp, ThumbsDown, Copy,
   Zap, Brain, Target, BookOpen, Users, AlertCircle,
   Check, Loader2, ChevronDown
@@ -434,16 +435,16 @@ export default function AIMentor() {
                     )}
                     
                     {/* Message Content */}
-                    <div 
+                    <div
                       className={`px-5 py-4 rounded-2xl shadow-xl max-w-full ${
-                        message.type === 'user' 
-                          ? 'bg-gradient-to-r from-violet-600 to-purple-600 text-white ml-auto' 
+                        message.type === 'user'
+                          ? 'bg-gradient-to-r from-violet-600 to-purple-600 text-white ml-auto'
                           : 'bg-white/10 backdrop-blur-lg border border-white/10 text-white'
                       }`}
                     >
-                      <p className="text-sm leading-relaxed whitespace-pre-wrap">
-                        {message.content}
-                      </p>
+                      <div className="text-sm leading-relaxed prose prose-invert prose-sm max-w-none prose-p:my-2 prose-ul:my-2 prose-ol:my-2 prose-li:my-1 prose-headings:mb-2 prose-headings:mt-3 prose-strong:text-white prose-strong:font-semibold">
+                        <ReactMarkdown>{message.content}</ReactMarkdown>
+                      </div>
                       
                       {/* Message Actions */}
                       <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/10">

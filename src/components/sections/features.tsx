@@ -107,14 +107,14 @@ export default function Features() {
           transition={{ duration: 0.5 }}
           className="text-center mb-16"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-white/10 mb-4">
-            <Sparkles className="w-4 h-4 text-yellow-400" />
-            <span className="text-sm font-medium">Comprehensive Career Platform</span>
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-200/50 dark:border-white/10 mb-4">
+            <Sparkles className="w-4 h-4 text-yellow-500 dark:text-yellow-400" />
+            <span className="text-sm font-medium text-gray-800 dark:text-white">Comprehensive Career Platform</span>
           </div>
-          <h2 className="heading-responsive font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400 text-center">
+          <h2 className="heading-responsive font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 text-center">
             Everything You Need to Succeed
           </h2>
-          <p className="text-responsive text-gray-400 max-w-4xl mx-auto text-center leading-relaxed">
+          <p className="text-responsive text-gray-600 dark:text-gray-400 max-w-4xl mx-auto text-center leading-relaxed">
             Our AI-powered platform provides end-to-end career guidance tailored for Indian students
           </p>
         </motion.div>
@@ -148,8 +148,8 @@ export default function Features() {
                 </div>
 
                 {/* Content */}
-                <h3 className="text-lg sm:text-xl font-semibold mb-2 text-center sm:text-left">{feature.title}</h3>
-                <p className="text-sm sm:text-base text-gray-400 mb-4 text-center sm:text-left leading-relaxed">{feature.description}</p>
+                <h3 className="text-lg sm:text-xl font-semibold mb-2 text-center sm:text-left text-gray-900 dark:text-white">{feature.title}</h3>
+                <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mb-4 text-center sm:text-left leading-relaxed">{feature.description}</p>
 
                 {/* Details (shown on hover) */}
                 <motion.div
@@ -165,9 +165,9 @@ export default function Features() {
                     {feature.details.map((detail, detailIndex) => (
                       <li
                         key={detailIndex}
-                        className="flex items-center space-x-2 text-sm text-gray-300"
+                        className="flex items-center space-x-2 text-sm text-gray-700 dark:text-gray-300"
                       >
-                        <Zap className="w-4 h-4 text-yellow-400" />
+                        <Zap className="w-4 h-4 text-yellow-500 dark:text-yellow-400" />
                         <span>{detail}</span>
                       </li>
                     ))}

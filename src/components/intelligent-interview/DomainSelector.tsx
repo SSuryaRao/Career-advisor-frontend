@@ -518,17 +518,14 @@ export function DomainSelector({ onStartSession }: DomainSelectorProps) {
             transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
           >
             <div className="relative">
-              {/* Decorative background */}
-              <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-3xl blur-3xl opacity-20 animate-pulse"></div>
-
-              <Card className="relative p-8 bg-gradient-to-br from-white via-indigo-50/30 to-purple-50/30 border-2 border-indigo-200/50 backdrop-blur-sm shadow-2xl">
+              <Card className="relative p-8 bg-white dark:bg-slate-800/80 border border-gray-200 dark:border-slate-700 shadow-xl dark:shadow-2xl dark:shadow-slate-950/50">
                 <div className="flex items-center mb-8">
-                  <div className="flex-1 h-px bg-gradient-to-r from-transparent via-indigo-300 to-transparent"></div>
-                  <h3 className="text-2xl font-bold text-gray-900 mx-6 flex items-center">
-                    <Award className="w-7 h-7 text-indigo-600 mr-2" />
+                  <div className="flex-1 h-px bg-gray-200 dark:bg-slate-700"></div>
+                  <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mx-6 flex items-center">
+                    <Award className="w-6 h-6 text-indigo-600 dark:text-indigo-400 mr-2" />
                     Interview Configuration
                   </h3>
-                  <div className="flex-1 h-px bg-gradient-to-r from-transparent via-indigo-300 to-transparent"></div>
+                  <div className="flex-1 h-px bg-gray-200 dark:bg-slate-700"></div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
@@ -538,10 +535,7 @@ export function DomainSelector({ onStartSession }: DomainSelectorProps) {
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.3 }}
                   >
-                    <label className="block text-base font-bold text-gray-800 mb-4 flex items-center">
-                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center mr-2">
-                        <TrendingUp className="w-4 h-4 text-white" />
-                      </div>
+                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
                       Experience Level
                     </label>
                     <div className="grid grid-cols-2 gap-3">
@@ -555,10 +549,10 @@ export function DomainSelector({ onStartSession }: DomainSelectorProps) {
                           <Button
                             onClick={() => setSelectedLevel(level)}
                             variant={selectedLevel === level ? 'default' : 'outline'}
-                            className={`w-full h-12 font-semibold text-base transition-all duration-300 ${
+                            className={`w-full h-11 font-medium text-sm transition-all duration-200 ${
                               selectedLevel === level
-                                ? 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg scale-105'
-                                : 'border-2 border-gray-300 hover:border-indigo-400 hover:bg-indigo-50'
+                                ? 'bg-indigo-600 dark:bg-indigo-500 hover:bg-indigo-700 dark:hover:bg-indigo-600 text-white'
+                                : 'border border-gray-300 dark:border-slate-600 hover:border-indigo-500 dark:hover:border-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 dark:text-gray-300'
                             }`}
                           >
                             {level}
@@ -574,10 +568,7 @@ export function DomainSelector({ onStartSession }: DomainSelectorProps) {
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.3 }}
                   >
-                    <label className="block text-base font-bold text-gray-800 mb-4 flex items-center">
-                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center mr-2">
-                        <CheckCircle className="w-4 h-4 text-white" />
-                      </div>
+                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
                       Number of Questions
                     </label>
                     <div className="grid grid-cols-3 gap-3">
@@ -591,10 +582,10 @@ export function DomainSelector({ onStartSession }: DomainSelectorProps) {
                           <Button
                             onClick={() => setQuestionCount(count)}
                             variant={questionCount === count ? 'default' : 'outline'}
-                            className={`w-full h-12 font-semibold text-base transition-all duration-300 ${
+                            className={`w-full h-11 font-medium text-sm transition-all duration-200 ${
                               questionCount === count
-                                ? 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg scale-105'
-                                : 'border-2 border-gray-300 hover:border-indigo-400 hover:bg-indigo-50'
+                                ? 'bg-indigo-600 dark:bg-indigo-500 hover:bg-indigo-700 dark:hover:bg-indigo-600 text-white'
+                                : 'border border-gray-300 dark:border-slate-600 hover:border-indigo-500 dark:hover:border-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 dark:text-gray-300'
                             }`}
                           >
                             {count}
@@ -612,94 +603,83 @@ export function DomainSelector({ onStartSession }: DomainSelectorProps) {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.5 }}
                 >
-                  <label className="block text-base font-bold text-gray-800 mb-4 flex items-center">
-                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center mr-2">
-                      <Sparkles className="w-4 h-4 text-white" />
-                    </div>
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
                     Analysis Mode
                   </label>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <motion.div
-                      whileHover={{ scale: 1.02, y: -4 }}
+                      whileHover={{ scale: 1.01 }}
                       transition={{ type: "spring", stiffness: 300 }}
                     >
                       <Card
                         onClick={() => setAnalysisMode('standard')}
-                        className={`p-5 cursor-pointer transition-all duration-300 relative overflow-hidden group ${
+                        className={`p-4 cursor-pointer transition-all duration-200 relative overflow-hidden group ${
                           analysisMode === 'standard'
-                            ? 'border-2 border-green-500 bg-gradient-to-br from-green-50 to-emerald-50 shadow-xl'
-                            : 'border-2 border-gray-300 bg-white hover:border-green-400 hover:shadow-lg'
+                            ? 'border-2 border-indigo-500 dark:border-indigo-400 bg-indigo-50 dark:bg-indigo-950/30'
+                            : 'border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 hover:border-indigo-400 dark:hover:border-indigo-500'
                         }`}
                       >
-                        <div className="absolute inset-0 bg-gradient-to-br from-green-500/0 to-emerald-500/0 group-hover:from-green-500/5 group-hover:to-emerald-500/5 transition-all duration-300"></div>
                         {analysisMode === 'standard' && (
                           <motion.div
                             className="absolute top-2 right-2"
                             initial={{ scale: 0 }}
                             animate={{ scale: 1 }}
                           >
-                            <CheckCircle className="w-6 h-6 text-green-600 fill-green-600" />
+                            <CheckCircle className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
                           </motion.div>
                         )}
                         <div className="relative flex items-start">
-                          <motion.div
-                            className={`p-3 rounded-xl mr-4 ${
-                              analysisMode === 'standard' ? 'bg-gradient-to-br from-green-500 to-emerald-600 shadow-md' : 'bg-gradient-to-br from-gray-100 to-gray-200 group-hover:from-green-100 group-hover:to-emerald-100'
-                            }`}
-                            whileHover={{ rotate: 5 }}
-                          >
+                          <div className={`p-2 rounded-lg mr-3 ${
+                            analysisMode === 'standard' ? 'bg-indigo-600 dark:bg-indigo-500' : 'bg-gray-200 dark:bg-slate-700'
+                          }`}>
                             <Sparkles className={`w-5 h-5 ${
-                              analysisMode === 'standard' ? 'text-white' : 'text-gray-600 group-hover:text-green-600'
+                              analysisMode === 'standard' ? 'text-white' : 'text-gray-600 dark:text-gray-400'
                             }`} />
-                          </motion.div>
+                          </div>
                           <div>
-                            <h4 className={`font-bold text-base mb-2 ${
-                              analysisMode === 'standard' ? 'text-green-700' : 'text-gray-900'
+                            <h4 className={`font-semibold text-sm mb-1 ${
+                              analysisMode === 'standard' ? 'text-indigo-700 dark:text-indigo-300' : 'text-gray-900 dark:text-gray-100'
                             }`}>Standard Analysis</h4>
-                            <p className="text-sm text-gray-600 leading-relaxed">Fast feedback on content quality and technical accuracy</p>
+                            <p className="text-xs text-gray-600 dark:text-gray-400">Fast feedback on content quality and technical accuracy</p>
                           </div>
                         </div>
                       </Card>
                     </motion.div>
 
                     <motion.div
-                      whileHover={{ scale: 1.02, y: -4 }}
+                      whileHover={{ scale: 1.01 }}
                       transition={{ type: "spring", stiffness: 300 }}
                     >
                       <Card
                         onClick={() => setAnalysisMode('advanced')}
-                        className={`p-5 cursor-pointer transition-all duration-300 relative overflow-hidden group ${
+                        className={`p-4 cursor-pointer transition-all duration-200 relative overflow-hidden group ${
                           analysisMode === 'advanced'
-                            ? 'border-2 border-purple-500 bg-gradient-to-br from-purple-50 to-pink-50 shadow-xl'
-                            : 'border-2 border-gray-300 bg-white hover:border-purple-400 hover:shadow-lg'
+                            ? 'border-2 border-purple-500 dark:border-purple-400 bg-purple-50 dark:bg-purple-950/30'
+                            : 'border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 hover:border-purple-400 dark:hover:border-purple-500'
                         }`}
                       >
-                        <div className="absolute inset-0 bg-gradient-to-br from-purple-500/0 to-pink-500/0 group-hover:from-purple-500/5 group-hover:to-pink-500/5 transition-all duration-300"></div>
                         {analysisMode === 'advanced' && (
                           <motion.div
                             className="absolute top-2 right-2"
                             initial={{ scale: 0 }}
                             animate={{ scale: 1 }}
                           >
-                            <CheckCircle className="w-6 h-6 text-purple-600 fill-purple-600" />
+                            <CheckCircle className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                           </motion.div>
                         )}
                         <div className="relative flex items-start">
-                          <motion.div
-                            className={`p-3 rounded-xl mr-4 ${
-                              analysisMode === 'advanced' ? 'bg-gradient-to-br from-purple-500 to-pink-600 shadow-md' : 'bg-gradient-to-br from-gray-100 to-gray-200 group-hover:from-purple-100 group-hover:to-pink-100'
-                            }`}
-                            whileHover={{ rotate: 5 }}
-                          >
+                          <div className={`p-2 rounded-lg mr-3 ${
+                            analysisMode === 'advanced' ? 'bg-purple-600 dark:bg-purple-500' : 'bg-gray-200 dark:bg-slate-700'
+                          }`}>
                             <Zap className={`w-5 h-5 ${
-                              analysisMode === 'advanced' ? 'text-white' : 'text-gray-600 group-hover:text-purple-600'
+                              analysisMode === 'advanced' ? 'text-white' : 'text-gray-600 dark:text-gray-400'
                             }`} />
-                          </motion.div>
+                          </div>
                           <div>
-                            <h4 className={`font-bold text-base mb-2 ${
-                              analysisMode === 'advanced' ? 'text-purple-700' : 'text-gray-900'
+                            <h4 className={`font-semibold text-sm mb-1 ${
+                              analysisMode === 'advanced' ? 'text-purple-700 dark:text-purple-300' : 'text-gray-900 dark:text-gray-100'
                             }`}>Advanced Analysis</h4>
-                            <p className="text-sm text-gray-600 leading-relaxed">Includes speech patterns, body language, and comprehensive feedback</p>
+                            <p className="text-xs text-gray-600 dark:text-gray-400">Includes speech patterns, body language, and comprehensive feedback</p>
                           </div>
                         </div>
                       </Card>
@@ -711,20 +691,16 @@ export function DomainSelector({ onStartSession }: DomainSelectorProps) {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.6 }}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
                 >
                   <Button
                     onClick={handleStart}
                     disabled={!selectedDomain || !selectedLevel}
-                    className="w-full bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:from-indigo-700 hover:via-purple-700 hover:to-pink-700 text-white py-6 text-lg font-bold shadow-2xl hover:shadow-indigo-500/50 transition-all duration-300 relative overflow-hidden group"
+                    className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 dark:from-blue-500 dark:to-indigo-500 dark:hover:from-blue-600 dark:hover:to-indigo-600 text-white py-3 text-lg font-semibold shadow-lg transition-all duration-200"
                   >
-                    <span className="relative z-10 flex items-center justify-center">
-                      <Sparkles className="w-6 h-6 mr-2 animate-pulse" />
+                    <span className="flex items-center justify-center">
+                      <Sparkles className="w-5 h-5 mr-2" />
                       Start Intelligent Interview
-                      <Sparkles className="w-6 h-6 ml-2 animate-pulse" />
                     </span>
-                    <div className="absolute inset-0 bg-gradient-to-r from-pink-600 via-purple-600 to-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   </Button>
                 </motion.div>
               </Card>

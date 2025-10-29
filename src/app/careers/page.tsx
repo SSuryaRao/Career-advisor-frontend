@@ -131,8 +131,20 @@ export default function CareersPage() {
   }, [])
 
   useEffect(() => {
-    filterJobs()
-  }, [jobs, searchTerm, locationFilter, selectedCategory, sortBy])
+    // Debounce the API call when filters change
+    const timeoutId = setTimeout(() => {
+      if (searchTerm || locationFilter || selectedCategory !== 'all') {
+        loadFilteredJobs()
+      } else {
+        // No filters applied, reload initial data to show all jobs
+        if (searchTerm === '' && locationFilter === '' && selectedCategory === 'all') {
+          setFilteredJobs(jobs)
+        }
+      }
+    }, 500)
+
+    return () => clearTimeout(timeoutId)
+  }, [searchTerm, locationFilter, selectedCategory, sortBy])
 
   const loadInitialData = async () => {
     try {
@@ -149,6 +161,7 @@ export default function CareersPage() {
 
       if (response.success && response.data) {
         setJobs(response.data.jobs || [])
+        setFilteredJobs(response.data.jobs || [])
         setTotalJobs(response.data.pagination?.totalJobs || 0)
         setHasMore(response.data.pagination?.hasNext || false)
         setIsConnectedToBackend(true)
@@ -165,6 +178,34 @@ export default function CareersPage() {
     }
   }
 
+  const loadFilteredJobs = async () => {
+    try {
+      setSearchLoading(true)
+      const response = await apiClient.getAllJobs({
+        page: 1,
+        limit: jobsPerPage,
+        daysOld: daysToShow,
+        search: searchTerm || undefined,
+        location: locationFilter || undefined,
+        tags: selectedCategory !== 'all' ? [selectedCategory] : undefined,
+        sortBy: sortBy === 'salary-high' || sortBy === 'salary-low' ? 'salary.max' :
+                sortBy === 'latest' ? 'postedAt' : 'postedAt',
+        sortOrder: sortBy === 'salary-low' ? 'asc' : 'desc'
+      })
+
+      if (response.success && response.data) {
+        setFilteredJobs(response.data.jobs || [])
+        setTotalJobs(response.data.pagination?.totalJobs || 0)
+        console.log(`🔍 Filtered: ${response.data.jobs.length} jobs found`)
+      }
+    } catch (err) {
+      console.error('Error filtering jobs:', err)
+      toast.error('Failed to filter jobs')
+    } finally {
+      setSearchLoading(false)
+    }
+  }
+
   const loadMoreJobs = async () => {
     if (!hasMore || loadingMore) return
 
@@ -175,12 +216,16 @@ export default function CareersPage() {
       const response = await apiClient.getAllJobs({
         page: nextPage,
         limit: jobsPerPage,
-        daysOld: daysToShow
+        daysOld: daysToShow,
+        search: searchTerm || undefined,
+        location: locationFilter || undefined,
+        tags: selectedCategory !== 'all' ? [selectedCategory] : undefined
       })
 
       if (response.success && response.data) {
         const newJobs = response.data.jobs || []
         setJobs(prevJobs => [...prevJobs, ...newJobs])
+        setFilteredJobs(prevJobs => [...prevJobs, ...newJobs])
         setPage(nextPage)
         setHasMore(response.data.pagination?.hasNext || false)
         console.log(`✅ Loaded ${newJobs.length} more jobs (Page ${nextPage})`)
@@ -223,53 +268,14 @@ export default function CareersPage() {
   }
 
   const filterJobs = () => {
-    let filtered = jobs.filter((job: any) => {
-      const matchesSearch = job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           job.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           (job.description && job.description.toLowerCase().includes(searchTerm.toLowerCase()))
-
-      const matchesLocation = !locationFilter ||
-                             (job.location && job.location.toLowerCase().includes(locationFilter.toLowerCase()))
-
-      const matchesCategory = selectedCategory === 'all' ||
-                             (job.tags && job.tags.some((tag: string) =>
-                               tag.toLowerCase() === selectedCategory.toLowerCase()))
-
-      return matchesSearch && matchesLocation && matchesCategory
-    })
-
-    // Apply sorting
-    const sorted = [...filtered].sort((a, b) => {
-      switch (sortBy) {
-        case 'latest':
-          return new Date(b.postedAt).getTime() - new Date(a.postedAt).getTime()
-
-        case 'salary-high':
-          const salaryA = a.salary?.max || a.salary?.min || 0
-          const salaryB = b.salary?.max || b.salary?.min || 0
-          return salaryB - salaryA
-
-        case 'salary-low':
-          const salaryAMin = a.salary?.min || a.salary?.max || 999999999
-          const salaryBMin = b.salary?.min || b.salary?.max || 999999999
-          return salaryAMin - salaryBMin
-
-        case 'relevant':
-        default:
-          // Most relevant: featured jobs first, then by date
-          if (a.featured && !b.featured) return -1
-          if (!a.featured && b.featured) return 1
-          return new Date(b.postedAt).getTime() - new Date(a.postedAt).getTime()
-      }
-    })
-
-    setFilteredJobs(sorted)
+    // This function is no longer needed as filtering is done server-side
+    // Kept for backward compatibility
+    setFilteredJobs(jobs)
   }
 
   const handleSearch = () => {
-    // The filtering is already handled by the useEffect
-    // This just triggers a re-filter
-    filterJobs()
+    // Trigger server-side search
+    loadFilteredJobs()
   }
 
   const formatSalary = (salary: any) => {
@@ -293,11 +299,14 @@ export default function CareersPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 bg-career-pattern">
-      <Navbar />
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-950 dark:via-gray-900 dark:to-purple-950/20">
+      <Navbar variant="transparent" />
       
-      {/* Hero Section - Keeping as is */}
-      <section className="pt-24 pb-12 gradient-career text-white relative overflow-hidden">
+      {/* Hero Section */}
+      <section className="pt-24 pb-12 gradient-test-4 text-white relative overflow-hidden">
+        {/* Dark overlay for better text visibility */}
+        <div className="absolute inset-0 bg-black/10"></div>
+
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-white/5 rounded-full blur-3xl float-slow"></div>
           <div className="absolute top-3/4 right-1/4 w-48 h-48 bg-blue-300/10 rounded-full blur-2xl float-delay-1"></div>
@@ -319,7 +328,7 @@ export default function CareersPage() {
             <h1 className="text-4xl lg:text-6xl font-bold mb-6">
               Find Your Dream Career
             </h1>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto mb-8">
+            <p className="text-xl text-white/95 max-w-3xl mx-auto mb-8">
               Discover opportunities that match your skills, interests, and career goals.
               Get AI-powered recommendations tailored just for you.
             </p>
@@ -358,11 +367,11 @@ export default function CareersPage() {
                   />
                 </div>
                 <div className="flex gap-3">
-                  <Button variant="outline" className="text-gray-700 border-white/30 bg-white/80 hover:bg-white/90 backdrop-blur-sm rounded-xl">
+                  {/* <Button variant="outline" className="text-gray-700 border-white/30 bg-white/80 hover:bg-white/90 backdrop-blur-sm rounded-xl">
                     <MapPin className="w-4 h-4 mr-2" />
                     Location
-                  </Button>
-                  <Button 
+                  </Button> */}
+                  <Button
                     className="btn-career px-8 py-4 rounded-xl font-semibold"
                     onClick={handleSearch}
                     disabled={searchLoading}
@@ -379,7 +388,7 @@ export default function CareersPage() {
 
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
               {[
-                { label: 'Active Jobs', value: jobs.length.toString(), color: 'text-blue-300', bg: 'bg-blue-500/10' },
+                { label: 'Total Jobs', value: totalJobs.toString(), color: 'text-blue-300', bg: 'bg-blue-500/10' },
                 { label: 'Filtered Jobs', value: filteredJobs.length.toString(), color: 'text-purple-300', bg: 'bg-purple-500/10' },
                 { label: 'AI Recommendations', value: recommendations.length.toString(), color: 'text-cyan-300', bg: 'bg-cyan-500/10' },
                 { label: 'New This Week', value: jobs.filter((j: any) => {
@@ -398,7 +407,7 @@ export default function CareersPage() {
                 >
                   <div className={`${stat.bg} backdrop-blur-sm rounded-2xl p-6 transition-all duration-300 group-hover:scale-105 group-hover:shadow-lg border border-white/10`}>
                     <div className={`text-2xl lg:text-3xl font-bold ${stat.color} mb-2 group-hover:scale-110 transition-transform`}>{stat.value}</div>
-                    <div className="text-gray-300 text-sm font-medium">{stat.label}</div>
+                    <div className="text-white/90 text-sm font-medium">{stat.label}</div>
                   </div>
                 </motion.div>
               ))}
@@ -416,7 +425,7 @@ export default function CareersPage() {
               <h2 className="text-4xl font-bold mb-3 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
                 Browse by Category
               </h2>
-              <p className="text-gray-600 text-lg">Explore opportunities across different industries</p>
+              <p className="text-gray-600 dark:text-gray-400 text-lg">Explore opportunities across different industries</p>
             </div>
             <Button className="bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all">
               View All Categories
@@ -432,12 +441,12 @@ export default function CareersPage() {
                 className="group cursor-pointer"
                 onClick={() => setSelectedCategory(category.name)}
               >
-                <div className="relative overflow-hidden rounded-2xl bg-white border border-gray-100 p-6 text-center hover:shadow-2xl transition-all duration-500 hover:scale-105">
-                  <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-purple-50 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div className="relative overflow-hidden rounded-2xl bg-white dark:bg-slate-800 border-2 border-gray-300 dark:border-slate-600 hover:border-indigo-300 dark:hover:border-indigo-500 p-6 text-center hover:shadow-2xl transition-all duration-500 hover:scale-105">
+                  <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-purple-50 dark:to-purple-50 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                   <div className={`w-16 h-16 bg-gradient-to-br ${category.gradient} rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform shadow-lg relative`}>
                     <category.icon className="w-8 h-8 text-white relative z-10" />
                   </div>
-                  <h3 className="font-bold text-gray-800 mb-2 text-lg group-hover:text-indigo-600 transition-colors">{category.name}</h3>
+                  <h3 className="font-bold text-gray-800 dark:text-gray-100 mb-2 text-lg group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{category.name}</h3>
                   <p className="text-gray-500 text-sm font-semibold">{category.count.toLocaleString()} jobs</p>
                 </div>
               </motion.div>
@@ -450,15 +459,15 @@ export default function CareersPage() {
           <div className="mb-12">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center">
-                <Sparkles className="w-6 h-6 text-purple-600 mr-2" />
-                <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                <Sparkles className="w-6 h-6 text-purple-600 dark:text-purple-400 mr-2" />
+                <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 dark:from-purple-400 dark:to-pink-400 bg-clip-text text-transparent">
                   AI-Powered Recommendations for You
                 </h2>
               </div>
               <Button
                 variant="outline"
                 onClick={() => setShowRecommendations(false)}
-                className="border-purple-300 text-purple-700 hover:bg-purple-50"
+                className="border-purple-300 dark:border-purple-700 text-purple-700 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30"
               >
                 Hide Recommendations
               </Button>
@@ -471,22 +480,30 @@ export default function CareersPage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.05 * index }}
                 >
-                  <Card className="p-6 hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-purple-50 to-blue-50 border-2 border-purple-200 cursor-pointer h-full">
-                    <div className="flex items-start justify-between mb-4">
+                  <Card className="relative overflow-hidden p-6 hover:shadow-2xl transition-all duration-300 bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50 dark:from-gray-800 dark:via-gray-900 dark:to-purple-900/30 border-2 border-purple-200 dark:border-purple-700/50 cursor-pointer h-full group">
+                    {/* Animated gradient overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-transparent to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+                    <div className="relative z-10 flex items-start justify-between mb-4">
                       <div className="flex-1">
-                        <h3 className="text-xl font-semibold text-gray-900 hover:text-purple-600 transition-colors mb-2">
+                        <h3 className="text-xl font-semibold text-gray-900 dark:text-white hover:text-purple-600 dark:hover:text-purple-400 transition-colors mb-2">
                           {job.title}
                         </h3>
-                        <div className="flex items-center text-gray-600 mb-2">
+                        <div className="flex items-center text-gray-600 dark:text-gray-300 mb-2">
                           <Building className="w-4 h-4 mr-2" />
                           <span>{job.company}</span>
                         </div>
                       </div>
-                      {/* Match Score Circle */}
+                      {/* Enhanced Match Score Circle with glow */}
                       <div className="ml-4">
                         <div className="relative w-20 h-20">
-                          <svg className="transform -rotate-90 w-20 h-20">
-                            <circle cx="40" cy="40" r="36" stroke="#e5e7eb" strokeWidth="6" fill="none" />
+                          {/* Glow effect */}
+                          <div className={`absolute inset-0 rounded-full blur-md ${
+                            (job.matchScore || 50) >= 80 ? 'bg-green-400/30' :
+                            (job.matchScore || 50) >= 60 ? 'bg-blue-400/30' : 'bg-yellow-400/30'
+                          }`} />
+                          <svg className="transform -rotate-90 w-20 h-20 relative z-10">
+                            <circle cx="40" cy="40" r="36" stroke="#e5e7eb" className="dark:stroke-gray-700" strokeWidth="6" fill="none" />
                             <circle
                               cx="40"
                               cy="40"
@@ -501,31 +518,31 @@ export default function CareersPage() {
                               strokeLinecap="round"
                             />
                           </svg>
-                          <div className="absolute inset-0 flex flex-col items-center justify-center">
-                            <span className="text-2xl font-bold text-gray-800">{job.matchScore || 50}%</span>
-                            <span className="text-xs text-gray-600">Match</span>
+                          <div className="absolute inset-0 flex flex-col items-center justify-center z-20">
+                            <span className="text-2xl font-bold text-gray-800 dark:text-white">{job.matchScore || 50}%</span>
+                            <span className="text-xs text-gray-600 dark:text-gray-400">Match</span>
                           </div>
                         </div>
                       </div>
                     </div>
 
-                    {/* AI Reason */}
+                    {/* AI Reason - Enhanced with relative positioning */}
                     {job.matchReason && (
-                      <div className={`mb-4 p-3 bg-white rounded-lg border ${
+                      <div className={`relative mb-4 p-3 rounded-lg border backdrop-blur-sm ${
                         job.matchReason.includes('Basic recommendation')
-                          ? 'border-orange-200 bg-orange-50'
-                          : 'border-purple-200'
+                          ? 'border-orange-200 dark:border-orange-800 bg-orange-50 dark:bg-orange-900/20'
+                          : 'border-purple-200 dark:border-purple-800 bg-white dark:bg-purple-900/20'
                       }`}>
-                        <div className="flex items-start">
+                        <div className="flex items-start relative z-10">
                           <Sparkles className={`w-4 h-4 mr-2 mt-0.5 flex-shrink-0 ${
                             job.matchReason.includes('Basic recommendation')
-                              ? 'text-orange-600'
-                              : 'text-purple-600'
+                              ? 'text-orange-600 dark:text-orange-400'
+                              : 'text-purple-600 dark:text-purple-400'
                           }`} />
                           <div className="flex-1">
-                            <p className="text-sm text-gray-700">{job.matchReason}</p>
+                            <p className="text-sm text-gray-700 dark:text-gray-200">{job.matchReason}</p>
                             {job.matchReason.includes('Basic recommendation') && (
-                              <p className="text-xs text-orange-600 mt-1">
+                              <p className="text-xs text-orange-600 dark:text-orange-400 mt-1">
                                 💡 Complete your profile and upload a resume for personalized AI recommendations
                               </p>
                             )}
@@ -534,28 +551,30 @@ export default function CareersPage() {
                       </div>
                     )}
 
-                    <div className="space-y-2 mb-4">
-                      <div className="flex items-center text-gray-600 text-sm">
-                        <MapPin className="w-4 h-4 mr-2" />
+                    <div className="relative z-10 space-y-2 mb-4">
+                      <div className="flex items-center text-gray-600 dark:text-gray-300 text-sm">
+                        <MapPin className="w-4 h-4 mr-2 text-purple-500 dark:text-purple-400" />
                         <span>{job.location || 'Remote'}</span>
                       </div>
-                      <div className="flex items-center text-gray-600 text-sm">
-                        <DollarSign className="w-4 h-4 mr-2" />
+                      <div className="flex items-center text-gray-600 dark:text-gray-300 text-sm">
+                        <DollarSign className="w-4 h-4 mr-2 text-green-500 dark:text-green-400" />
                         <span>{formatSalary(job.salary)}</span>
                       </div>
-                      <div className="flex items-center text-gray-600 text-sm">
-                        <Clock className="w-4 h-4 mr-2" />
+                      <div className="flex items-center text-gray-600 dark:text-gray-300 text-sm">
+                        <Clock className="w-4 h-4 mr-2 text-blue-500 dark:text-blue-400" />
                         <span>{formatDate(job.postedAt)}</span>
                       </div>
                     </div>
 
                     {/* Strengths */}
                     {job.strengths && job.strengths.length > 0 && (
-                      <div className="mb-4">
-                        <p className="text-xs text-gray-500 mb-2 font-medium">Your Strengths:</p>
+                      <div className="relative z-10 mb-4">
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mb-2 font-medium flex items-center">
+                          <span className="mr-1">✨</span> Your Strengths:
+                        </p>
                         <div className="flex flex-wrap gap-1">
                           {job.strengths.slice(0, 3).map((strength: string, idx: number) => (
-                            <Badge key={idx} className="text-xs bg-green-100 text-green-800">
+                            <Badge key={idx} className="text-xs bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 border border-green-200 dark:border-green-800">
                               {strength}
                             </Badge>
                           ))}
@@ -565,11 +584,13 @@ export default function CareersPage() {
 
                     {/* Skill Gaps */}
                     {job.skillGaps && job.skillGaps.length > 0 && (
-                      <div className="mb-4">
-                        <p className="text-xs text-gray-500 mb-2 font-medium">Skills to Learn:</p>
+                      <div className="relative z-10 mb-4">
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mb-2 font-medium flex items-center">
+                          <span className="mr-1">📚</span> Skills to Learn:
+                        </p>
                         <div className="flex flex-wrap gap-1">
                           {job.skillGaps.slice(0, 3).map((skill: string, idx: number) => (
-                            <Badge key={idx} variant="outline" className="text-xs text-orange-700 border-orange-300">
+                            <Badge key={idx} variant="outline" className="text-xs text-orange-700 dark:text-orange-400 border-orange-300 dark:border-orange-700 bg-orange-50 dark:bg-orange-900/20">
                               {skill}
                             </Badge>
                           ))}
@@ -577,10 +598,10 @@ export default function CareersPage() {
                       </div>
                     )}
 
-                    {/* Apply Now Button */}
-                    <div className="mt-auto pt-4 border-t border-purple-200">
+                    {/* Apply Now Button - Enhanced with gradient and shadow */}
+                    <div className="relative z-10 mt-auto pt-4 border-t border-purple-200 dark:border-purple-800">
                       <Button
-                        className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-medium"
+                        className="w-full bg-gradient-to-r from-purple-600 via-blue-600 to-purple-600 hover:from-purple-700 hover:via-blue-700 hover:to-purple-700 text-white font-semibold shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200"
                         onClick={(e) => {
                           e.stopPropagation()
                           if (job.applicationUrl) {
@@ -600,8 +621,8 @@ export default function CareersPage() {
                 </motion.div>
               ))}
             </div>
-            <div className="border-t border-gray-300 pt-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">All Available Jobs</h2>
+            <div className="border-t border-gray-300 dark:border-gray-700 pt-8">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">All Available Jobs</h2>
             </div>
           </div>
         )}
@@ -651,11 +672,11 @@ export default function CareersPage() {
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
-                className="mb-8 bg-gradient-to-br from-purple-50 to-blue-50 rounded-2xl p-6 border border-purple-200"
+                className="mb-8 bg-gradient-to-br from-purple-50 to-blue-50 dark:from-gray-800 dark:to-gray-900 rounded-2xl p-6 border border-purple-200 dark:border-gray-700"
               >
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
                       Search Jobs
                     </label>
                     <Input
@@ -663,11 +684,11 @@ export default function CareersPage() {
                       placeholder="Job title, company, keywords..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="bg-white border-purple-200 focus:border-purple-400"
+                      className="bg-white dark:bg-gray-700 dark:text-white border-purple-200 dark:border-gray-600 focus:border-purple-400 dark:focus:border-purple-500"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
                       Location
                     </label>
                     <Input
@@ -675,17 +696,17 @@ export default function CareersPage() {
                       placeholder="City, state, or remote"
                       value={locationFilter}
                       onChange={(e) => setLocationFilter(e.target.value)}
-                      className="bg-white border-purple-200 focus:border-purple-400"
+                      className="bg-white dark:bg-gray-700 dark:text-white border-purple-200 dark:border-gray-600 focus:border-purple-400 dark:focus:border-purple-500"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
                       Category
                     </label>
                     <select
                       value={selectedCategory}
                       onChange={(e) => setSelectedCategory(e.target.value)}
-                      className="w-full bg-white border border-purple-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                      className="w-full bg-white dark:bg-gray-700 dark:text-white border border-purple-200 dark:border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400 dark:focus:ring-purple-500"
                     >
                       <option value="all">All Categories</option>
                       {getJobCategories(jobs).map((cat) => (
@@ -697,8 +718,8 @@ export default function CareersPage() {
                   </div>
                 </div>
                 <div className="mt-4 flex items-center justify-between">
-                  <div className="text-sm text-gray-600">
-                    <span className="font-semibold text-purple-700">{filteredJobs.length}</span> jobs found
+                  <div className="text-sm text-gray-600 dark:text-gray-300">
+                    <span className="font-semibold text-purple-700 dark:text-purple-400">{filteredJobs.length}</span> jobs found
                   </div>
                   <Button
                     variant="outline"
@@ -706,8 +727,10 @@ export default function CareersPage() {
                       setSearchTerm('')
                       setLocationFilter('')
                       setSelectedCategory('all')
+                      // Reload all jobs
+                      loadInitialData()
                     }}
-                    className="border-purple-300 text-purple-700 hover:bg-purple-100"
+                    className="border-purple-300 dark:border-purple-700 text-purple-700 dark:text-purple-400 hover:bg-purple-100 dark:hover:bg-purple-900/30"
                   >
                     <X className="w-4 h-4 mr-2" />
                     Clear All Filters
@@ -750,7 +773,7 @@ export default function CareersPage() {
                   transition={{ delay: 0.1 * (index % 5) }}
                   className="group"
                 >
-                  <div className="relative bg-white rounded-3xl p-8 hover:shadow-2xl transition-all duration-500 border border-gray-100 overflow-hidden hover:border-indigo-200">
+                  <div className="relative bg-white dark:bg-slate-800 rounded-3xl p-8 hover:shadow-2xl transition-all duration-500 border-2 border-gray-300 dark:border-slate-600 overflow-hidden hover:border-indigo-300 dark:hover:border-indigo-500">
                     {/* Gradient accent bar */}
                     <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-indigo-500 via-purple-500 to-pink-500"></div>
                     
@@ -762,7 +785,7 @@ export default function CareersPage() {
                     <div className="flex items-start justify-between mb-6">
                       <div className="flex-1">
                         <div className="flex items-center space-x-3 mb-3">
-                          <h3 className="text-2xl font-bold text-gray-800 group-hover:text-indigo-600 transition-colors cursor-pointer">
+                          <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors cursor-pointer">
                             {job.title}
                           </h3>
                           {job.featured && (
@@ -776,34 +799,34 @@ export default function CareersPage() {
                             </Badge>
                           )}
                         </div>
-                        <div className="flex flex-wrap items-center gap-4 text-gray-600 mb-4 text-sm">
+                        <div className="flex flex-wrap items-center gap-4 text-gray-600 dark:text-gray-300 mb-4 text-sm">
                           <div className="flex items-center font-semibold">
-                            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center mr-2">
-                              <Building className="w-4 h-4 text-indigo-600" />
+                            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900 dark:to-indigo-900 flex items-center justify-center mr-2">
+                              <Building className="w-4 h-4 text-indigo-600 dark:text-indigo-300" />
                             </div>
-                            <span className="text-gray-800">{job.company}</span>
+                            <span className="text-gray-800 dark:text-gray-100">{job.company}</span>
                           </div>
                           <div className="flex items-center">
-                            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-100 to-emerald-100 flex items-center justify-center mr-2">
-                              <MapPin className="w-4 h-4 text-emerald-600" />
+                            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-100 to-emerald-100 dark:from-green-900 dark:to-emerald-900 flex items-center justify-center mr-2">
+                              <MapPin className="w-4 h-4 text-emerald-600 dark:text-emerald-300" />
                             </div>
-                            <span className="font-medium">{job.location}</span>
+                            <span className="font-medium dark:text-gray-200">{job.location}</span>
                           </div>
                           <div className="flex items-center">
-                            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-100 to-amber-100 flex items-center justify-center mr-2">
-                              <Clock className="w-4 h-4 text-orange-600" />
+                            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-100 to-amber-100 dark:from-orange-900 dark:to-amber-900 flex items-center justify-center mr-2">
+                              <Clock className="w-4 h-4 text-orange-600 dark:text-orange-300" />
                             </div>
-                            <span className="font-medium">{formatDate(job.postedAt)}</span>
+                            <span className="font-medium dark:text-gray-200">{formatDate(job.postedAt)}</span>
                           </div>
                         </div>
                         <div className="flex flex-wrap gap-2 mb-6">
                           {job.tags?.slice(0, 5).map((tag: string, tagIndex: number) => (
-                            <Badge key={`${tag}-${tagIndex}`} className="bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-700 hover:from-indigo-100 hover:to-purple-100 transition-all cursor-pointer border border-indigo-200 font-semibold px-3 py-1.5 rounded-full shadow-sm">
+                            <Badge key={`${tag}-${tagIndex}`} className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900 dark:to-purple-900 text-indigo-700 dark:text-indigo-300 hover:from-indigo-100 hover:to-purple-100 dark:hover:from-indigo-800 dark:hover:to-purple-800 transition-all cursor-pointer border border-indigo-200 dark:border-indigo-700 font-semibold px-3 py-1.5 rounded-full shadow-sm">
                               {tag}
                             </Badge>
                           ))}
                           {job.tags && job.tags.length > 5 && (
-                            <Badge className="bg-gray-100 text-gray-600 border border-gray-200 px-3 py-1.5 rounded-full font-semibold">
+                            <Badge className="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-600 px-3 py-1.5 rounded-full font-semibold">
                               +{job.tags.length - 5} more
                             </Badge>
                           )}
@@ -829,18 +852,18 @@ export default function CareersPage() {
                     
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
                       <div className="flex flex-wrap items-center gap-3 text-sm">
-                        <div className="flex items-center font-bold bg-gradient-to-r from-emerald-50 to-green-50 text-emerald-700 px-4 py-2.5 rounded-xl border border-emerald-200 shadow-sm">
+                        <div className="flex items-center font-bold bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-900 dark:to-green-900 text-emerald-700 dark:text-emerald-300 px-4 py-2.5 rounded-xl border border-emerald-200 dark:border-emerald-700 shadow-sm">
                           <DollarSign className="w-4 h-4 mr-1.5" />
                           <span>{formatSalary(job.salary)}</span>
                         </div>
                         {job.jobType && (
-                          <div className="flex items-center bg-gradient-to-r from-purple-50 to-violet-50 text-purple-700 px-4 py-2.5 rounded-xl border border-purple-200 font-semibold shadow-sm">
+                          <div className="flex items-center bg-gradient-to-r from-purple-50 to-violet-50 dark:from-purple-900 dark:to-violet-900 text-purple-700 dark:text-purple-300 px-4 py-2.5 rounded-xl border border-purple-200 dark:border-purple-700 font-semibold shadow-sm">
                             <Briefcase className="w-4 h-4 mr-1.5" />
                             <span>{job.jobType}</span>
                           </div>
                         )}
                         {job.experienceLevel && (
-                          <div className="flex items-center bg-gradient-to-r from-amber-50 to-orange-50 text-amber-700 px-4 py-2.5 rounded-xl border border-amber-200 font-semibold shadow-sm">
+                          <div className="flex items-center bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900 dark:to-orange-900 text-amber-700 dark:text-amber-300 px-4 py-2.5 rounded-xl border border-amber-200 dark:border-amber-700 font-semibold shadow-sm">
                             <Award className="w-4 h-4 mr-1.5" />
                             <span>{job.experienceLevel}</span>
                           </div>
@@ -871,13 +894,13 @@ export default function CareersPage() {
             {/* Load More Button */}
             {!loading && !error && filteredJobs.length > 0 && hasMore && (
               <div className="mt-12 text-center">
-                <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-2xl p-8 border border-purple-200">
+                <div className="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-gray-800 dark:to-gray-900 rounded-2xl p-8 border border-purple-200 dark:border-purple-800">
                   <div className="mb-4">
-                    <p className="text-sm text-gray-600 mb-1">
-                      Showing <span className="font-bold text-purple-700">{jobs.length}</span> of{' '}
-                      <span className="font-bold text-purple-700">{totalJobs}</span> jobs
+                    <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">
+                      Showing <span className="font-bold text-purple-700 dark:text-purple-400">{jobs.length}</span> of{' '}
+                      <span className="font-bold text-purple-700 dark:text-purple-400">{totalJobs}</span> jobs
                     </p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
                       Latest jobs from the past {daysToShow} days
                     </p>
                   </div>
@@ -898,7 +921,7 @@ export default function CareersPage() {
                       </>
                     )}
                   </Button>
-                  <p className="text-xs text-gray-500 mt-3">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-3">
                     💡 {totalJobs - jobs.length} more jobs available
                   </p>
                 </div>
@@ -908,14 +931,14 @@ export default function CareersPage() {
             {/* No More Jobs Message */}
             {!loading && !error && filteredJobs.length > 0 && !hasMore && (
               <div className="mt-12 text-center">
-                <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-6 border border-green-200">
+                <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-2xl p-6 border border-green-200 dark:border-green-800">
                   <div className="flex items-center justify-center mb-2">
-                    <Star className="w-5 h-5 text-green-600 mr-2" />
-                    <p className="text-sm font-semibold text-green-800">
+                    <Star className="w-5 h-5 text-green-600 dark:text-green-400 mr-2" />
+                    <p className="text-sm font-semibold text-green-800 dark:text-green-300">
                       You've seen all {totalJobs} available jobs!
                     </p>
                   </div>
-                  <p className="text-xs text-gray-600">
+                  <p className="text-xs text-gray-600 dark:text-gray-400">
                     Check back later for new opportunities or adjust your filters
                   </p>
                 </div>
@@ -932,6 +955,8 @@ export default function CareersPage() {
                     setSearchTerm('')
                     setLocationFilter('')
                     setSelectedCategory('all')
+                    // Reload all jobs
+                    loadInitialData()
                   }}
                 >
                   Clear Filters

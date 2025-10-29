@@ -30,12 +30,14 @@ export function IntelligentInterviewMain() {
 
     setLoading(true)
     try {
+      const token = await user.getIdToken();
       const session = await intelligentInterviewApi.startSession(
         user.uid,
         domainId,
         level,
         questionCount,
-        analysisMode
+        analysisMode,
+        token
       )
 
       setSessionData(session)

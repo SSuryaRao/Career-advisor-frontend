@@ -41,7 +41,12 @@ export default function AdminInsightsPage() {
       setIsLoading(true)
       const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
 
-      const response = await fetch(`${API_BASE_URL}/api/analytics/admin/dashboard`)
+      const token = await user?.getIdToken()
+      const response = await fetch(`${API_BASE_URL}/api/analytics/admin/dashboard`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
       if (response.ok) {
         const data = await response.json()
         setInsights(data.data)
@@ -61,8 +66,12 @@ export default function AdminInsightsPage() {
       setIsSyncing(true)
       const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
 
+      const token = await user?.getIdToken()
       const response = await fetch(`${API_BASE_URL}/api/analytics/sync/all`, {
-        method: 'POST'
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       })
 
       if (response.ok) {
@@ -105,12 +114,12 @@ export default function AdminInsightsPage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-950 dark:via-gray-900 dark:to-purple-950/20">
         <Navbar />
         <div className="flex items-center justify-center h-screen">
-          <Card className="p-8 text-center max-w-md">
-            <h2 className="text-2xl font-bold mb-4">Admin Access Required</h2>
-            <p className="text-gray-600 mb-6">Please sign in to view analytics dashboard</p>
+          <Card className="p-8 text-center max-w-md dark:bg-slate-800">
+            <h2 className="text-2xl font-bold mb-4 dark:text-gray-100">Admin Access Required</h2>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">Please sign in to view analytics dashboard</p>
             <Button onClick={() => router.push('/login')} className="w-full">
               Sign In
             </Button>
@@ -122,12 +131,12 @@ export default function AdminInsightsPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-950 dark:via-gray-900 dark:to-purple-950/20">
         <Navbar />
         <div className="flex items-center justify-center h-screen">
-          <Card className="p-8 text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading analytics dashboard...</p>
+          <Card className="p-8 text-center dark:bg-slate-800">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 dark:border-blue-400 mx-auto mb-4"></div>
+            <p className="text-gray-600 dark:text-gray-400">Loading analytics dashboard...</p>
           </Card>
         </div>
       </div>
@@ -136,12 +145,12 @@ export default function AdminInsightsPage() {
 
   if (!insights) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-950 dark:via-gray-900 dark:to-purple-950/20">
         <Navbar />
         <div className="flex items-center justify-center h-screen">
-          <Card className="p-8 text-center max-w-md">
-            <h2 className="text-2xl font-bold mb-4">No Data Available</h2>
-            <p className="text-gray-600 mb-6">Run data sync to populate the dashboard</p>
+          <Card className="p-8 text-center max-w-md dark:bg-slate-800">
+            <h2 className="text-2xl font-bold mb-4 dark:text-gray-100">No Data Available</h2>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">Run data sync to populate the dashboard</p>
             <Button onClick={handleSync} disabled={isSyncing} className="w-full">
               {isSyncing ? 'Syncing...' : 'Sync Data Now'}
             </Button>
@@ -168,7 +177,7 @@ export default function AdminInsightsPage() {
   const totalScholarships = scholarshipStatsData.reduce((sum: number, item: any) => sum + (item.applicationCount || 0), 0)
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-950 dark:via-gray-900 dark:to-purple-950/20">
       <Navbar />
 
       {/* Hero Section */}
@@ -245,10 +254,10 @@ export default function AdminInsightsPage() {
             animate={{ opacity: 1 }}
             className="mb-8"
           >
-            <Card className="p-6 bg-white/80 backdrop-blur-sm shadow-xl border-0">
+            <Card className="p-6 bg-white/80 dark:bg-slate-800 backdrop-blur-sm shadow-xl border-0">
               <div className="mb-4">
-                <h3 className="text-xl font-bold text-gray-900 mb-2">Looker Studio Dashboard</h3>
-                <p className="text-sm text-gray-600">Interactive visualizations powered by Google Looker Studio</p>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">Looker Studio Dashboard</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Interactive visualizations powered by Google Looker Studio</p>
               </div>
               <div className="w-full" style={{ height: '800px' }}>
                 <iframe
@@ -340,13 +349,13 @@ export default function AdminInsightsPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
             >
-              <Card className="p-6 bg-white/80 backdrop-blur-sm shadow-xl border-0">
+              <Card className="p-6 bg-white/80 dark:bg-slate-800 backdrop-blur-sm shadow-xl border-0">
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <h3 className="text-xl font-bold text-gray-900">Career Domains</h3>
-                    <p className="text-sm text-gray-600">Distribution by student count</p>
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">Career Domains</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Distribution by student count</p>
                   </div>
-                  <MapPin className="w-6 h-6 text-blue-600" />
+                  <MapPin className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div className="h-80">
                   <ResponsiveContainer width="100%" height="100%">
@@ -382,13 +391,13 @@ export default function AdminInsightsPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6 }}
             >
-              <Card className="p-6 bg-white/80 backdrop-blur-sm shadow-xl border-0">
+              <Card className="p-6 bg-white/80 dark:bg-slate-800 backdrop-blur-sm shadow-xl border-0">
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <h3 className="text-xl font-bold text-gray-900">Top Emerging Skills</h3>
-                    <p className="text-sm text-gray-600">Most demanded by students</p>
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">Top Emerging Skills</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Most demanded by students</p>
                   </div>
-                  <TrendingUp className="w-6 h-6 text-purple-600" />
+                  <TrendingUp className="w-6 h-6 text-purple-600 dark:text-purple-400" />
                 </div>
                 <div className="h-80">
                   <ResponsiveContainer width="100%" height="100%">
@@ -412,13 +421,13 @@ export default function AdminInsightsPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.7 }}
             >
-              <Card className="p-6 bg-white/80 backdrop-blur-sm shadow-xl border-0">
+              <Card className="p-6 bg-white/80 dark:bg-slate-800 backdrop-blur-sm shadow-xl border-0">
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <h3 className="text-xl font-bold text-gray-900">ATS Score Trends</h3>
-                    <p className="text-sm text-gray-600">Average scores over time</p>
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">ATS Score Trends</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Average scores over time</p>
                   </div>
-                  <CheckCircle2 className="w-6 h-6 text-green-600" />
+                  <CheckCircle2 className="w-6 h-6 text-green-600 dark:text-green-400" />
                 </div>
                 <div className="h-80">
                   <ResponsiveContainer width="100%" height="100%">
@@ -457,13 +466,13 @@ export default function AdminInsightsPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.8 }}
             >
-              <Card className="p-6 bg-white/80 backdrop-blur-sm shadow-xl border-0">
+              <Card className="p-6 bg-white/80 dark:bg-slate-800 backdrop-blur-sm shadow-xl border-0">
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <h3 className="text-xl font-bold text-gray-900">Geographic Distribution</h3>
-                    <p className="text-sm text-gray-600">Students by state</p>
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">Geographic Distribution</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Students by state</p>
                   </div>
-                  <MapPin className="w-6 h-6 text-blue-600" />
+                  <MapPin className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div className="h-80">
                   <ResponsiveContainer width="100%" height="100%">
@@ -488,33 +497,33 @@ export default function AdminInsightsPage() {
               transition={{ delay: 0.9 }}
               className="lg:col-span-2"
             >
-              <Card className="p-6 bg-white/80 backdrop-blur-sm shadow-xl border-0">
+              <Card className="p-6 bg-white/80 dark:bg-slate-800 backdrop-blur-sm shadow-xl border-0">
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <h3 className="text-xl font-bold text-gray-900">ROI Analysis</h3>
-                    <p className="text-sm text-gray-600">Career domain performance metrics</p>
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">ROI Analysis</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Career domain performance metrics</p>
                   </div>
-                  <Sparkles className="w-6 h-6 text-yellow-600" />
+                  <Sparkles className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
-                      <tr className="border-b-2 border-gray-200">
-                        <th className="text-left py-3 px-4 font-semibold">Domain</th>
-                        <th className="text-right py-3 px-4 font-semibold">Users</th>
-                        <th className="text-right py-3 px-4 font-semibold">Avg ATS Score</th>
-                        <th className="text-right py-3 px-4 font-semibold">Mock Interview</th>
+                      <tr className="border-b-2 border-gray-200 dark:border-gray-700">
+                        <th className="text-left py-3 px-4 font-semibold dark:text-gray-200">Domain</th>
+                        <th className="text-right py-3 px-4 font-semibold dark:text-gray-200">Users</th>
+                        <th className="text-right py-3 px-4 font-semibold dark:text-gray-200">Avg ATS Score</th>
+                        <th className="text-right py-3 px-4 font-semibold dark:text-gray-200">Mock Interview</th>
                       </tr>
                     </thead>
                     <tbody>
                       {roiComparisonData.map((item: any, index: number) => (
-                        <tr key={index} className="border-b border-gray-100 hover:bg-gray-50">
-                          <td className="py-3 px-4 font-medium">{item.careerDomain}</td>
-                          <td className="py-3 px-4 text-right">{item.totalUsers}</td>
-                          <td className="py-3 px-4 text-right">
+                        <tr key={index} className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-slate-700">
+                          <td className="py-3 px-4 font-medium dark:text-gray-300">{item.careerDomain}</td>
+                          <td className="py-3 px-4 text-right dark:text-gray-300">{item.totalUsers}</td>
+                          <td className="py-3 px-4 text-right dark:text-gray-300">
                             {item.avgAtsScore ? `${item.avgAtsScore.toFixed(1)}%` : 'N/A'}
                           </td>
-                          <td className="py-3 px-4 text-right">
+                          <td className="py-3 px-4 text-right dark:text-gray-300">
                             {item.avgMockInterviewScore ? `${item.avgMockInterviewScore.toFixed(1)}%` : 'N/A'}
                           </td>
                         </tr>
@@ -537,12 +546,12 @@ export default function AdminInsightsPage() {
           transition={{ delay: 1 }}
           className="mt-8 text-center"
         >
-          <Card className="p-6 bg-gradient-to-r from-blue-50 to-purple-50 border-0">
-            <p className="text-sm text-gray-600 mb-2">Powered by</p>
+          <Card className="p-6 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-slate-800 dark:to-slate-700 border-0">
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Powered by</p>
             <div className="flex items-center justify-center space-x-4">
-              <Badge className="bg-blue-100 text-blue-700 text-sm">Google Cloud BigQuery</Badge>
-              <Badge className="bg-purple-100 text-purple-700 text-sm">Real-time Analytics</Badge>
-              <Badge className="bg-pink-100 text-pink-700 text-sm">
+              <Badge className="bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 text-sm">Google Cloud BigQuery</Badge>
+              <Badge className="bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 text-sm">Real-time Analytics</Badge>
+              <Badge className="bg-pink-100 dark:bg-pink-900/50 text-pink-700 dark:text-pink-300 text-sm">
                 {viewMode === 'looker' ? 'Looker Studio' : 'AI-Driven Insights'}
               </Badge>
             </div>

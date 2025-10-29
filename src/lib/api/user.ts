@@ -65,7 +65,7 @@ export async function getUserProfile(): Promise<UserProfile> {
     }
 
     const data = await response.json()
-    return data.user || data
+    return data.data || data.user || data
   } catch (error) {
     console.error('Get profile error:', error)
     throw error

@@ -32,9 +32,9 @@ export default function LandingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-black text-white overflow-x-hidden">
+    <div className="min-h-screen bg-gradient-to-b from-white via-gray-50 to-white dark:from-black dark:via-gray-900 dark:to-black text-gray-900 dark:text-white overflow-x-hidden">
       {/* Background Effects */}
-      <div className="fixed inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]" />
+      <div className="fixed inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] opacity-50 dark:opacity-100" />
       <div className="fixed inset-0">
         <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/10 via-purple-500/10 to-pink-500/10 blur-3xl" />
       </div>
@@ -56,10 +56,10 @@ export default function LandingPage() {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.2 }}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-white/10 mb-8"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-200/50 dark:border-white/10 mb-8"
             >
-              <Sparkles className="w-4 h-4 text-yellow-400" />
-              <span className="text-sm font-medium">AI-Powered Career Guidance for Indian Students</span>
+              <Sparkles className="w-4 h-4 text-yellow-500 dark:text-yellow-400" />
+              <span className="text-sm font-medium text-gray-800 dark:text-white">AI-Powered Career Guidance for Indian Students</span>
             </motion.div>
 
             {/* Main Heading */}
@@ -67,7 +67,7 @@ export default function LandingPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="heading-responsive-lg font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 leading-tight text-center"
+              className="heading-responsive-lg font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 dark:from-blue-400 dark:via-purple-400 dark:to-pink-400 leading-tight text-center"
             >
               Your Personalized
               <br />
@@ -79,9 +79,9 @@ export default function LandingPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
-              className="text-responsive text-gray-400 mb-8 max-w-4xl mx-auto text-center leading-relaxed"
+              className="text-responsive text-gray-600 dark:text-gray-400 mb-8 max-w-4xl mx-auto text-center leading-relaxed"
             >
-              Transform your career journey with AI-driven insights, personalized roadmaps, 
+              Transform your career journey with AI-driven insights, personalized roadmaps,
               and expert mentorship tailored for the Indian job market
             </motion.p>
 
@@ -103,7 +103,7 @@ export default function LandingPage() {
               <Button
                 size="lg"
                 variant="outline"
-                className="btn-responsive-lg border-white/20 hover:bg-white/10 text-white rounded-full w-full sm:w-auto"
+                className="btn-responsive-lg border-gray-300 dark:border-white/20 hover:bg-gray-100 dark:hover:bg-white/10 text-gray-900 dark:text-white rounded-full w-full sm:w-auto"
                 onClick={handleWatchDemo}
               >
                 Watch Demo
@@ -123,10 +123,10 @@ export default function LandingPage() {
                 { icon: Target, label: 'Success Rate', value: '94%' },
                 { icon: Globe, label: 'Languages', value: '10+' },
               ].map((stat, index) => (
-                <div key={index} className="glass rounded-xl sm:rounded-2xl p-4 sm:p-6 hover:scale-105 transition-transform text-center">
-                  <stat.icon className="w-6 h-6 sm:w-8 sm:h-8 text-blue-400 mb-2 mx-auto" />
-                  <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-white mb-1">{stat.value}</div>
-                  <div className="text-xs sm:text-sm text-gray-400">{stat.label}</div>
+                <div key={index} className="glass bg-white/40 dark:bg-white/10 rounded-xl sm:rounded-2xl p-4 sm:p-6 hover:scale-105 transition-transform text-center border border-gray-200/50 dark:border-white/20">
+                  <stat.icon className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600 dark:text-blue-400 mb-2 mx-auto" />
+                  <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white mb-1">{stat.value}</div>
+                  <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{stat.label}</div>
                 </div>
               ))}
             </motion.div>

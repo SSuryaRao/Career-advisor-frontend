@@ -65,7 +65,7 @@ const awards = [
 
 export default function Footer() {
   return (
-    <footer className="relative bg-gray-900 border-t border-white/10">
+    <footer className="relative bg-gray-100 dark:bg-gray-900 border-t border-gray-200 dark:border-white/10">
       {/* Background Pattern */}
       <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center opacity-10" />
       
@@ -85,31 +85,31 @@ export default function Footer() {
                 <Link href="/" className="flex items-center space-x-2 mb-6">
                   <div className="relative">
                     <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg blur-lg opacity-75" />
-                    <div className="relative bg-gray-900 rounded-lg p-2">
-                      <Sparkles className="w-8 h-8 text-white" />
+                    <div className="relative bg-white dark:bg-gray-900 rounded-lg p-2">
+                      <Sparkles className="w-8 h-8 text-blue-600 dark:text-white" />
                     </div>
                   </div>
-                  <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400">
+                  <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400">
                     CareerCraft AI
                   </span>
                 </Link>
 
-                <p className="text-gray-400 mb-6 leading-relaxed">
-                  Empowering Indian students with AI-driven career guidance, 
+                <p className="text-gray-600 dark:text-gray-400 mb-6 leading-relaxed">
+                  Empowering Indian students with AI-driven career guidance,
                   personalized learning paths, and industry connections.
                 </p>
 
                 {/* Contact Info */}
                 <div className="space-y-3 mb-6">
-                  <div className="flex items-center space-x-3 text-gray-400">
+                  <div className="flex items-center space-x-3 text-gray-600 dark:text-gray-400">
                     <Mail className="w-4 h-4" />
                     <span>hello@careercraft.ai</span>
                   </div>
-                  <div className="flex items-center space-x-3 text-gray-400">
+                  <div className="flex items-center space-x-3 text-gray-600 dark:text-gray-400">
                     <Phone className="w-4 h-4" />
                     <span>+91 80 4000 3000</span>
                   </div>
-                  <div className="flex items-center space-x-3 text-gray-400">
+                  <div className="flex items-center space-x-3 text-gray-600 dark:text-gray-400">
                     <MapPin className="w-4 h-4" />
                     <span>Bangalore, Karnataka, India</span>
                   </div>
@@ -123,7 +123,7 @@ export default function Footer() {
                       href={social.href}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-gray-400 hover:text-white transition-all duration-300"
+                      className="w-10 h-10 bg-gray-200 dark:bg-white/10 hover:bg-gray-300 dark:hover:bg-white/20 rounded-full flex items-center justify-center text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-all duration-300"
                     >
                       <social.icon className="w-5 h-5" />
                     </a>
@@ -142,13 +142,13 @@ export default function Footer() {
                   viewport={{ once: true }}
                   transition={{ duration: 0.5, delay: 0.1 }}
                 >
-                  <h3 className="text-white font-semibold mb-4">Product</h3>
+                  <h3 className="text-gray-900 dark:text-white font-semibold mb-4">Product</h3>
                   <ul className="space-y-3">
                     {footerLinks.product.map((link) => (
                       <li key={link.name}>
-                        <Link 
+                        <Link
                           href={link.href}
-                          className="text-gray-400 hover:text-white transition-colors duration-300 flex items-center group"
+                          className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors duration-300 flex items-center group"
                         >
                           {link.name}
                           <ArrowRight className="w-3 h-3 ml-1 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300" />
@@ -165,13 +165,13 @@ export default function Footer() {
                   viewport={{ once: true }}
                   transition={{ duration: 0.5, delay: 0.2 }}
                 >
-                  <h3 className="text-white font-semibold mb-4">Solutions</h3>
+                  <h3 className="text-gray-900 dark:text-white font-semibold mb-4">Solutions</h3>
                   <ul className="space-y-3">
                     {footerLinks.solutions.map((link) => (
                       <li key={link.name}>
-                        <Link 
+                        <Link
                           href={link.href}
-                          className="text-gray-400 hover:text-white transition-colors duration-300 flex items-center group"
+                          className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors duration-300 flex items-center group"
                         >
                           {link.name}
                           <ArrowRight className="w-3 h-3 ml-1 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300" />
@@ -188,13 +188,13 @@ export default function Footer() {
                   viewport={{ once: true }}
                   transition={{ duration: 0.5, delay: 0.3 }}
                 >
-                  <h3 className="text-white font-semibold mb-4">Resources</h3>
+                  <h3 className="text-gray-900 dark:text-white font-semibold mb-4">Resources</h3>
                   <ul className="space-y-3">
                     {footerLinks.resources.map((link) => (
                       <li key={link.name}>
-                        <Link 
+                        <Link
                           href={link.href}
-                          className="text-gray-400 hover:text-white transition-colors duration-300 flex items-center group"
+                          className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors duration-300 flex items-center group"
                         >
                           {link.name}
                           <ArrowRight className="w-3 h-3 ml-1 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300" />
@@ -211,13 +211,13 @@ export default function Footer() {
                   viewport={{ once: true }}
                   transition={{ duration: 0.5, delay: 0.4 }}
                 >
-                  <h3 className="text-white font-semibold mb-4">Company</h3>
+                  <h3 className="text-gray-900 dark:text-white font-semibold mb-4">Company</h3>
                   <ul className="space-y-3">
                     {footerLinks.company.map((link) => (
                       <li key={link.name}>
-                        <Link 
+                        <Link
                           href={link.href}
-                          className="text-gray-400 hover:text-white transition-colors duration-300 flex items-center group"
+                          className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors duration-300 flex items-center group"
                         >
                           {link.name}
                           <ArrowRight className="w-3 h-3 ml-1 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300" />
@@ -236,18 +236,18 @@ export default function Footer() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.5 }}
-            className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-white/10 rounded-2xl p-8 mb-12"
+            className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-200 dark:border-white/10 rounded-2xl p-8 mb-12"
           >
             <div className="max-w-2xl mx-auto text-center">
-              <h3 className="text-2xl font-bold text-white mb-4">Stay Updated</h3>
-              <p className="text-gray-400 mb-6">
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Stay Updated</h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-6">
                 Get the latest career insights, AI updates, and success stories delivered to your inbox
               </p>
               <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
                 <input
                   type="email"
                   placeholder="Enter your email"
-                  className="flex-1 px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="flex-1 px-4 py-3 bg-white dark:bg-white/10 border border-gray-300 dark:border-white/20 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 <button className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300">
                   Subscribe
@@ -265,15 +265,15 @@ export default function Footer() {
             className="text-center mb-12"
           >
             <div className="flex items-center justify-center mb-4">
-              <Award className="w-6 h-6 text-yellow-400 mr-2" />
-              <h3 className="text-lg font-semibold text-white">Recognition & Awards</h3>
+              <Award className="w-6 h-6 text-yellow-500 dark:text-yellow-400 mr-2" />
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Recognition & Awards</h3>
             </div>
-            <div className="flex flex-wrap justify-center gap-6 text-sm text-gray-400">
+            <div className="flex flex-wrap justify-center gap-6 text-sm text-gray-600 dark:text-gray-400">
               {awards.map((award, index) => (
                 <span key={index} className="flex items-center">
                   {award}
                   {index < awards.length - 1 && (
-                    <div className="w-1 h-1 bg-gray-600 rounded-full ml-6" />
+                    <div className="w-1 h-1 bg-gray-400 dark:bg-gray-600 rounded-full ml-6" />
                   )}
                 </span>
               ))}
@@ -282,12 +282,12 @@ export default function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="border-t border-white/10">
+        <div className="border-t border-gray-200 dark:border-white/10">
           <div className="container mx-auto max-w-7xl px-4 py-6">
             <div className="flex flex-col md:flex-row items-center justify-between">
               <div className="flex flex-wrap items-center gap-6 mb-4 md:mb-0">
-                <p className="text-gray-400 text-sm flex items-center">
-                  © 2024 CareerCraft AI. Made with 
+                <p className="text-gray-600 dark:text-gray-400 text-sm flex items-center">
+                  © 2024 CareerCraft AI. Made with
                   <Heart className="w-4 h-4 text-red-500 mx-1 fill-current" />
                   in India
                 </p>
@@ -296,15 +296,15 @@ export default function Footer() {
                     <Link
                       key={link.name}
                       href={link.href}
-                      className="text-gray-400 hover:text-white text-sm transition-colors duration-300"
+                      className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white text-sm transition-colors duration-300"
                     >
                       {link.name}
                     </Link>
                   ))}
                 </div>
               </div>
-              
-              <div className="flex items-center space-x-4 text-sm text-gray-400">
+
+              <div className="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-400">
                 <span>🇮🇳 Proudly Indian</span>
                 <span>|</span>
                 <span>Available in 10+ languages</span>

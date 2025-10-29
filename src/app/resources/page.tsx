@@ -187,41 +187,60 @@ export default function ResourcesPage() {
     setSelectedResourceCategory('all')
   }
 
+  // Format number consistently for SSR
+  const formatNumber = (num: number): string => {
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-      <Navbar />
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-950 dark:via-gray-900 dark:to-purple-950/20">
+      <Navbar variant="transparent" />
       {/* Hero Section */}
-      <section className="pt-24 pb-12 bg-gradient-to-br from-indigo-900 via-purple-900 to-blue-900 text-white">
-        <div className="max-w-7xl mx-auto px-4">
+      <section className="pt-24 pb-12 gradient-test-4 text-white relative overflow-hidden">
+        {/* Dark overlay for better text visibility */}
+        <div className="absolute inset-0 bg-black/10"></div>
+
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-white/5 rounded-full blur-3xl float-slow"></div>
+          <div className="absolute top-3/4 right-1/4 w-48 h-48 bg-blue-300/10 rounded-full blur-2xl float-delay-1"></div>
+          <div className="absolute top-1/2 right-1/3 w-32 h-32 bg-purple-300/10 rounded-full blur-xl float-delay-2"></div>
+          <div className="absolute top-1/3 right-1/2 w-20 h-20 bg-cyan-300/10 rounded-full blur-lg float-fast"></div>
+          <div className="absolute bottom-1/4 left-1/2 w-36 h-36 bg-indigo-300/8 rounded-full blur-2xl float-delay-1"></div>
+
+          <div className="absolute top-20 right-20 w-6 h-6 bg-white/20 rotate-45 float-slow"></div>
+          <div className="absolute bottom-32 left-20 w-4 h-4 bg-blue-300/30 rounded-full float-delay-2"></div>
+          <div className="absolute top-1/2 left-20 w-2 h-2 bg-purple-300/40 rounded-full float-fast"></div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="text-center mb-12"
           >
             <h1 className="text-4xl lg:text-6xl font-bold mb-6">
-              Career Resources
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400"> Hub</span>
+              Career Resources Hub
             </h1>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto mb-8">
-              Access comprehensive career resources, guides, templates, and expert insights 
+            <p className="text-xl text-white/95 max-w-3xl mx-auto mb-8">
+              Access comprehensive career resources, guides, templates, and expert insights
               to accelerate your professional journey. Track your progress and build your skills systematically.
             </p>
-            
+
             {/* Search Bar */}
-            <div className="max-w-3xl mx-auto bg-white rounded-2xl p-2 shadow-2xl">
+            <div className="max-w-3xl mx-auto bg-white/10 backdrop-blur-md rounded-2xl p-2 shadow-2xl border border-white/20">
               <div className="flex gap-2">
                 <div className="relative flex-1">
-                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-300 w-5 h-5" />
                   <Input
                     type="text"
                     placeholder="Search resources, guides, templates..."
-                    className="pl-12 border-0 text-gray-900 text-lg py-4 focus:ring-0"
+                    className="pl-12 border-0 bg-white/5 text-white placeholder:text-gray-300 text-lg py-4 focus:ring-0 focus:bg-white/10"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
                 </div>
-                <Button 
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8"
+                <Button
+                  className="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white px-8 font-semibold shadow-lg border border-white/30"
                   onClick={() => {
                     setShowResourceFilters(true)
                   }}
@@ -246,8 +265,8 @@ export default function ResourcesPage() {
                   transition={{ delay: 0.1 * index }}
                   className="text-center"
                 >
-                  <div className="text-2xl lg:text-3xl font-bold text-blue-400">{stat.value}</div>
-                  <div className="text-gray-300 text-sm">{stat.label}</div>
+                  <div className="text-2xl lg:text-3xl font-bold text-white">{stat.value}</div>
+                  <div className="text-white/80 text-sm font-medium">{stat.label}</div>
                 </motion.div>
               ))}
             </div>
@@ -261,30 +280,30 @@ export default function ResourcesPage() {
                 className="mt-8 max-w-md mx-auto"
               >
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-gray-300">Overall Progress</span>
-                  <span className="text-sm text-gray-300">
+                  <span className="text-sm text-white/90">Overall Progress</span>
+                  <span className="text-sm text-white/90">
                     {Math.round((completedResources.length / featuredResources.length) * 100)}%
                   </span>
                 </div>
-                <div className="w-full bg-gray-700 rounded-full h-3">
-                  <div 
-                    className="bg-gradient-to-r from-blue-500 to-purple-500 h-3 rounded-full transition-all duration-300"
+                <div className="w-full bg-white/20 rounded-full h-3">
+                  <div
+                    className="bg-gradient-to-r from-cyan-400 to-blue-400 h-3 rounded-full transition-all duration-300"
                     style={{ width: `${(completedResources.length / featuredResources.length) * 100}%` }}
                   />
                 </div>
-                <div className="flex items-center justify-center space-x-4 mt-4 text-sm text-gray-300">
+                <div className="flex items-center justify-center space-x-4 mt-4 text-sm text-white/90">
                   <div className="flex items-center">
-                    <Flame className="w-4 h-4 mr-1 text-orange-400" />
+                    <Flame className="w-4 h-4 mr-1 text-orange-300" />
                     <span>Streak: {userProgress.stats?.streak?.current || 0} days</span>
                   </div>
                   <div className="flex items-center">
-                    <Trophy className="w-4 h-4 mr-1 text-yellow-400" />
+                    <Trophy className="w-4 h-4 mr-1 text-yellow-300" />
                     <span>{userProgress.achievements?.length || 0} achievements</span>
                   </div>
                 </div>
               </motion.div>
             )}
-            
+
             {user && !userProgress && !isLoading && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -292,10 +311,10 @@ export default function ResourcesPage() {
                 transition={{ delay: 0.5 }}
                 className="mt-8 max-w-md mx-auto text-center"
               >
-                <p className="text-gray-300">Start marking resources as complete to track your progress!</p>
+                <p className="text-white/90">Start marking resources as complete to track your progress!</p>
               </motion.div>
             )}
-            
+
             {!user && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -303,9 +322,9 @@ export default function ResourcesPage() {
                 transition={{ delay: 0.5 }}
                 className="mt-8 max-w-md mx-auto text-center"
               >
-                <p className="text-gray-300 mb-4">Sign in to track your learning progress and unlock achievements!</p>
-                <Button 
-                  className="bg-gradient-to-r from-purple-500 to-blue-500 text-white px-6 py-2"
+                <p className="text-white/90 mb-4">Sign in to track your learning progress and unlock achievements!</p>
+                <Button
+                  className="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white px-6 py-2 border border-white/30"
                   onClick={() => window.location.href = '/login'}
                 >
                   Sign In
@@ -319,11 +338,18 @@ export default function ResourcesPage() {
       <div className="max-w-7xl mx-auto px-4 py-12">
         {/* Browse Categories Section */}
         <section className="mb-16">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-3xl font-bold text-gray-900">Browse Categories</h2>
-            <Button variant="outline">View All</Button>
+          <div className="flex items-center justify-between mb-10">
+            <div>
+              <h2 className="text-4xl font-bold mb-3 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                Browse Categories
+              </h2>
+              <p className="text-gray-600 dark:text-gray-400 text-lg">Explore resources across different topics</p>
+            </div>
+            <Button className="bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all">
+              View All Categories
+            </Button>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-5">
             {resourceCategories.map((category, index) => (
               <motion.div
                 key={category.name}
@@ -333,13 +359,14 @@ export default function ResourcesPage() {
                 className="group cursor-pointer"
                 onClick={() => setSelectedCategory(category.name)}
               >
-                <Card className="p-6 text-center hover:shadow-xl hover:border-blue-500 transition-all duration-300 group-hover:scale-105 h-full bg-white border border-gray-200 hover:border-blue-300">
-                  <div className={`w-14 h-14 ${category.color} rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform shadow-lg`}>
-                    <category.icon className="w-7 h-7 text-white" />
+                <div className="relative overflow-hidden rounded-2xl bg-white dark:bg-slate-800 border-2 border-gray-300 dark:border-slate-600 hover:border-indigo-300 dark:hover:border-indigo-500 p-6 text-center hover:shadow-2xl transition-all duration-500 hover:scale-105 h-full min-h-[180px] flex flex-col justify-center">
+                  <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-purple-50 dark:to-purple-950/50 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                  <div className={`w-16 h-16 ${category.color} rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform shadow-lg relative`}>
+                    <category.icon className="w-8 h-8 text-white relative z-10" />
                   </div>
-                  <h3 className="font-semibold text-gray-900 mb-2 text-sm">{category.name}</h3>
-                  <p className="text-gray-600 text-xs">{resourceCounts[category.name] || 0} resources</p>
-                </Card>
+                  <h3 className="font-bold text-gray-800 dark:text-gray-100 mb-2 text-base leading-tight group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors min-h-[2.5rem] flex items-center justify-center">{category.name}</h3>
+                  <p className="text-gray-500 dark:text-gray-400 text-sm font-semibold">{resourceCounts[category.name] || 0} resources</p>
+                </div>
               </motion.div>
             ))}
           </div>
@@ -347,28 +374,33 @@ export default function ResourcesPage() {
 
         {/* Popular Learning Platforms Section - ENHANCED STYLING */}
         <section className="mb-16">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-3xl font-bold text-gray-900">Popular Learning Platforms</h2>
+          <div className="flex items-center justify-between mb-10">
+            <div>
+              <h2 className="text-4xl font-bold mb-3 bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
+                Popular Learning Platforms
+              </h2>
+              <p className="text-gray-600 dark:text-gray-400 text-lg">Discover top platforms for skill development</p>
+            </div>
             <div className="flex items-center space-x-4">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 size="sm"
                 onClick={() => setShowFilters(!showFilters)}
-                className="hover:bg-blue-50"
+                className="bg-gradient-to-r from-violet-50 to-purple-50 dark:from-violet-950 dark:to-purple-950 hover:from-violet-100 hover:to-purple-100 dark:hover:from-violet-900 dark:hover:to-purple-900 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-700 rounded-xl font-semibold shadow-sm hover:shadow-md transition-all"
               >
                 <Filter className="w-4 h-4 mr-2" />
                 Filter
               </Button>
             </div>
           </div>
-          
+
           {/* Enhanced Filter Options */}
           {showFilters && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="mb-6 p-6 bg-white rounded-xl border border-gray-200 shadow-sm"
+              className="mb-8 bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-950/30 dark:to-blue-950/30 rounded-2xl p-6 border border-purple-200 dark:border-purple-800"
             >
               <div className="flex flex-wrap gap-3">
                 {platformCategories.map((category) => (
@@ -396,26 +428,26 @@ export default function ResourcesPage() {
                 transition={{ delay: 0.1 * index }}
                 className="group"
               >
-                <Card 
-                  className="p-6 flex flex-col hover:shadow-xl hover:border-blue-300 transition-all duration-300 h-full cursor-pointer bg-white border border-gray-200 hover:-translate-y-1"
+                <div
+                  className="relative bg-white dark:bg-slate-800 rounded-3xl p-6 flex flex-col hover:shadow-2xl transition-all duration-500 border-2 border-gray-300 dark:border-slate-600 overflow-hidden hover:border-indigo-300 dark:hover:border-indigo-500 h-full cursor-pointer hover:-translate-y-1"
                   onClick={() => handleExternalLink(platform.url)}
                 >
                   <div className="flex items-start justify-between mb-4">
                     <div className={`w-14 h-14 ${platform.color} rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-md`}>
                       <platform.icon className="w-7 h-7 text-white" />
                     </div>
-                    <Badge variant="secondary" className="text-xs bg-gray-100 text-gray-700 hover:bg-blue-100">
+                    <Badge variant="secondary" className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-blue-100 dark:hover:bg-blue-900">
                       {platform.category}
                     </Badge>
                   </div>
-                  <h3 className="font-semibold text-gray-900 mb-2 text-left text-lg">{platform.name}</h3>
-                  <p className="text-gray-600 text-sm mb-4 flex-grow text-left leading-relaxed">{platform.description}</p>
-                  <div className="flex items-center text-blue-600 group-hover:text-blue-700 transition-colors mt-auto">
+                  <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2 text-left text-lg">{platform.name}</h3>
+                  <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 flex-grow text-left leading-relaxed">{platform.description}</p>
+                  <div className="flex items-center text-blue-600 dark:text-blue-400 group-hover:text-blue-700 dark:group-hover:text-blue-300 transition-colors mt-auto">
                     <ExternalLink className="w-4 h-4 mr-2" />
                     <span className="text-sm font-medium">Visit Platform</span>
                     <ChevronRight className="w-4 h-4 ml-auto group-hover:translate-x-1 transition-transform" />
                   </div>
-                </Card>
+                </div>
               </motion.div>
             ))}
           </div>
@@ -439,13 +471,19 @@ export default function ResourcesPage() {
           <div className="lg:col-span-2 space-y-8">
             {/* Featured Resources Section */}
             <section>
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">Featured Resources</h2>
+              <div className="flex items-center justify-between mb-10">
+                <div>
+                  <h2 className="text-3xl font-bold mb-1 bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
+                    Featured Resources
+                  </h2>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">Curated learning materials for your career growth</p>
+                </div>
                 <div className="flex items-center space-x-4">
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     size="sm"
                     onClick={() => setShowResourceFilters(!showResourceFilters)}
+                    className="bg-gradient-to-r from-violet-50 to-purple-50 dark:from-violet-950 dark:to-purple-950 hover:from-violet-100 hover:to-purple-100 dark:hover:from-violet-900 dark:hover:to-purple-900 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-700 rounded-xl font-semibold shadow-sm hover:shadow-md transition-all"
                   >
                     <Filter className="w-4 h-4 mr-2" />
                     Filter
@@ -459,7 +497,7 @@ export default function ResourcesPage() {
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
-                  className="mb-6 p-6 bg-white rounded-xl border border-gray-200 shadow-sm"
+                  className="mb-8 bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-950/30 dark:to-blue-950/30 rounded-2xl p-6 border border-purple-200 dark:border-purple-800"
                 >
                   <div className="space-y-4">
                     <div>
@@ -518,10 +556,10 @@ export default function ResourcesPage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.05 * index }}
                   >
-                    <Card className={`p-6 hover:shadow-xl transition-all duration-300 bg-white border border-gray-200 hover:border-blue-300 ${completedResources.includes(resource.id) ? 'ring-2 ring-green-200 bg-green-50' : ''}`}>
+                    <div className={`relative bg-white dark:bg-slate-800 rounded-3xl p-8 hover:shadow-2xl transition-all duration-500 border-2 border-gray-300 dark:border-slate-600 overflow-hidden hover:border-indigo-300 dark:hover:border-indigo-500 ${completedResources.includes(resource.id) ? 'ring-2 ring-green-300 dark:ring-green-500 bg-green-50 dark:bg-green-950/20' : ''}`}>
                       <div className="flex flex-col sm:flex-row gap-6">
-                        <div className="w-24 h-24 bg-gradient-to-br from-blue-100 to-purple-100 rounded-xl flex items-center justify-center flex-shrink-0 mx-auto sm:mx-0 shadow-sm relative">
-                          <resource.icon className="w-8 h-8 text-blue-600" />
+                        <div className="w-24 h-24 bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900 dark:to-purple-900 rounded-xl flex items-center justify-center flex-shrink-0 mx-auto sm:mx-0 shadow-sm relative">
+                          <resource.icon className="w-8 h-8 text-blue-600 dark:text-blue-300" />
                           {completedResources.includes(resource.id) && (
                             <div className="absolute -top-2 -right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
                               <CheckCircle2 className="w-4 h-4 text-white" />
@@ -533,7 +571,7 @@ export default function ResourcesPage() {
                           <div className="flex items-start justify-between mb-3">
                             <div>
                               <div className="flex items-center space-x-3 mb-2">
-                                <h3 className="text-xl font-semibold text-gray-900 hover:text-blue-600 transition-colors">{resource.title}</h3>
+                                <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-100 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">{resource.title}</h3>
                                 {resource.isPremium && (
                                   <Badge className="bg-amber-100 text-amber-800 border border-amber-200">Premium</Badge>
                                 )}
@@ -544,44 +582,44 @@ export default function ResourcesPage() {
                                   </Badge>
                                 )}
                               </div>
-                              <p className="text-gray-600 mb-3 leading-relaxed">{resource.description}</p>
+                              <p className="text-gray-600 dark:text-gray-300 mb-3 leading-relaxed">{resource.description}</p>
                             </div>
                             <button
                               onClick={(e) => {
                                 e.stopPropagation()
                                 toggleBookmark(resource.id)
                               }}
-                              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
                             >
-                              <Bookmark 
-                                className={`w-5 h-5 ${bookmarkedItems.includes(resource.id) ? 'fill-blue-500 text-blue-500' : 'text-gray-400 hover:text-gray-600'}`} 
+                              <Bookmark
+                                className={`w-5 h-5 ${bookmarkedItems.includes(resource.id) ? 'fill-blue-500 text-blue-500 dark:fill-blue-400 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'}`}
                               />
                             </button>
                           </div>
-                          
-                          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-gray-700 mb-4">
+
+                          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-gray-700 dark:text-gray-300 mb-4">
                             <div className="flex items-center">
-                              <User className="w-4 h-4 mr-2 text-gray-500" />
-                              <span className="font-medium">{resource.author}</span>
+                              <User className="w-4 h-4 mr-2 text-gray-500 dark:text-gray-400" />
+                              <span className="font-medium dark:text-gray-200">{resource.author}</span>
                             </div>
                             <div className="flex items-center">
-                              <Clock className="w-4 h-4 mr-2 text-gray-500" />
+                              <Clock className="w-4 h-4 mr-2 text-gray-500 dark:text-gray-400" />
                               <span>{resource.duration}</span>
                             </div>
                             <div className="flex items-center">
-                              <Download className="w-4 h-4 mr-2 text-gray-500" />
-                              <span>{resource.downloads.toLocaleString()}</span>
+                              <Download className="w-4 h-4 mr-2 text-gray-500 dark:text-gray-400" />
+                              <span>{formatNumber(resource.downloads)}</span>
                             </div>
                             <div className="flex items-center">
                               <Star className="w-4 h-4 mr-2 text-yellow-500 fill-yellow-400" />
                               <span className="font-medium">{resource.rating}</span>
                             </div>
                           </div>
-                          
+
                           <div className="flex items-center justify-between">
                             <div className="flex flex-wrap gap-2">
                               {resource.tags.map((tag) => (
-                                <Badge key={tag} variant="secondary" className="text-xs bg-gray-100 text-gray-700">
+                                <Badge key={tag} variant="secondary" className="text-xs bg-indigo-50 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-700">
                                   {tag}
                                 </Badge>
                               ))}
@@ -595,14 +633,14 @@ export default function ResourcesPage() {
                                     onCheckedChange={(checked) => handleResourceComplete(resource.id, checked as boolean)}
                                     className="w-5 h-5"
                                   />
-                                  <label 
-                                    htmlFor={`resource-${resource.id}`} 
-                                    className="text-sm font-medium text-gray-700 cursor-pointer flex items-center space-x-1"
+                                  <label
+                                    htmlFor={`resource-${resource.id}`}
+                                    className="text-sm font-medium text-gray-700 dark:text-gray-200 cursor-pointer flex items-center space-x-1"
                                   >
                                     {completedResources.includes(resource.id) ? (
                                       <>
-                                        <CheckCircle2 className="w-4 h-4 text-green-600" />
-                                        <span className="text-green-700">Completed</span>
+                                        <CheckCircle2 className="w-4 h-4 text-green-600 dark:text-green-400" />
+                                        <span className="text-green-700 dark:text-green-400">Completed</span>
                                       </>
                                     ) : (
                                       <span>Mark Complete</span>
@@ -610,7 +648,7 @@ export default function ResourcesPage() {
                                   </label>
                                 </div>
                               ) : (
-                                <div className="text-sm text-gray-500">
+                                <div className="text-sm text-gray-500 dark:text-gray-400">
                                   <span>Sign in to track progress</span>
                                 </div>
                               )}
@@ -625,7 +663,7 @@ export default function ResourcesPage() {
                           </div>
                         </div>
                       </div>
-                    </Card>
+                    </div>
                   </motion.div>
                 ))}
               </div>
@@ -658,19 +696,19 @@ export default function ResourcesPage() {
           <div className="space-y-6">
             {/* Progress Summary */}
             {user && userProgress && (
-              <Card className="p-6 bg-gradient-to-br from-blue-50 to-purple-50 border-blue-200">
-                <h3 className="text-lg font-semibold mb-4 flex items-center">
-                  <Trophy className="w-5 h-5 mr-2 text-blue-500" />
+              <div className="p-6 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/30 dark:to-purple-950/30 border-2 border-blue-200 dark:border-blue-800 rounded-2xl shadow-lg">
+                <h3 className="text-lg font-semibold mb-4 flex items-center text-gray-900 dark:text-gray-100">
+                  <Trophy className="w-5 h-5 mr-2 text-blue-500 dark:text-blue-400" />
                   Your Progress
                 </h3>
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-700">Resources Completed</span>
-                    <span className="text-lg font-bold text-blue-600">
+                    <span className="text-sm text-gray-700 dark:text-gray-300">Resources Completed</span>
+                    <span className="text-lg font-bold text-blue-600 dark:text-blue-400">
                       {completedResources.length}/{featuredResources.length}
                     </span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                     <div 
                       className="bg-blue-600 h-2 rounded-full transition-all duration-300"
                       style={{ width: `${(completedResources.length / featuredResources.length) * 100}%` }}
@@ -682,64 +720,64 @@ export default function ResourcesPage() {
                         <Flame className="w-4 h-4 mr-1" />
                         {userProgress.stats?.streak?.current || 0}
                       </div>
-                      <div className="text-xs text-gray-600">Day Streak</div>
+                      <div className="text-xs text-gray-600 dark:text-gray-400">Day Streak</div>
                     </div>
                     <div>
-                      <div className="text-lg font-bold text-yellow-600">
+                      <div className="text-lg font-bold text-yellow-600 dark:text-yellow-400">
                         {userProgress.achievements?.length || 0}
                       </div>
-                      <div className="text-xs text-gray-600">Achievements</div>
+                      <div className="text-xs text-gray-600 dark:text-gray-400">Achievements</div>
                     </div>
                   </div>
                 </div>
-              </Card>
+              </div>
             )}
-            
+
             {!user && (
-              <Card className="p-6 bg-gradient-to-br from-gray-50 to-blue-50 border-gray-200">
-                <h3 className="text-lg font-semibold mb-4 flex items-center">
-                  <Trophy className="w-5 h-5 mr-2 text-gray-400" />
+              <div className="p-6 bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-blue-950/30 border-2 border-gray-200 dark:border-gray-700 rounded-2xl shadow-lg">
+                <h3 className="text-lg font-semibold mb-4 flex items-center text-gray-900 dark:text-gray-100">
+                  <Trophy className="w-5 h-5 mr-2 text-gray-400 dark:text-gray-500" />
                   Track Your Progress
                 </h3>
-                <p className="text-sm text-gray-600 mb-4">
+                <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
                   Sign in to start tracking your learning progress and unlock achievements!
                 </p>
-                <Button 
+                <Button
                   className="w-full bg-blue-600 hover:bg-blue-700 text-white"
                   onClick={() => window.location.href = '/login'}
                 >
                   Sign In
                 </Button>
-              </Card>
+              </div>
             )}
 
             {/* Trending Topics */}
-            <Card className="p-6 bg-white border border-gray-200 shadow-sm">
-              <h3 className="text-lg font-semibold mb-4 flex items-center">
-                <TrendingUp className="w-5 h-5 mr-2 text-green-500" />
+            <div className="p-6 bg-white dark:bg-slate-800 border-2 border-gray-300 dark:border-slate-600 rounded-2xl shadow-lg">
+              <h3 className="text-lg font-semibold mb-4 flex items-center text-gray-900 dark:text-gray-100">
+                <TrendingUp className="w-5 h-5 mr-2 text-green-500 dark:text-green-400" />
                 Trending Topics
               </h3>
               <div className="space-y-3">
                 {trendingTopics.map((topic, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer">
-                    <span className="font-medium text-gray-900 text-sm">{topic.name}</span>
-                    <span className="text-sm text-green-600 font-bold">{topic.searches}</span>
+                  <div key={index} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors cursor-pointer">
+                    <span className="font-medium text-gray-900 dark:text-gray-100 text-sm">{topic.name}</span>
+                    <span className="text-sm text-green-600 dark:text-green-400 font-bold">{topic.searches}</span>
                   </div>
                 ))}
               </div>
-            </Card>
+            </div>
 
             {/* Upcoming Webinars */}
-            <Card className="p-6 bg-white border border-gray-200 shadow-sm">
-              <h3 className="text-lg font-semibold mb-4 flex items-center">
-                <Calendar className="w-5 h-5 mr-2 text-blue-500" />
+            <div className="p-6 bg-white dark:bg-slate-800 border-2 border-gray-300 dark:border-slate-600 rounded-2xl shadow-lg">
+              <h3 className="text-lg font-semibold mb-4 flex items-center text-gray-900 dark:text-gray-100">
+                <Calendar className="w-5 h-5 mr-2 text-blue-500 dark:text-blue-400" />
                 Upcoming Webinars
               </h3>
               <div className="space-y-4">
                 {upcomingWebinars.slice(0, 3).map((webinar) => (
-                  <div key={webinar.id} className="p-4 bg-blue-50 rounded-lg border border-blue-100">
-                    <h4 className="font-semibold text-gray-900 mb-2 text-sm">{webinar.title}</h4>
-                    <div className="text-xs text-gray-600 space-y-1">
+                  <div key={webinar.id} className="p-4 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-100 dark:border-blue-800">
+                    <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-2 text-sm">{webinar.title}</h4>
+                    <div className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
                       <div className="flex items-center">
                         <Calendar className="w-3 h-3 mr-2" />
                         {webinar.date} at {webinar.time}
@@ -763,31 +801,31 @@ export default function ResourcesPage() {
                   </div>
                 ))}
               </div>
-              <Button variant="outline" className="w-full mt-4" size="sm">
+              <Button variant="outline" className="w-full mt-4 dark:border-slate-500 dark:text-gray-200 dark:hover:bg-slate-700" size="sm">
                 View All Webinars
               </Button>
-            </Card>
+            </div>
 
             {/* Newsletter Signup */}
-            <Card className="p-6 bg-gradient-to-br from-purple-50 to-blue-50 border-purple-200">
-              <h3 className="text-lg font-semibold mb-4 text-gray-900">Weekly Career Insights</h3>
-              <p className="text-gray-700 mb-4 text-sm leading-relaxed">
+            <div className="p-6 bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-950/30 dark:to-blue-950/30 border-2 border-purple-200 dark:border-purple-800 rounded-2xl shadow-lg">
+              <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Weekly Career Insights</h3>
+              <p className="text-gray-700 dark:text-gray-300 mb-4 text-sm leading-relaxed">
                 Get the latest career resources, job market trends, and expert tips delivered to your inbox.
               </p>
               <div className="space-y-3">
-                <Input type="email" placeholder="Enter your email" className="border-purple-200" />
+                <Input type="email" placeholder="Enter your email" className="border-purple-200 dark:border-purple-700 dark:bg-slate-700 dark:text-gray-100" />
                 <Button className="w-full bg-purple-600 hover:bg-purple-700">
                   Subscribe Now
                 </Button>
               </div>
-              <p className="text-xs text-gray-600 mt-3">
+              <p className="text-xs text-gray-600 dark:text-gray-400 mt-3">
                 Join 35,000+ professionals. Unsubscribe anytime.
               </p>
-            </Card>
-            
+            </div>
+
             {/* Quick Access */}
-            <Card className="p-6 bg-white border border-gray-200 shadow-sm">
-              <h3 className="text-lg font-semibold mb-4 text-gray-900">Quick Access</h3>
+            <div className="p-6 bg-white dark:bg-slate-800 border-2 border-gray-300 dark:border-slate-600 rounded-2xl shadow-lg">
+              <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Quick Access</h3>
               <div className="space-y-2">
                 {[
                   { name: 'Resume Builder', icon: FileText, url: 'https://www.canva.com/resumes/templates/' },
@@ -795,18 +833,18 @@ export default function ResourcesPage() {
                   { name: 'Salary Calculator', icon: TrendingUp, url: 'https://www.glassdoor.co.in/Salaries/index.htm' },
                   { name: 'Skill Assessment', icon: Award, url: 'https://www.hackerrank.com/skills-verification' },
                 ].map((link, index) => (
-                  <button 
-                    key={index} 
-                    className="w-full flex items-center p-3 text-left hover:bg-gray-50 rounded-lg transition-colors group"
+                  <button
+                    key={index}
+                    className="w-full flex items-center p-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors group"
                     onClick={() => handleExternalLink(link.url)}
                   >
-                    <link.icon className="w-4 h-4 mr-3 text-blue-600" />
-                    <span className="font-medium text-gray-900 text-sm">{link.name}</span>
-                    <ExternalLink className="w-3 h-3 ml-auto text-gray-400 group-hover:text-gray-600" />
+                    <link.icon className="w-4 h-4 mr-3 text-blue-600 dark:text-blue-400" />
+                    <span className="font-medium text-gray-900 dark:text-gray-100 text-sm">{link.name}</span>
+                    <ExternalLink className="w-3 h-3 ml-auto text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300" />
                   </button>
                 ))}
               </div>
-            </Card>
+            </div>
           </div>
         </div>
       </div>

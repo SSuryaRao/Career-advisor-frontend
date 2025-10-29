@@ -223,9 +223,21 @@
   }
 
   .gradient-career {
-    background: linear-gradient(135deg, hsl(221.2 83.2% 53.3%) 0%, hsl(271.5 81% 56%) 25%, hsl(239 84% 67%) 50%, hsl(180 85% 47%) 75%, hsl(160 84% 39%) 100%);
+    /* Light mode: Vibrant gradient similar to dark mode but lighter */
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 25%, #3b82f6 50%, #06b6d4 75%, #14b8a6 100%);
     background-size: 400% 400%;
     animation: gradient-shift 20s ease infinite;
+  }
+
+  /* Dark mode support for gradient-career */
+  @media (prefers-color-scheme: dark) {
+    .gradient-career {
+      background: linear-gradient(135deg, #1e3a8a 0%, #3b0764 25%, #4c1d95 50%, #0e7490 75%, #115e59 100%);
+    }
+  }
+
+  .dark .gradient-career {
+    background: linear-gradient(135deg, #1e3a8a 0%, #3b0764 25%, #4c1d95 50%, #0e7490 75%, #115e59 100%);
   }
 
   .gradient-mentor {
@@ -238,6 +250,74 @@
     background: linear-gradient(135deg, hsl(160 84% 39%) 0%, hsl(180 85% 47%) 25%, hsl(221.2 83.2% 53.3%) 50%, hsl(271.5 81% 56%) 75%, hsl(350 89% 60%) 100%);
     background-size: 350% 350%;
     animation: gradient-shift 18s ease infinite;
+  }
+
+  /* TEST GRADIENTS - Try these in AI Mentor page, then delete after choosing */
+  /* Light mode: Colorful gradients | Dark mode: Original blue/purple/cyan */
+
+  /* Option 1: Sunset Vibes (Orange → Pink → Purple) - LIGHT MODE ONLY */
+  .gradient-test-1 {
+    background: linear-gradient(135deg, #f97316 0%, #fb923c 25%, #ec4899 50%, #f472b6 75%, #a855f7 100%);
+    background-size: 400% 400%;
+    animation: gradient-shift 20s ease infinite;
+  }
+
+  .dark .gradient-test-1 {
+    background: linear-gradient(135deg, #1e3a8a 0%, #3b0764 25%, #4c1d95 50%, #0e7490 75%, #115e59 100%);
+    background-size: 400% 400%;
+    animation: gradient-shift 20s ease infinite;
+  }
+
+  /* Option 2: Fire Energy (Red → Orange → Yellow-Orange) - LIGHT MODE ONLY */
+  .gradient-test-2 {
+    background: linear-gradient(135deg, #dc2626 0%, #ef4444 25%, #f97316 50%, #fb923c 75%, #fbbf24 100%);
+    background-size: 400% 400%;
+    animation: gradient-shift 20s ease infinite;
+  }
+
+  .dark .gradient-test-2 {
+    background: linear-gradient(135deg, #1e3a8a 0%, #3b0764 25%, #4c1d95 50%, #0e7490 75%, #115e59 100%);
+    background-size: 400% 400%;
+    animation: gradient-shift 20s ease infinite;
+  }
+
+  /* Option 3: Coral Romance (Coral → Rose → Violet) - LIGHT MODE ONLY */
+  .gradient-test-3 {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 25%, #e91e63 50%, #c44569 75%, #9b59b6 100%);
+    background-size: 400% 400%;
+    animation: gradient-shift 20s ease infinite;
+  }
+
+  .dark .gradient-test-3 {
+    background: linear-gradient(135deg, #1e3a8a 0%, #3b0764 25%, #4c1d95 50%, #0e7490 75%, #115e59 100%);
+    background-size: 400% 400%;
+    animation: gradient-shift 20s ease infinite;
+  }
+
+  /* Option 4: Vibrant Modern (Pink → Purple → Blue) - LIGHT MODE ONLY */
+  .gradient-test-4 {
+    background: linear-gradient(135deg, #ec4899 0%, #d946ef 25%, #a855f7 50%, #8b5cf6 75%, #6366f1 100%);
+    background-size: 400% 400%;
+    animation: gradient-shift 20s ease infinite;
+  }
+
+  .dark .gradient-test-4 {
+    background: linear-gradient(135deg, #1e3a8a 0%, #3b0764 25%, #4c1d95 50%, #0e7490 75%, #115e59 100%);
+    background-size: 400% 400%;
+    animation: gradient-shift 20s ease infinite;
+  }
+
+  /* Option 5: Tropical Paradise (Orange → Magenta → Pink) - LIGHT MODE ONLY */
+  .gradient-test-5 {
+    background: linear-gradient(135deg, #fb923c 0%, #f472b6 25%, #db2777 50%, #be185d 75%, #831843 100%);
+    background-size: 400% 400%;
+    animation: gradient-shift 20s ease infinite;
+  }
+
+  .dark .gradient-test-5 {
+    background: linear-gradient(135deg, #1e3a8a 0%, #3b0764 25%, #4c1d95 50%, #0e7490 75%, #115e59 100%);
+    background-size: 400% 400%;
+    animation: gradient-shift 20s ease infinite;
   }
 
   @keyframes gradient-shift {
@@ -255,6 +335,19 @@
     text-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
   }
 
+  /* Text shadows for better readability */
+  .text-shadow-sm {
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  }
+
+  .text-shadow-md {
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+  }
+
+  .text-shadow-lg {
+    text-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+  }
+
   /* Enhanced Glass Morphism */
   .glass {
     @apply backdrop-blur-lg bg-white/10 border border-white/20;
@@ -266,6 +359,15 @@
 
   .glass-career {
     @apply backdrop-blur-xl bg-white/20 border border-blue-200/30 shadow-xl;
+  }
+
+  /* Light mode subtle pattern background */
+  .bg-light-pattern {
+    background-color: #f8fafc;
+    background-image:
+      radial-gradient(circle at 25px 25px, rgba(99, 102, 241, 0.03) 2%, transparent 0%),
+      radial-gradient(circle at 75px 75px, rgba(139, 92, 246, 0.03) 2%, transparent 0%);
+    background-size: 100px 100px;
   }
 
   .glass-mentor {

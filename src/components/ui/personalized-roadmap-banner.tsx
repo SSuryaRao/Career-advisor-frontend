@@ -95,38 +95,38 @@ export function PersonalizedRecommendationBanner({
           {/* Left Column - Main Recommendation */}
           <div className="lg:col-span-2 space-y-4">
             {/* Recommended Path Card */}
-            <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-xl">
+            <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-transparent dark:border-gray-700/50">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center space-x-3">
-                  <div className="p-2 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl">
+                  <div className="p-2 bg-gradient-to-br from-purple-500 to-pink-500 dark:from-purple-400 dark:to-pink-400 rounded-xl">
                     <Target className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <div className="text-sm text-gray-500 font-medium">Recommended Path</div>
-                    <div className="text-2xl font-bold text-gray-900">{recommendedDomain}</div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400 font-medium">Recommended Path</div>
+                    <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">{recommendedDomain}</div>
                   </div>
                 </div>
-                <div className={`px-4 py-2 ${colors.badge} ${colors.text} rounded-full font-semibold text-sm capitalize`}>
+                <div className={`px-4 py-2 ${colors.badge} dark:bg-opacity-20 dark:border dark:border-gray-600 ${colors.text} dark:text-gray-200 rounded-full font-semibold text-sm capitalize`}>
                   {skillLevel}
                 </div>
               </div>
 
               {/* Confidence Bar */}
               <div className="mb-4">
-                <div className="flex items-center justify-between text-xs text-gray-600 mb-2">
+                <div className="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400 mb-2">
                   <span>Confidence Score</span>
                   <span className="font-bold">{confidence}%</span>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 overflow-hidden">
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${confidence}%` }}
                     transition={{ duration: 1, delay: 0.3, ease: 'easeOut' }}
                     className={`h-2.5 rounded-full bg-gradient-to-r ${
-                      confidence >= 85 ? 'from-emerald-500 to-green-600' :
-                      confidence >= 70 ? 'from-blue-500 to-indigo-600' :
-                      confidence >= 55 ? 'from-amber-500 to-orange-600' :
-                      'from-purple-500 to-pink-600'
+                      confidence >= 85 ? 'from-emerald-500 to-green-600 dark:from-emerald-400 dark:to-green-500' :
+                      confidence >= 70 ? 'from-blue-500 to-indigo-600 dark:from-blue-400 dark:to-indigo-500' :
+                      confidence >= 55 ? 'from-amber-500 to-orange-600 dark:from-amber-400 dark:to-orange-500' :
+                      'from-purple-500 to-pink-600 dark:from-purple-400 dark:to-pink-500'
                     }`}
                   />
                 </div>
@@ -134,8 +134,8 @@ export function PersonalizedRecommendationBanner({
 
               {/* Why This Path */}
               <div className="space-y-2 mb-4">
-                <div className="text-sm font-bold text-gray-900 flex items-center">
-                  <CheckCircle className="w-4 h-4 mr-2 text-green-600" />
+                <div className="text-sm font-bold text-gray-900 dark:text-gray-100 flex items-center">
+                  <CheckCircle className="w-4 h-4 mr-2 text-green-600 dark:text-green-500" />
                   Why this path is perfect for you:
                 </div>
                 <div className="space-y-1.5">
@@ -145,9 +145,9 @@ export function PersonalizedRecommendationBanner({
                       initial={{ opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: 0.1 * i }}
-                      className="flex items-start text-sm text-gray-700"
+                      className="flex items-start text-sm text-gray-700 dark:text-gray-300"
                     >
-                      <span className="text-purple-500 mr-2 mt-1">•</span>
+                      <span className="text-purple-500 dark:text-purple-400 mr-2 mt-1">•</span>
                       <span>{reason}</span>
                     </motion.div>
                   ))}
@@ -166,18 +166,18 @@ export function PersonalizedRecommendationBanner({
             </div>
 
             {/* Mobile Confidence Badge */}
-            <div className="lg:hidden bg-white/95 backdrop-blur-sm rounded-2xl p-4 shadow-xl">
+            <div className="lg:hidden bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-2xl p-4 shadow-xl border border-transparent dark:border-gray-700/50">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <Award className="w-8 h-8 text-yellow-500" />
+                  <Award className="w-8 h-8 text-yellow-500 dark:text-yellow-400" />
                   <div>
-                    <div className="text-gray-600 text-sm">Match Score</div>
-                    <div className="text-2xl font-bold text-gray-900">{confidence}%</div>
+                    <div className="text-gray-600 dark:text-gray-400 text-sm">Match Score</div>
+                    <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">{confidence}%</div>
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-xs text-gray-500">Confidence Level</div>
-                  <div className={`text-sm font-bold ${colors.text}`}>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">Confidence Level</div>
+                  <div className={`text-sm font-bold ${colors.text} dark:text-gray-200`}>
                     {confidence >= 85 ? 'Excellent' : confidence >= 70 ? 'Very Good' : confidence >= 55 ? 'Good' : 'Fair'}
                   </div>
                 </div>
@@ -189,10 +189,10 @@ export function PersonalizedRecommendationBanner({
           <div className="space-y-4">
             {/* Skills to Focus On */}
             {skillGaps.length > 0 && (
-              <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-5 shadow-xl">
+              <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-2xl p-5 shadow-xl border border-transparent dark:border-gray-700/50">
                 <div className="flex items-center mb-3">
-                  <TrendingUp className="w-5 h-5 text-orange-600 mr-2" />
-                  <h4 className="font-bold text-gray-900">Skills to Focus On</h4>
+                  <TrendingUp className="w-5 h-5 text-orange-600 dark:text-orange-400 mr-2" />
+                  <h4 className="font-bold text-gray-900 dark:text-gray-100">Skills to Focus On</h4>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {skillGaps.slice(0, 5).map((skill, i) => (
@@ -201,7 +201,7 @@ export function PersonalizedRecommendationBanner({
                       initial={{ opacity: 0, scale: 0.8 }}
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ delay: 0.1 * i }}
-                      className="px-3 py-1.5 bg-gradient-to-r from-orange-100 to-red-100 text-orange-800 rounded-lg text-xs font-semibold border border-orange-200"
+                      className="px-3 py-1.5 bg-gradient-to-r from-orange-100 to-red-100 dark:from-orange-950/40 dark:to-red-950/40 text-orange-800 dark:text-orange-300 rounded-lg text-xs font-semibold border border-orange-200 dark:border-orange-800/30"
                     >
                       {skill}
                     </motion.span>
@@ -212,15 +212,15 @@ export function PersonalizedRecommendationBanner({
 
             {/* Your Strengths */}
             {currentStrengths && currentStrengths.length > 0 && (
-              <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-5 shadow-xl">
+              <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-2xl p-5 shadow-xl border border-transparent dark:border-gray-700/50">
                 <div className="flex items-center mb-3">
-                  <Award className="w-5 h-5 text-green-600 mr-2" />
-                  <h4 className="font-bold text-gray-900">Your Strengths</h4>
+                  <Award className="w-5 h-5 text-green-600 dark:text-green-500 mr-2" />
+                  <h4 className="font-bold text-gray-900 dark:text-gray-100">Your Strengths</h4>
                 </div>
                 <div className="space-y-2">
                   {currentStrengths.slice(0, 3).map((strength, i) => (
-                    <div key={i} className="flex items-start text-xs text-gray-700">
-                      <CheckCircle className="w-4 h-4 text-green-600 mr-2 mt-0.5 flex-shrink-0" />
+                    <div key={i} className="flex items-start text-xs text-gray-700 dark:text-gray-300">
+                      <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-500 mr-2 mt-0.5 flex-shrink-0" />
                       <span>{strength}</span>
                     </div>
                   ))}
@@ -230,12 +230,12 @@ export function PersonalizedRecommendationBanner({
 
             {/* Next Steps Preview */}
             {nextSteps && nextSteps.length > 0 && (
-              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-5 border-2 border-blue-200 shadow-lg">
+              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 rounded-2xl p-5 border-2 border-blue-200 dark:border-blue-800/30 shadow-lg">
                 <div className="flex items-center mb-3">
-                  <Sparkles className="w-5 h-5 text-blue-600 mr-2" />
-                  <h4 className="font-bold text-gray-900">Quick Tip</h4>
+                  <Sparkles className="w-5 h-5 text-blue-600 dark:text-blue-400 mr-2" />
+                  <h4 className="font-bold text-gray-900 dark:text-gray-100">Quick Tip</h4>
                 </div>
-                <p className="text-xs text-gray-700 leading-relaxed">
+                <p className="text-xs text-gray-700 dark:text-gray-300 leading-relaxed">
                   {nextSteps[0]}
                 </p>
               </div>

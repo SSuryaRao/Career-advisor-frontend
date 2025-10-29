@@ -6,6 +6,7 @@ import { Toaster } from 'react-hot-toast'
 import { Analytics } from '@vercel/analytics/react'
 import AuthProvider from '@/components/auth-provider'
 import ChatbotWidget from '@/components/ui/chatbot-widget'
+import GlobalErrorHandler from '@/components/GlobalErrorHandler'
 
 
 const inter = Inter({ subsets: ['latin'] })
@@ -59,12 +60,14 @@ export default function RootLayout({
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        <script src="https://checkout.razorpay.com/v1/checkout.js" defer />
       </head>
       <body className={inter.className}>
         <Providers>
           <AuthProvider>
             {children}
             <ChatbotWidget />
+            <GlobalErrorHandler />
             <Toaster
               position="bottom-left"
               toastOptions={{

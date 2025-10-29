@@ -100,6 +100,30 @@ export default function ProfilePage(): JSX.Element {
   })
   const [newInterest, setNewInterest] = useState<string>('')
 
+  // Character limits for different fields
+  const CHARACTER_LIMITS = {
+    title: 100,
+    bio: 500,
+    education: 150,
+    careerGoal: 300,
+    location: 100,
+    website: 200,
+    linkedin: 200,
+    github: 200,
+    phone: 20,
+    name: 100,
+  }
+
+  // Helper function to get remaining characters
+  const getRemainingChars = (text: string, limit: number): number => {
+    return limit - (text?.length || 0)
+  }
+
+  // Helper function to check if limit is exceeded
+  const isLimitExceeded = (text: string, limit: number): boolean => {
+    return (text?.length || 0) > limit
+  }
+
   // Fetch user profile data from backend
   useEffect(() => {
     const fetchProfile = async () => {
@@ -203,6 +227,7 @@ export default function ProfilePage(): JSX.Element {
       setIsSaving(true)
       
       const response = await apiClient.updateProfile({
+        name: profile.name,
         profile: profile.profile,
         skills: profile.skills,
         preferences: profile.preferences,
@@ -449,93 +474,250 @@ export default function ProfilePage(): JSX.Element {
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div className="space-y-3">
-                      <label className="block text-sm font-bold text-blue-100/90 tracking-wide uppercase">
-                        Full Name
-                      </label>
+                      <div className="flex items-center justify-between">
+                        <label className="block text-sm font-bold text-blue-100/90 tracking-wide uppercase">
+                          Full Name
+                        </label>
+                        {isEditing && (
+                          <span className={`text-sm font-semibold ${
+                            profile.name?.length > CHARACTER_LIMITS.name
+                              ? 'text-red-400'
+                              : profile.name?.length > CHARACTER_LIMITS.name - 10
+                              ? 'text-yellow-400'
+                              : 'text-blue-200/70'
+                          }`}>
+                            {profile.name?.length || 0}/{CHARACTER_LIMITS.name}
+                          </span>
+                        )}
+                      </div>
                       <Input
                         value={profile.name}
-                        onChange={(e) => handleInputChange(e, 'name')}
+                        onChange={(e) => {
+                          if (e.target.value.length <= CHARACTER_LIMITS.name) {
+                            handleInputChange(e, 'name')
+                          }
+                        }}
                         disabled={!isEditing}
+                        maxLength={CHARACTER_LIMITS.name}
                         className="border-white/20 focus:border-cyan-400 focus:ring-cyan-400/20 bg-white/10 backdrop-blur-sm text-white placeholder-blue-200/60 transition-all duration-300 hover:bg-white/15"
                       />
                     </div>
 
                     <div className="space-y-3">
-                      <label className="block text-sm font-bold text-blue-100/90 tracking-wide uppercase">
-                        Job Title
-                      </label>
+                      <div className="flex items-center justify-between">
+                        <label className="block text-sm font-bold text-blue-100/90 tracking-wide uppercase">
+                          Job Title
+                        </label>
+                        {isEditing && (
+                          <span className={`text-sm font-semibold ${
+                            profile.profile.title?.length > CHARACTER_LIMITS.title
+                              ? 'text-red-400'
+                              : profile.profile.title?.length > CHARACTER_LIMITS.title - 10
+                              ? 'text-yellow-400'
+                              : 'text-blue-200/70'
+                          }`}>
+                            {profile.profile.title?.length || 0}/{CHARACTER_LIMITS.title}
+                          </span>
+                        )}
+                      </div>
                       <Input
                         value={profile.profile.title}
-                        onChange={(e) => handleInputChange(e, 'profile.title')}
+                        onChange={(e) => {
+                          if (e.target.value.length <= CHARACTER_LIMITS.title) {
+                            handleInputChange(e, 'profile.title')
+                          }
+                        }}
                         disabled={!isEditing}
                         placeholder="e.g. Software Engineer"
+                        maxLength={CHARACTER_LIMITS.title}
                         className="border-white/20 focus:border-cyan-400 focus:ring-cyan-400/20 bg-white/10 backdrop-blur-sm text-white placeholder-blue-200/60 transition-all duration-300 hover:bg-white/15"
                       />
                     </div>
 
                     <div className="space-y-3">
-                      <label className="block text-sm font-bold text-blue-100/90 tracking-wide uppercase">
-                        Phone Number
-                      </label>
+                      <div className="flex items-center justify-between">
+                        <label className="block text-sm font-bold text-blue-100/90 tracking-wide uppercase">
+                          Phone Number
+                        </label>
+                        {isEditing && (
+                          <span className={`text-sm font-semibold ${
+                            profile.profile.phone?.length > CHARACTER_LIMITS.phone
+                              ? 'text-red-400'
+                              : profile.profile.phone?.length > CHARACTER_LIMITS.phone - 3
+                              ? 'text-yellow-400'
+                              : 'text-blue-200/70'
+                          }`}>
+                            {profile.profile.phone?.length || 0}/{CHARACTER_LIMITS.phone}
+                          </span>
+                        )}
+                      </div>
                       <Input
                         value={profile.profile.phone}
-                        onChange={(e) => handleInputChange(e, 'profile.phone')}
+                        onChange={(e) => {
+                          if (e.target.value.length <= CHARACTER_LIMITS.phone) {
+                            handleInputChange(e, 'profile.phone')
+                          }
+                        }}
                         disabled={!isEditing}
                         placeholder="+1 (555) 123-4567"
+                        maxLength={CHARACTER_LIMITS.phone}
                         className="border-white/20 focus:border-cyan-400 focus:ring-cyan-400/20 bg-white/10 backdrop-blur-sm text-white placeholder-blue-200/60 transition-all duration-300 hover:bg-white/15"
                       />
                     </div>
 
                     <div className="space-y-3">
-                      <label className="block text-sm font-bold text-blue-100/90 tracking-wide uppercase">
-                        Location
-                      </label>
+                      <div className="flex items-center justify-between">
+                        <label className="block text-sm font-bold text-blue-100/90 tracking-wide uppercase">
+                          Location
+                        </label>
+                        {isEditing && (
+                          <span className={`text-sm font-semibold ${
+                            profile.profile.location?.length > CHARACTER_LIMITS.location
+                              ? 'text-red-400'
+                              : profile.profile.location?.length > CHARACTER_LIMITS.location - 10
+                              ? 'text-yellow-400'
+                              : 'text-blue-200/70'
+                          }`}>
+                            {profile.profile.location?.length || 0}/{CHARACTER_LIMITS.location}
+                          </span>
+                        )}
+                      </div>
                       <Input
                         value={profile.profile.location}
-                        onChange={(e) => handleInputChange(e, 'profile.location')}
+                        onChange={(e) => {
+                          if (e.target.value.length <= CHARACTER_LIMITS.location) {
+                            handleInputChange(e, 'profile.location')
+                          }
+                        }}
                         disabled={!isEditing}
                         placeholder="City, Country"
+                        maxLength={CHARACTER_LIMITS.location}
                         className="border-white/20 focus:border-cyan-400 focus:ring-cyan-400/20 bg-white/10 backdrop-blur-sm text-white placeholder-blue-200/60 transition-all duration-300 hover:bg-white/15"
                       />
                     </div>
 
                     <div className="space-y-3">
-                      <label className="block text-sm font-bold text-blue-100/90 tracking-wide uppercase">
-                        Website
-                      </label>
+                      <div className="flex items-center justify-between">
+                        <label className="block text-sm font-bold text-blue-100/90 tracking-wide uppercase">
+                          Website
+                        </label>
+                        {isEditing && (
+                          <span className={`text-sm font-semibold ${
+                            profile.profile.website?.length > CHARACTER_LIMITS.website
+                              ? 'text-red-400'
+                              : profile.profile.website?.length > CHARACTER_LIMITS.website - 20
+                              ? 'text-yellow-400'
+                              : 'text-blue-200/70'
+                          }`}>
+                            {profile.profile.website?.length || 0}/{CHARACTER_LIMITS.website}
+                          </span>
+                        )}
+                      </div>
                       <Input
                         value={profile.profile.website}
-                        onChange={(e) => handleInputChange(e, 'profile.website')}
+                        onChange={(e) => {
+                          if (e.target.value.length <= CHARACTER_LIMITS.website) {
+                            handleInputChange(e, 'profile.website')
+                          }
+                        }}
                         disabled={!isEditing}
                         placeholder="https://yourwebsite.com"
+                        maxLength={CHARACTER_LIMITS.website}
                         className="border-white/20 focus:border-cyan-400 focus:ring-cyan-400/20 bg-white/10 backdrop-blur-sm text-white placeholder-blue-200/60 transition-all duration-300 hover:bg-white/15"
                       />
                     </div>
 
                     <div className="space-y-3">
-                      <label className="block text-sm font-bold text-blue-100/90 tracking-wide uppercase">
-                        LinkedIn Profile
-                      </label>
+                      <div className="flex items-center justify-between">
+                        <label className="block text-sm font-bold text-blue-100/90 tracking-wide uppercase">
+                          LinkedIn Profile
+                        </label>
+                        {isEditing && (
+                          <span className={`text-sm font-semibold ${
+                            profile.profile.linkedin?.length > CHARACTER_LIMITS.linkedin
+                              ? 'text-red-400'
+                              : profile.profile.linkedin?.length > CHARACTER_LIMITS.linkedin - 20
+                              ? 'text-yellow-400'
+                              : 'text-blue-200/70'
+                          }`}>
+                            {profile.profile.linkedin?.length || 0}/{CHARACTER_LIMITS.linkedin}
+                          </span>
+                        )}
+                      </div>
                       <Input
                         value={profile.profile.linkedin}
-                        onChange={(e) => handleInputChange(e, 'profile.linkedin')}
+                        onChange={(e) => {
+                          if (e.target.value.length <= CHARACTER_LIMITS.linkedin) {
+                            handleInputChange(e, 'profile.linkedin')
+                          }
+                        }}
                         disabled={!isEditing}
                         placeholder="https://linkedin.com/in/yourprofile"
+                        maxLength={CHARACTER_LIMITS.linkedin}
                         className="border-white/20 focus:border-cyan-400 focus:ring-cyan-400/20 bg-white/10 backdrop-blur-sm text-white placeholder-blue-200/60 transition-all duration-300 hover:bg-white/15"
                       />
                     </div>
                   </div>
 
                   <div className="mt-8 space-y-3">
-                    <label className="block text-sm font-bold text-blue-100/90 tracking-wide uppercase">
-                      Bio
-                    </label>
+                    <div className="flex items-center justify-between">
+                      <label className="block text-sm font-bold text-blue-100/90 tracking-wide uppercase">
+                        GitHub Profile
+                      </label>
+                      {isEditing && (
+                        <span className={`text-sm font-semibold ${
+                          profile.profile.github?.length > CHARACTER_LIMITS.github
+                            ? 'text-red-400'
+                            : profile.profile.github?.length > CHARACTER_LIMITS.github - 20
+                            ? 'text-yellow-400'
+                            : 'text-blue-200/70'
+                        }`}>
+                          {profile.profile.github?.length || 0}/{CHARACTER_LIMITS.github}
+                        </span>
+                      )}
+                    </div>
+                    <Input
+                      value={profile.profile.github}
+                      onChange={(e) => {
+                        if (e.target.value.length <= CHARACTER_LIMITS.github) {
+                          handleInputChange(e, 'profile.github')
+                        }
+                      }}
+                      disabled={!isEditing}
+                      placeholder="https://github.com/yourusername"
+                      maxLength={CHARACTER_LIMITS.github}
+                      className="border-white/20 focus:border-cyan-400 focus:ring-cyan-400/20 bg-white/10 backdrop-blur-sm text-white placeholder-blue-200/60 transition-all duration-300 hover:bg-white/15"
+                    />
+                  </div>
+
+                  <div className="mt-8 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <label className="block text-sm font-bold text-blue-100/90 tracking-wide uppercase">
+                        Bio
+                      </label>
+                      {isEditing && (
+                        <span className={`text-sm font-semibold ${
+                          getRemainingChars(profile.profile.bio, CHARACTER_LIMITS.bio) < 0
+                            ? 'text-red-400'
+                            : getRemainingChars(profile.profile.bio, CHARACTER_LIMITS.bio) < 50
+                            ? 'text-yellow-400'
+                            : 'text-blue-200/70'
+                        }`}>
+                          {profile.profile.bio?.length || 0} / {CHARACTER_LIMITS.bio} characters
+                        </span>
+                      )}
+                    </div>
                     <Textarea
                       value={profile.profile.bio}
-                      onChange={(e) => handleTextareaChange(e, 'profile.bio')}
+                      onChange={(e) => {
+                        if (e.target.value.length <= CHARACTER_LIMITS.bio) {
+                          handleTextareaChange(e, 'profile.bio')
+                        }
+                      }}
                       disabled={!isEditing}
                       placeholder="Tell us about yourself..."
                       rows={4}
+                      maxLength={CHARACTER_LIMITS.bio}
                       className="border-white/20 focus:border-cyan-400 focus:ring-cyan-400/20 bg-white/10 backdrop-blur-sm text-white placeholder-blue-200/60 transition-all duration-300 hover:bg-white/15 resize-none"
                     />
                   </div>
@@ -553,28 +735,64 @@ export default function ProfilePage(): JSX.Element {
                   
                   <div className="grid grid-cols-1 gap-8">
                     <div className="space-y-3">
-                      <label className="block text-sm font-bold text-blue-100/90 tracking-wide uppercase">
-                        Education Background
-                      </label>
+                      <div className="flex items-center justify-between">
+                        <label className="block text-sm font-bold text-blue-100/90 tracking-wide uppercase">
+                          Education Background
+                        </label>
+                        {isEditing && (
+                          <span className={`text-sm font-semibold ${
+                            getRemainingChars(profile.profile.education || '', CHARACTER_LIMITS.education) < 0
+                              ? 'text-red-400'
+                              : getRemainingChars(profile.profile.education || '', CHARACTER_LIMITS.education) < 20
+                              ? 'text-yellow-400'
+                              : 'text-blue-200/70'
+                          }`}>
+                            {profile.profile.education?.length || 0} / {CHARACTER_LIMITS.education} characters
+                          </span>
+                        )}
+                      </div>
                       <Input
                         value={profile.profile.education || ''}
-                        onChange={(e) => handleInputChange(e, 'profile.education')}
+                        onChange={(e) => {
+                          if (e.target.value.length <= CHARACTER_LIMITS.education) {
+                            handleInputChange(e, 'profile.education')
+                          }
+                        }}
                         disabled={!isEditing}
                         placeholder="e.g. B.Tech Computer Science, MBA Marketing"
+                        maxLength={CHARACTER_LIMITS.education}
                         className="border-white/20 focus:border-cyan-400 focus:ring-cyan-400/20 bg-white/10 backdrop-blur-sm text-white placeholder-blue-200/60 transition-all duration-300 hover:bg-white/15"
                       />
                     </div>
 
                     <div className="space-y-3">
-                      <label className="block text-sm font-bold text-blue-100/90 tracking-wide uppercase">
-                        Career Goal (Optional)
-                      </label>
+                      <div className="flex items-center justify-between">
+                        <label className="block text-sm font-bold text-blue-100/90 tracking-wide uppercase">
+                          Career Goal (Optional)
+                        </label>
+                        {isEditing && (
+                          <span className={`text-sm font-semibold ${
+                            getRemainingChars(profile.profile.careerGoal || '', CHARACTER_LIMITS.careerGoal) < 0
+                              ? 'text-red-400'
+                              : getRemainingChars(profile.profile.careerGoal || '', CHARACTER_LIMITS.careerGoal) < 30
+                              ? 'text-yellow-400'
+                              : 'text-blue-200/70'
+                          }`}>
+                            {profile.profile.careerGoal?.length || 0} / {CHARACTER_LIMITS.careerGoal} characters
+                          </span>
+                        )}
+                      </div>
                       <Textarea
                         value={profile.profile.careerGoal || ''}
-                        onChange={(e) => handleTextareaChange(e, 'profile.careerGoal')}
+                        onChange={(e) => {
+                          if (e.target.value.length <= CHARACTER_LIMITS.careerGoal) {
+                            handleTextareaChange(e, 'profile.careerGoal')
+                          }
+                        }}
                         disabled={!isEditing}
                         placeholder="e.g. Machine Learning Engineer, Full-Stack Developer, Product Manager"
                         rows={3}
+                        maxLength={CHARACTER_LIMITS.careerGoal}
                         className="border-white/20 focus:border-cyan-400 focus:ring-cyan-400/20 bg-white/10 backdrop-blur-sm text-white placeholder-blue-200/60 transition-all duration-300 hover:bg-white/15 resize-none"
                       />
                     </div>

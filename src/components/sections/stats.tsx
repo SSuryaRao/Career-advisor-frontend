@@ -173,10 +173,10 @@ export default function Stats() {
           transition={{ duration: 0.5 }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400">
+          <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400">
             Numbers That Speak
           </h2>
-          <p className="text-xl text-gray-400 max-w-3xl mx-auto">
+          <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
             Our impact in transforming careers across India
           </p>
         </motion.div>
@@ -191,17 +191,17 @@ export default function Stats() {
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: index * 0.1 }}
             >
-              <Card className="p-6 bg-white/5 backdrop-blur-xl border-white/10 hover:bg-white/10 transition-all duration-300 text-center group">
+              <Card className="p-6 bg-white/70 dark:bg-white/5 backdrop-blur-xl border-gray-200 dark:border-white/10 hover:bg-white dark:hover:bg-white/10 transition-all duration-300 text-center group shadow-lg">
                 <div className={`w-16 h-16 bg-gradient-to-r ${stat.color} rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform`}>
                   <stat.icon className="w-8 h-8 text-white" />
                 </div>
-                
+
                 <div className={`bg-gradient-to-r ${stat.color} bg-clip-text text-transparent mb-2`}>
                   <Counter value={stat.value} suffix={stat.suffix} />
                 </div>
-                
-                <h3 className="text-lg font-semibold text-white mb-2">{stat.label}</h3>
-                <p className="text-sm text-gray-400 leading-relaxed">{stat.description}</p>
+
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{stat.label}</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">{stat.description}</p>
               </Card>
             </motion.div>
           ))}
@@ -214,10 +214,10 @@ export default function Stats() {
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.4 }}
         >
-          <h3 className="text-2xl md:text-3xl font-bold text-center mb-12 text-white">
+          <h3 className="text-2xl md:text-3xl font-bold text-center mb-12 text-gray-900 dark:text-white">
             Recognition & Achievements
           </h3>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {achievements.map((achievement, index) => (
               <motion.div
@@ -227,14 +227,14 @@ export default function Stats() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
               >
-                <Card className="p-6 bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl border-white/20 hover:from-white/20 hover:to-white/10 transition-all duration-300">
+                <Card className="p-6 bg-gradient-to-br from-white/80 to-white/60 dark:from-white/10 dark:to-white/5 backdrop-blur-xl border-gray-200 dark:border-white/20 hover:from-white hover:to-white dark:hover:from-white/20 dark:hover:to-white/10 transition-all duration-300 shadow-md">
                   <div className="text-center">
                     <div className="w-12 h-12 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
                       <Award className="w-6 h-6 text-white" />
                     </div>
-                    <h4 className="font-semibold text-white mb-2">{achievement.title}</h4>
-                    <p className="text-sm text-gray-400 mb-3">{achievement.description}</p>
-                    <div className="text-xs text-yellow-400 font-medium">{achievement.date}</div>
+                    <h4 className="font-semibold text-gray-900 dark:text-white mb-2">{achievement.title}</h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">{achievement.description}</p>
+                    <div className="text-xs text-yellow-600 dark:text-yellow-400 font-medium">{achievement.date}</div>
                   </div>
                 </Card>
               </motion.div>
@@ -250,41 +250,41 @@ export default function Stats() {
           transition={{ duration: 0.6, delay: 0.6 }}
           className="mt-16"
         >
-          <Card className="p-8 bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10 backdrop-blur-xl border-white/20">
+          <Card className="p-8 bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10 backdrop-blur-xl border-blue-200 dark:border-white/20 shadow-lg">
             <div className="text-center mb-8">
-              <h3 className="text-2xl md:text-3xl font-bold text-white mb-4">
+              <h3 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-4">
                 Growing Every Day
               </h3>
-              <p className="text-gray-300 max-w-2xl mx-auto">
-                Join a thriving community of learners, mentors, and industry professionals 
+              <p className="text-gray-700 dark:text-gray-300 max-w-2xl mx-auto">
+                Join a thriving community of learners, mentors, and industry professionals
                 who are shaping the future of careers in India
               </p>
             </div>
-            
+
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
               <div className="text-center">
-                <div className="text-2xl md:text-3xl font-bold text-blue-400 mb-1">
+                <div className="text-2xl md:text-3xl font-bold text-blue-600 dark:text-blue-400 mb-1">
                   <Counter value={850} suffix="+" />
                 </div>
-                <div className="text-sm text-gray-400">Companies Hiring</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">Companies Hiring</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl md:text-3xl font-bold text-purple-400 mb-1">
+                <div className="text-2xl md:text-3xl font-bold text-purple-600 dark:text-purple-400 mb-1">
                   <Counter value={28} suffix="" />
                 </div>
-                <div className="text-sm text-gray-400">Cities Covered</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">Cities Covered</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl md:text-3xl font-bold text-pink-400 mb-1">
+                <div className="text-2xl md:text-3xl font-bold text-pink-600 dark:text-pink-400 mb-1">
                   <Counter value={15000} suffix="+" />
                 </div>
-                <div className="text-sm text-gray-400">Mock Interviews</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">Mock Interviews</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl md:text-3xl font-bold text-orange-400 mb-1">
+                <div className="text-2xl md:text-3xl font-bold text-orange-600 dark:text-orange-400 mb-1">
                   <Counter value={99} suffix="%" />
                 </div>
-                <div className="text-sm text-gray-400">User Satisfaction</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">User Satisfaction</div>
               </div>
             </div>
           </Card>
@@ -298,18 +298,18 @@ export default function Stats() {
           transition={{ duration: 1, delay: 0.8 }}
           className="mt-12"
         >
-          <div className="bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-white/10 rounded-full p-4">
-            <div className="flex items-center justify-center space-x-8 text-sm text-white">
+          <div className="bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-blue-200 dark:border-white/10 rounded-full p-4">
+            <div className="flex items-center justify-center space-x-8 text-sm text-gray-800 dark:text-white">
               <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+                <div className="w-2 h-2 bg-green-500 dark:bg-green-400 rounded-full animate-pulse" />
                 <span>Live: <Counter value={1247} suffix="" /> users online</span>
               </div>
               <div className="hidden md:flex items-center space-x-2">
-                <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" />
+                <div className="w-2 h-2 bg-blue-500 dark:bg-blue-400 rounded-full animate-pulse" />
                 <span>Today: <Counter value={342} suffix="" /> new registrations</span>
               </div>
               <div className="hidden lg:flex items-center space-x-2">
-                <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse" />
+                <div className="w-2 h-2 bg-purple-500 dark:bg-purple-400 rounded-full animate-pulse" />
                 <span>This week: <Counter value={89} suffix="" /> job offers</span>
               </div>
             </div>

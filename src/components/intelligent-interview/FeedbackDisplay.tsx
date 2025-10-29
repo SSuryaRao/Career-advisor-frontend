@@ -54,8 +54,8 @@ export function FeedbackDisplay({ analysis, questionText }: FeedbackDisplayProps
     >
       {/* Score Breakdown for Advanced Mode */}
       {analysis.mode === 'advanced' && analysis.scoreBreakdown && (
-        <Card className="p-6 bg-gradient-to-br from-purple-50 via-indigo-50 to-blue-50 border-2 border-purple-200 shadow-lg">
-          <h4 className="text-lg font-bold text-gray-900 mb-5 flex items-center">
+        <Card className="p-6 bg-gradient-to-br from-purple-50 via-indigo-50 to-blue-50 dark:from-purple-900/20 dark:via-indigo-900/20 dark:to-blue-900/20 border-2 border-purple-200 dark:border-purple-800 shadow-lg">
+          <h4 className="text-lg font-bold text-gray-900 dark:text-white mb-5 flex items-center">
             <div className="w-10 h-10 rounded-full bg-purple-600 flex items-center justify-center mr-3">
               <Sparkles className="w-5 h-5 text-white" />
             </div>
@@ -63,18 +63,18 @@ export function FeedbackDisplay({ analysis, questionText }: FeedbackDisplayProps
           </h4>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <motion.div
-              className="bg-white rounded-xl p-4 shadow-md"
+              className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md"
               whileHover={{ scale: 1.05, y: -3 }}
               transition={{ type: "spring", stiffness: 300 }}
             >
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <Brain className="w-5 h-5 text-purple-600" />
-                  <span className="text-sm font-semibold text-gray-700">Content Quality</span>
+                  <Brain className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                  <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">Content Quality</span>
                 </div>
-                <span className="text-2xl font-bold text-purple-600">{analysis.scoreBreakdown.content.toFixed(2)}%</span>
+                <span className="text-2xl font-bold text-purple-600 dark:text-purple-400">{analysis.scoreBreakdown.content.toFixed(2)}%</span>
               </div>
-              <div className="relative h-3 bg-gray-200 rounded-full overflow-hidden">
+              <div className="relative h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                 <motion.div
                   className="h-full bg-gradient-to-r from-purple-500 to-indigo-600 rounded-full"
                   initial={{ width: 0 }}
@@ -85,18 +85,18 @@ export function FeedbackDisplay({ analysis, questionText }: FeedbackDisplayProps
             </motion.div>
 
             <motion.div
-              className="bg-white rounded-xl p-4 shadow-md"
+              className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md"
               whileHover={{ scale: 1.05, y: -3 }}
               transition={{ type: "spring", stiffness: 300 }}
             >
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <Mic className="w-5 h-5 text-blue-600" />
-                  <span className="text-sm font-semibold text-gray-700">Delivery</span>
+                  <Mic className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                  <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">Delivery</span>
                 </div>
-                <span className="text-2xl font-bold text-blue-600">{analysis.scoreBreakdown.delivery.toFixed(2)}%</span>
+                <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">{analysis.scoreBreakdown.delivery.toFixed(2)}%</span>
               </div>
-              <div className="relative h-3 bg-gray-200 rounded-full overflow-hidden">
+              <div className="relative h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                 <motion.div
                   className="h-full bg-gradient-to-r from-blue-500 to-cyan-600 rounded-full"
                   initial={{ width: 0 }}
@@ -107,18 +107,18 @@ export function FeedbackDisplay({ analysis, questionText }: FeedbackDisplayProps
             </motion.div>
 
             <motion.div
-              className="bg-white rounded-xl p-4 shadow-md"
+              className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md"
               whileHover={{ scale: 1.05, y: -3 }}
               transition={{ type: "spring", stiffness: 300 }}
             >
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <Video className="w-5 h-5 text-pink-600" />
-                  <span className="text-sm font-semibold text-gray-700">Body Language</span>
+                  <Video className="w-5 h-5 text-pink-600 dark:text-pink-400" />
+                  <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">Body Language</span>
                 </div>
-                <span className="text-2xl font-bold text-pink-600">{analysis.scoreBreakdown.bodyLanguage.toFixed(2)}%</span>
+                <span className="text-2xl font-bold text-pink-600 dark:text-pink-400">{analysis.scoreBreakdown.bodyLanguage.toFixed(2)}%</span>
               </div>
-              <div className="relative h-3 bg-gray-200 rounded-full overflow-hidden">
+              <div className="relative h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                 <motion.div
                   className="h-full bg-gradient-to-r from-pink-500 to-purple-600 rounded-full"
                   initial={{ width: 0 }}
@@ -213,8 +213,8 @@ export function FeedbackDisplay({ analysis, questionText }: FeedbackDisplayProps
       </div>
 
       {/* Strengths - Enhanced */}
-      <Card className="p-6 bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-300 shadow-lg">
-        <h4 className="text-lg font-bold text-gray-900 mb-5 flex items-center">
+      <Card className="p-6 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-2 border-green-300 dark:border-green-800 shadow-lg">
+        <h4 className="text-lg font-bold text-gray-900 dark:text-white mb-5 flex items-center">
           <div className="w-10 h-10 rounded-full bg-green-600 flex items-center justify-center mr-3">
             <CheckCircle className="w-5 h-5 text-white" />
           </div>
@@ -227,20 +227,20 @@ export function FeedbackDisplay({ analysis, questionText }: FeedbackDisplayProps
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.6 + idx * 0.1 }}
-              className="flex items-start p-3 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200"
+              className="flex items-start p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200"
             >
-              <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center mr-3 mt-0.5 flex-shrink-0">
-                <Star className="w-4 h-4 text-green-600" />
+              <div className="w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mr-3 mt-0.5 flex-shrink-0">
+                <Star className="w-4 h-4 text-green-600 dark:text-green-400" />
               </div>
-              <span className="text-gray-800 leading-relaxed">{strength}</span>
+              <span className="text-gray-800 dark:text-gray-200 leading-relaxed" dangerouslySetInnerHTML={{ __html: strength.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/\*(.+?)\*/g, '<em>$1</em>') }}></span>
             </motion.div>
           ))}
         </div>
       </Card>
 
       {/* Areas for Improvement - Enhanced */}
-      <Card className="p-6 bg-gradient-to-br from-orange-50 to-amber-50 border-2 border-orange-300 shadow-lg">
-        <h4 className="text-lg font-bold text-gray-900 mb-5 flex items-center">
+      <Card className="p-6 bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 border-2 border-orange-300 dark:border-orange-800 shadow-lg">
+        <h4 className="text-lg font-bold text-gray-900 dark:text-white mb-5 flex items-center">
           <div className="w-10 h-10 rounded-full bg-orange-600 flex items-center justify-center mr-3">
             <TrendingUp className="w-5 h-5 text-white" />
           </div>
@@ -253,12 +253,12 @@ export function FeedbackDisplay({ analysis, questionText }: FeedbackDisplayProps
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.7 + idx * 0.1 }}
-              className="flex items-start p-3 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200"
+              className="flex items-start p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200"
             >
-              <div className="w-6 h-6 rounded-full bg-orange-100 flex items-center justify-center mr-3 mt-0.5 flex-shrink-0">
-                <Zap className="w-4 h-4 text-orange-600" />
+              <div className="w-6 h-6 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center mr-3 mt-0.5 flex-shrink-0">
+                <Zap className="w-4 h-4 text-orange-600 dark:text-orange-400" />
               </div>
-              <span className="text-gray-800 leading-relaxed">{improvement}</span>
+              <span className="text-gray-800 dark:text-gray-200 leading-relaxed" dangerouslySetInnerHTML={{ __html: improvement.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/\*(.+?)\*/g, '<em>$1</em>') }}></span>
             </motion.div>
           ))}
         </div>
@@ -266,8 +266,8 @@ export function FeedbackDisplay({ analysis, questionText }: FeedbackDisplayProps
 
       {/* Speech Analysis (Advanced Mode) - Enhanced */}
       {analysis.speechAnalysis && (
-        <Card className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-300 shadow-lg">
-          <h4 className="text-lg font-bold text-gray-900 mb-5 flex items-center">
+        <Card className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-2 border-blue-300 dark:border-blue-800 shadow-lg">
+          <h4 className="text-lg font-bold text-gray-900 dark:text-white mb-5 flex items-center">
             <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center mr-3">
               <Mic className="w-5 h-5 text-white" />
             </div>
@@ -275,38 +275,38 @@ export function FeedbackDisplay({ analysis, questionText }: FeedbackDisplayProps
           </h4>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5">
             <motion.div
-              className="text-center p-4 bg-white rounded-xl shadow-md"
+              className="text-center p-4 bg-white dark:bg-gray-800 rounded-xl shadow-md"
               whileHover={{ scale: 1.05, y: -3 }}
             >
-              <div className="text-3xl font-bold text-blue-600 mb-1">{analysis.speechAnalysis.wordsPerMinute}</div>
-              <div className="text-xs text-gray-600">Words/Min</div>
+              <div className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-1">{analysis.speechAnalysis.wordsPerMinute}</div>
+              <div className="text-xs text-gray-600 dark:text-gray-400">Words/Min</div>
             </motion.div>
             <motion.div
-              className="text-center p-4 bg-white rounded-xl shadow-md"
+              className="text-center p-4 bg-white dark:bg-gray-800 rounded-xl shadow-md"
               whileHover={{ scale: 1.05, y: -3 }}
             >
-              <div className="text-3xl font-bold text-blue-600 mb-1">{analysis.speechAnalysis.fillerWordCount}</div>
-              <div className="text-xs text-gray-600">Filler Words</div>
+              <div className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-1">{analysis.speechAnalysis.fillerWordCount}</div>
+              <div className="text-xs text-gray-600 dark:text-gray-400">Filler Words</div>
             </motion.div>
             <motion.div
-              className="text-center p-4 bg-white rounded-xl shadow-md"
+              className="text-center p-4 bg-white dark:bg-gray-800 rounded-xl shadow-md"
               whileHover={{ scale: 1.05, y: -3 }}
             >
-              <div className="text-3xl font-bold text-blue-600 mb-1">{analysis.speechAnalysis.fillerWordPercentage}%</div>
-              <div className="text-xs text-gray-600">Filler Rate</div>
+              <div className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-1">{typeof analysis.speechAnalysis.fillerWordPercentage === 'number' ? analysis.speechAnalysis.fillerWordPercentage.toFixed(2) : analysis.speechAnalysis.fillerWordPercentage}%</div>
+              <div className="text-xs text-gray-600 dark:text-gray-400">Filler Rate</div>
             </motion.div>
             <motion.div
-              className="text-center p-4 bg-white rounded-xl shadow-md"
+              className="text-center p-4 bg-white dark:bg-gray-800 rounded-xl shadow-md"
               whileHover={{ scale: 1.05, y: -3 }}
             >
-              <div className="text-3xl font-bold text-blue-600 mb-1">{analysis.speechAnalysis.confidence}%</div>
-              <div className="text-xs text-gray-600">Confidence</div>
+              <div className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-1">{typeof analysis.speechAnalysis.confidence === 'number' ? analysis.speechAnalysis.confidence.toFixed(2) : analysis.speechAnalysis.confidence}%</div>
+              <div className="text-xs text-gray-600 dark:text-gray-400">Confidence</div>
             </motion.div>
           </div>
           {analysis.speechAnalysis.recommendations && analysis.speechAnalysis.recommendations.length > 0 && (
-            <div className="bg-white rounded-xl p-4 shadow-md">
-              <h5 className="text-sm font-semibold text-gray-900 mb-3 flex items-center">
-                <Sparkles className="w-4 h-4 mr-2 text-blue-600" />
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md">
+              <h5 className="text-sm font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
+                <Sparkles className="w-4 h-4 mr-2 text-blue-600 dark:text-blue-400" />
                 Recommendations
               </h5>
               <ul className="space-y-2">
@@ -316,10 +316,10 @@ export function FeedbackDisplay({ analysis, questionText }: FeedbackDisplayProps
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.8 + idx * 0.1 }}
-                    className="text-sm text-gray-700 flex items-start"
+                    className="text-sm text-gray-700 dark:text-gray-300 flex items-start"
                   >
-                    <span className="text-blue-600 mr-2 font-bold">•</span>
-                    {rec}
+                    <span className="text-blue-600 dark:text-blue-400 mr-2 font-bold">•</span>
+                    <span dangerouslySetInnerHTML={{ __html: rec.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/\*(.+?)\*/g, '<em>$1</em>') }}></span>
                   </motion.li>
                 ))}
               </ul>
@@ -330,8 +330,8 @@ export function FeedbackDisplay({ analysis, questionText }: FeedbackDisplayProps
 
       {/* Body Language Analysis (Advanced Mode) - Enhanced */}
       {analysis.bodyLanguageAnalysis && (
-        <Card className="p-6 bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-300 shadow-lg">
-          <h4 className="text-lg font-bold text-gray-900 mb-5 flex items-center">
+        <Card className="p-6 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-2 border-purple-300 dark:border-purple-800 shadow-lg">
+          <h4 className="text-lg font-bold text-gray-900 dark:text-white mb-5 flex items-center">
             <div className="w-10 h-10 rounded-full bg-purple-600 flex items-center justify-center mr-3">
               <Video className="w-5 h-5 text-white" />
             </div>
@@ -339,31 +339,31 @@ export function FeedbackDisplay({ analysis, questionText }: FeedbackDisplayProps
           </h4>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
             <motion.div
-              className="text-center p-5 bg-white rounded-xl shadow-md"
+              className="text-center p-5 bg-white dark:bg-gray-800 rounded-xl shadow-md"
               whileHover={{ scale: 1.05, y: -3 }}
             >
-              <div className="text-sm text-gray-600 mb-2 font-semibold">Eye Contact</div>
-              <div className="text-2xl font-bold text-purple-600">{analysis.bodyLanguageAnalysis.eyeContact}</div>
+              <div className="text-sm text-gray-600 dark:text-gray-400 mb-2 font-semibold">Eye Contact</div>
+              <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">{analysis.bodyLanguageAnalysis.eyeContact}</div>
             </motion.div>
             <motion.div
-              className="text-center p-5 bg-white rounded-xl shadow-md"
+              className="text-center p-5 bg-white dark:bg-gray-800 rounded-xl shadow-md"
               whileHover={{ scale: 1.05, y: -3 }}
             >
-              <div className="text-sm text-gray-600 mb-2 font-semibold">Body Movement</div>
-              <div className="text-2xl font-bold text-purple-600">{analysis.bodyLanguageAnalysis.bodyMovement}</div>
+              <div className="text-sm text-gray-600 dark:text-gray-400 mb-2 font-semibold">Body Movement</div>
+              <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">{analysis.bodyLanguageAnalysis.bodyMovement}</div>
             </motion.div>
             <motion.div
-              className="text-center p-5 bg-white rounded-xl shadow-md"
+              className="text-center p-5 bg-white dark:bg-gray-800 rounded-xl shadow-md"
               whileHover={{ scale: 1.05, y: -3 }}
             >
-              <div className="text-sm text-gray-600 mb-2 font-semibold">Overall Presence</div>
-              <div className="text-2xl font-bold text-purple-600">{analysis.bodyLanguageAnalysis.overallPresence}</div>
+              <div className="text-sm text-gray-600 dark:text-gray-400 mb-2 font-semibold">Overall Presence</div>
+              <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">{analysis.bodyLanguageAnalysis.overallPresence}</div>
             </motion.div>
           </div>
           {analysis.bodyLanguageAnalysis.recommendations && analysis.bodyLanguageAnalysis.recommendations.length > 0 && (
-            <div className="bg-white rounded-xl p-4 shadow-md">
-              <h5 className="text-sm font-semibold text-gray-900 mb-3 flex items-center">
-                <Sparkles className="w-4 h-4 mr-2 text-purple-600" />
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md">
+              <h5 className="text-sm font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
+                <Sparkles className="w-4 h-4 mr-2 text-purple-600 dark:text-purple-400" />
                 Recommendations
               </h5>
               <ul className="space-y-2">
@@ -373,10 +373,10 @@ export function FeedbackDisplay({ analysis, questionText }: FeedbackDisplayProps
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.9 + idx * 0.1 }}
-                    className="text-sm text-gray-700 flex items-start"
+                    className="text-sm text-gray-700 dark:text-gray-300 flex items-start"
                   >
-                    <span className="text-purple-600 mr-2 font-bold">•</span>
-                    {rec}
+                    <span className="text-purple-600 dark:text-purple-400 mr-2 font-bold">•</span>
+                    <span dangerouslySetInnerHTML={{ __html: rec.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/\*(.+?)\*/g, '<em>$1</em>') }}></span>
                   </motion.li>
                 ))}
               </ul>
@@ -387,60 +387,60 @@ export function FeedbackDisplay({ analysis, questionText }: FeedbackDisplayProps
 
       {/* Domain-Specific Insights - Enhanced */}
       {analysis.domainSpecificInsights && (
-        <Card className="p-6 bg-gradient-to-br from-indigo-50 to-purple-50 border-2 border-indigo-300 shadow-lg">
-          <h4 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
+        <Card className="p-6 bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 border-2 border-indigo-300 dark:border-indigo-800 shadow-lg">
+          <h4 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center">
             <div className="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center mr-3">
               <Brain className="w-5 h-5 text-white" />
             </div>
             Domain-Specific Insights
           </h4>
-          <div className="bg-white rounded-xl p-5 shadow-md">
-            <p className="text-gray-800 leading-relaxed">{analysis.domainSpecificInsights}</p>
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-md">
+            <p className="text-gray-800 dark:text-gray-200 leading-relaxed" dangerouslySetInnerHTML={{ __html: analysis.domainSpecificInsights.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/\*(.+?)\*/g, '<em>$1</em>') }}></p>
           </div>
         </Card>
       )}
 
       {/* Overall Assessment - Enhanced */}
-      <Card className="p-6 bg-gradient-to-br from-gray-50 to-slate-100 border-2 border-gray-300 shadow-lg">
-        <h4 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
-          <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center mr-3">
+      <Card className="p-6 bg-gradient-to-br from-gray-50 to-slate-100 dark:from-gray-800 dark:to-gray-900 border-2 border-gray-300 dark:border-gray-700 shadow-lg">
+        <h4 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+          <div className="w-10 h-10 rounded-full bg-gray-700 dark:bg-gray-600 flex items-center justify-center mr-3">
             <Sparkles className="w-5 h-5 text-white" />
           </div>
           Overall Assessment
         </h4>
-        <div className="bg-white rounded-xl p-5 shadow-md">
-          <p className="text-gray-800 leading-relaxed text-base">{analysis.overallAssessment}</p>
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-md">
+          <p className="text-gray-800 dark:text-gray-200 leading-relaxed text-base" dangerouslySetInnerHTML={{ __html: analysis.overallAssessment.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/\*(.+?)\*/g, '<em>$1</em>') }}></p>
         </div>
       </Card>
 
       {/* Transcription (Advanced Mode) - Enhanced */}
       {analysis.transcription && analysis.transcription.text && (
-        <Card className="p-6 bg-gradient-to-br from-gray-50 to-blue-50 border-2 border-gray-300 shadow-lg">
-          <h4 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
-            <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center mr-3">
+        <Card className="p-6 bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-800 dark:to-blue-900/20 border-2 border-gray-300 dark:border-gray-700 shadow-lg">
+          <h4 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+            <div className="w-10 h-10 rounded-full bg-gray-700 dark:bg-gray-600 flex items-center justify-center mr-3">
               <MessageSquare className="w-5 h-5 text-white" />
             </div>
             Your Response (Transcribed)
           </h4>
-          <div className="bg-white rounded-xl p-5 border-2 border-gray-200 shadow-md">
-            <p className="text-gray-800 leading-relaxed italic text-base">&quot;{analysis.transcription.text}&quot;</p>
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border-2 border-gray-200 dark:border-gray-700 shadow-md">
+            <p className="text-gray-800 dark:text-gray-200 leading-relaxed italic text-base">&quot;{analysis.transcription.text}&quot;</p>
           </div>
           <div className="grid grid-cols-3 gap-4 mt-4">
-            <div className="text-center p-3 bg-white rounded-lg shadow-sm">
-              <div className="text-xs text-gray-600 mb-1">Words</div>
-              <div className="text-lg font-bold text-gray-900">{analysis.transcription.wordCount}</div>
+            <div className="text-center p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+              <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">Words</div>
+              <div className="text-lg font-bold text-gray-900 dark:text-white">{analysis.transcription.wordCount}</div>
             </div>
-            <div className="text-center p-3 bg-white rounded-lg shadow-sm">
-              <div className="text-xs text-gray-600 mb-1">Duration</div>
-              <div className="text-lg font-bold text-gray-900">
+            <div className="text-center p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+              <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">Duration</div>
+              <div className="text-lg font-bold text-gray-900 dark:text-white">
                 {typeof analysis.transcription.duration === 'number'
                   ? analysis.transcription.duration.toFixed(1)
                   : parseFloat(analysis.transcription.duration).toFixed(1)}s
               </div>
             </div>
-            <div className="text-center p-3 bg-white rounded-lg shadow-sm">
-              <div className="text-xs text-gray-600 mb-1">Confidence</div>
-              <div className="text-lg font-bold text-gray-900">
+            <div className="text-center p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+              <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">Confidence</div>
+              <div className="text-lg font-bold text-gray-900 dark:text-white">
                 {(analysis.transcription.confidence * 100).toFixed(2)}%
               </div>
             </div>

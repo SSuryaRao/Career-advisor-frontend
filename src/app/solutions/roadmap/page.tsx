@@ -105,26 +105,43 @@ export default function RoadmapPage() {
   const generateRoadmap = async (career_domain: string, skill_level: string) => {
     try {
       const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+
+      // Get authentication token if user is logged in
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      }
+
+      if (user) {
+        try {
+          const token = await user.getIdToken()
+          headers['Authorization'] = `Bearer ${token}`
+        } catch (error) {
+          console.error('Failed to get auth token:', error)
+          throw new Error('Authentication required. Please log in to generate roadmaps.')
+        }
+      } else {
+        throw new Error('Please log in to generate roadmaps')
+      }
+
       const response = await fetch(`${API_BASE_URL}/api/roadmap/generate`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers,
         body: JSON.stringify({
           career_domain,
           skill_level
         }),
       })
-      
+
       if (response.ok) {
         const data = await response.json()
         return data
       } else {
-        throw new Error('Failed to generate roadmap')
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.message || 'Failed to generate roadmap')
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error generating roadmap:', error)
-      return null
+      throw error
     }
   }
 
@@ -146,16 +163,16 @@ export default function RoadmapPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-950 dark:via-gray-900 dark:to-purple-950/20">
       <Navbar />
-      
+
       {/* Hero Header */}
       <div className="relative overflow-hidden mt-20">
         {/* Background Pattern */}
-        <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/10 via-purple-600/10 to-pink-600/10" />
-        <div className="absolute inset-0 opacity-40" 
-             style={{ 
-               backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23a855f7' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='1.5'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")` 
+        <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/10 via-purple-600/10 to-pink-600/10 dark:from-indigo-500/5 dark:via-purple-500/5 dark:to-pink-500/5" />
+        <div className="absolute inset-0 opacity-40 dark:opacity-20"
+             style={{
+               backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23a855f7' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='1.5'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
              }} />
         
         <div className="relative max-w-7xl mx-auto px-4 py-20">
@@ -185,21 +202,21 @@ export default function RoadmapPage() {
               transition={{ delay: 0.3 }}
               className="text-5xl md:text-6xl lg:text-7xl font-bold mb-8"
             >
-              <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 dark:from-indigo-400 dark:via-purple-400 dark:to-pink-400 bg-clip-text text-transparent">
                 Career Roadmap
               </span>
               <br />
-              <span className="text-gray-800">Generator</span>
+              <span className="text-gray-800 dark:text-gray-100">Generator</span>
             </motion.h1>
             
-            <motion.p 
+            <motion.p
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
-              className="text-xl md:text-2xl text-gray-600 max-w-4xl mx-auto mb-12 leading-relaxed"
+              className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 max-w-4xl mx-auto mb-12 leading-relaxed"
             >
-              Create your personalized learning journey with AI-powered roadmaps tailored to your goals. 
-              <span className="text-purple-600 font-semibold"> Track progress, access curated resources, and achieve your career dreams.</span>
+              Create your personalized learning journey with AI-powered roadmaps tailored to your goals.
+              <span className="text-purple-600 dark:text-purple-400 font-semibold"> Track progress, access curated resources, and achieve your career dreams.</span>
             </motion.p>
             
             {/* Stats or badges */}
@@ -207,18 +224,18 @@ export default function RoadmapPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
-              className="flex flex-wrap justify-center gap-6 text-sm text-gray-500"
+              className="flex flex-wrap justify-center gap-6 text-sm text-gray-500 dark:text-gray-400"
             >
               <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                <div className="w-2 h-2 bg-green-500 dark:bg-green-400 rounded-full animate-pulse" />
                 <span>50+ Career Domains</span>
               </div>
               <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+                <div className="w-2 h-2 bg-blue-500 dark:bg-blue-400 rounded-full animate-pulse" />
                 <span>Personalized Learning Paths</span>
               </div>
               <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse" />
+                <div className="w-2 h-2 bg-purple-500 dark:bg-purple-400 rounded-full animate-pulse" />
                 <span>Progress Tracking</span>
               </div>
             </motion.div>
@@ -259,10 +276,10 @@ export default function RoadmapPage() {
           transition={{ delay: 0.6 }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl font-bold text-gray-900 mb-4">
-            Why Choose Our <span className="text-purple-600">Roadmaps?</span>
+          <h2 className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+            Why Choose Our <span className="text-purple-600 dark:text-purple-400">Roadmaps?</span>
           </h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+          <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
             Experience the power of AI-driven career guidance with features designed for your success
           </p>
         </motion.div>
@@ -274,17 +291,17 @@ export default function RoadmapPage() {
             transition={{ delay: 0.7 }}
             className="group"
           >
-            <Card className="p-8 text-center h-full border-0 shadow-lg hover:shadow-2xl transition-all duration-300 bg-gradient-to-br from-blue-50 to-indigo-100 group-hover:from-blue-100 group-hover:to-indigo-200">
+            <Card className="p-8 text-center h-full border-0 shadow-lg hover:shadow-2xl transition-all duration-300 bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950/30 dark:to-indigo-950/30 group-hover:from-blue-100 group-hover:to-indigo-200 dark:group-hover:from-blue-950/50 dark:group-hover:to-indigo-950/50 dark:border dark:border-blue-800/30">
               <div className="relative mb-6">
-                <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto shadow-lg group-hover:scale-110 transition-transform duration-300">
+                <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-indigo-600 dark:from-blue-400 dark:to-indigo-500 rounded-2xl flex items-center justify-center mx-auto shadow-lg group-hover:scale-110 transition-transform duration-300">
                   <Target className="w-8 h-8 text-white" />
                 </div>
-                <div className="absolute -top-2 -right-2 w-6 h-6 bg-yellow-400 rounded-full animate-pulse" />
+                <div className="absolute -top-2 -right-2 w-6 h-6 bg-yellow-400 dark:bg-yellow-500 rounded-full animate-pulse" />
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-4 group-hover:text-blue-600 transition-colors">
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                 Personalized Paths
               </h3>
-              <p className="text-gray-600 leading-relaxed">
+              <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
                 AI-powered roadmaps tailored to your current skill level, career goals, and learning preferences
               </p>
             </Card>
@@ -296,17 +313,17 @@ export default function RoadmapPage() {
             transition={{ delay: 0.8 }}
             className="group"
           >
-            <Card className="p-8 text-center h-full border-0 shadow-lg hover:shadow-2xl transition-all duration-300 bg-gradient-to-br from-green-50 to-emerald-100 group-hover:from-green-100 group-hover:to-emerald-200">
+            <Card className="p-8 text-center h-full border-0 shadow-lg hover:shadow-2xl transition-all duration-300 bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-950/30 dark:to-emerald-950/30 group-hover:from-green-100 group-hover:to-emerald-200 dark:group-hover:from-green-950/50 dark:group-hover:to-emerald-950/50 dark:border dark:border-green-800/30">
               <div className="relative mb-6">
-                <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center mx-auto shadow-lg group-hover:scale-110 transition-transform duration-300">
+                <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-600 dark:from-green-400 dark:to-emerald-500 rounded-2xl flex items-center justify-center mx-auto shadow-lg group-hover:scale-110 transition-transform duration-300">
                   <BookOpen className="w-8 h-8 text-white" />
                 </div>
-                <div className="absolute -top-2 -right-2 w-6 h-6 bg-orange-400 rounded-full animate-pulse" />
+                <div className="absolute -top-2 -right-2 w-6 h-6 bg-orange-400 dark:bg-orange-500 rounded-full animate-pulse" />
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-4 group-hover:text-green-600 transition-colors">
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">
                 Curated Resources
               </h3>
-              <p className="text-gray-600 leading-relaxed">
+              <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
                 Premium learning materials from NPTEL, Coursera, freeCodeCamp, and top educational platforms
               </p>
             </Card>
@@ -318,17 +335,17 @@ export default function RoadmapPage() {
             transition={{ delay: 0.9 }}
             className="group"
           >
-            <Card className="p-8 text-center h-full border-0 shadow-lg hover:shadow-2xl transition-all duration-300 bg-gradient-to-br from-purple-50 to-pink-100 group-hover:from-purple-100 group-hover:to-pink-200">
+            <Card className="p-8 text-center h-full border-0 shadow-lg hover:shadow-2xl transition-all duration-300 bg-gradient-to-br from-purple-50 to-pink-100 dark:from-purple-950/30 dark:to-pink-950/30 group-hover:from-purple-100 group-hover:to-pink-200 dark:group-hover:from-purple-950/50 dark:group-hover:to-pink-950/50 dark:border dark:border-purple-800/30">
               <div className="relative mb-6">
-                <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center mx-auto shadow-lg group-hover:scale-110 transition-transform duration-300">
+                <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-600 dark:from-purple-400 dark:to-pink-500 rounded-2xl flex items-center justify-center mx-auto shadow-lg group-hover:scale-110 transition-transform duration-300">
                   <MapPin className="w-8 h-8 text-white" />
                 </div>
-                <div className="absolute -top-2 -right-2 w-6 h-6 bg-green-400 rounded-full animate-pulse" />
+                <div className="absolute -top-2 -right-2 w-6 h-6 bg-green-400 dark:bg-green-500 rounded-full animate-pulse" />
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-4 group-hover:text-purple-600 transition-colors">
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
                 Smart Progress Tracking
               </h3>
-              <p className="text-gray-600 leading-relaxed">
+              <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
                 Visual milestone tracking with achievement badges and progress analytics to keep you motivated
               </p>
             </Card>
@@ -354,11 +371,11 @@ export default function RoadmapPage() {
           ref={roadmapGeneratorRef}
         >
           {/* Background decoration */}
-          <div className="absolute -inset-4 bg-gradient-to-r from-purple-200/20 via-pink-200/20 to-indigo-200/20 rounded-3xl blur-3xl" />
-          <div className="relative bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-gray-200/50 p-1">
-            <div className="bg-white rounded-3xl shadow-inner">
-              <Roadmap 
-                onGenerateRoadmap={generateRoadmap} 
+          <div className="absolute -inset-4 bg-gradient-to-r from-purple-200/20 via-pink-200/20 to-indigo-200/20 dark:from-purple-500/10 dark:via-pink-500/10 dark:to-indigo-500/10 rounded-3xl blur-3xl" />
+          <div className="relative bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-3xl shadow-xl border border-gray-200/50 dark:border-gray-700/50 p-1">
+            <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-inner">
+              <Roadmap
+                onGenerateRoadmap={generateRoadmap}
                 prefilledDomain={prefilledDomain}
                 prefilledSkillLevel={prefilledSkillLevel}
                 onPrefilledUsed={() => {

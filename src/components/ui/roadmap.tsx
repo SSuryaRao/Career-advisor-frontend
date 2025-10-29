@@ -15,6 +15,12 @@ import { useAuth } from '@/components/auth-provider'
 import { apiClient } from '@/lib/api'
 import toast from 'react-hot-toast'
 
+interface Subtask {
+  id: string
+  name: string
+  optional?: boolean
+}
+
 interface RoadmapMilestone {
   id: string
   title: string
@@ -23,6 +29,7 @@ interface RoadmapMilestone {
   estimated_time: string
   prerequisites: string[]
   category: string
+  subtasks?: Subtask[]
 }
 
 interface ROIData {
@@ -109,8 +116,35 @@ export function Roadmap({ onGenerateRoadmap, prefilledDomain, prefilledSkillLeve
   const [roadmapData, setRoadmapData] = useState<RoadmapData | null>(null)
   const [isGenerating, setIsGenerating] = useState(false)
   const [completedMilestones, setCompletedMilestones] = useState<Set<string>>(new Set())
+  const [completedSubtasks, setCompletedSubtasks] = useState<Map<string, Set<string>>>(new Map())
   const [isLoading, setIsLoading] = useState(false)
-  const { user } = useAuth()
+  const { user} = useAuth()
+
+  // Load saved roadmap selection from localStorage on mount
+  useEffect(() => {
+    const savedDomain = localStorage.getItem('selected_roadmap_domain')
+    const savedSkillLevel = localStorage.getItem('selected_roadmap_skill_level')
+    const savedRoadmapData = localStorage.getItem('selected_roadmap_data')
+
+    if (savedDomain && savedSkillLevel && savedRoadmapData && !prefilledDomain && !prefilledSkillLevel) {
+      try {
+        setSelectedDomain(savedDomain)
+        setSelectedSkillLevel(savedSkillLevel)
+        setRoadmapData(JSON.parse(savedRoadmapData))
+
+        // Load progress after restoring roadmap
+        if (user) {
+          setTimeout(() => loadSavedProgress(), 100)
+        }
+      } catch (error) {
+        console.error('Error loading saved roadmap from localStorage:', error)
+        // Clear invalid data
+        localStorage.removeItem('selected_roadmap_domain')
+        localStorage.removeItem('selected_roadmap_skill_level')
+        localStorage.removeItem('selected_roadmap_data')
+      }
+    }
+  }, [user])
 
   // Handle prefilled values from recommendations
   useEffect(() => {
@@ -124,12 +158,17 @@ export function Roadmap({ onGenerateRoadmap, prefilledDomain, prefilledSkillLeve
           setIsGenerating(true)
           const data = await onGenerateRoadmap(prefilledDomain, prefilledSkillLevel)
           setRoadmapData(data)
-          
+
+          // Save roadmap selection to localStorage for persistence
+          localStorage.setItem('selected_roadmap_domain', prefilledDomain)
+          localStorage.setItem('selected_roadmap_skill_level', prefilledSkillLevel)
+          localStorage.setItem('selected_roadmap_data', JSON.stringify(data))
+
           // Load any existing progress for this roadmap
           if (user) {
             setTimeout(() => loadSavedProgress(), 100)
           }
-          
+
           // Clear the prefilled values
           if (onPrefilledUsed) {
             onPrefilledUsed()
@@ -155,7 +194,7 @@ export function Roadmap({ onGenerateRoadmap, prefilledDomain, prefilledSkillLeve
 
   const loadSavedProgress = async () => {
     if (!user || !selectedDomain || !selectedSkillLevel) return
-    
+
     setIsLoading(true)
     try {
       const response = await apiClient.getRoadmapProgress(user.uid, selectedDomain, selectedSkillLevel)
@@ -163,6 +202,16 @@ export function Roadmap({ onGenerateRoadmap, prefilledDomain, prefilledSkillLeve
         const progress = response.data[0]
         const completed = new Set(progress.completedMilestones.map((m: any) => m.milestoneId))
         setCompletedMilestones(completed)
+
+        // Load subtask completion
+        const subtasksMap = new Map<string, Set<string>>()
+        progress.completedMilestones.forEach((m: any) => {
+          if (m.completedSubtasks && m.completedSubtasks.length > 0) {
+            subtasksMap.set(m.milestoneId, new Set(m.completedSubtasks))
+          }
+        })
+        setCompletedSubtasks(subtasksMap)
+
         toast.success('Progress loaded successfully!')
       }
     } catch (error) {
@@ -181,10 +230,12 @@ export function Roadmap({ onGenerateRoadmap, prefilledDomain, prefilledSkillLeve
         const milestone = roadmapData.stages
           .flatMap(s => s.milestones)
           .find(m => m.id === id)
+        const subtasksForMilestone = completedSubtasks.get(id) || new Set()
         return {
           milestoneId: id,
           title: milestone?.title || id,
-          completedAt: new Date().toISOString()
+          completedAt: new Date().toISOString(),
+          completedSubtasks: Array.from(subtasksForMilestone)
         }
       })
 
@@ -212,21 +263,91 @@ export function Roadmap({ onGenerateRoadmap, prefilledDomain, prefilledSkillLeve
 
   const handleGenerateRoadmap = async () => {
     if (!selectedDomain || !selectedSkillLevel) return
-    
+
     setIsGenerating(true)
     try {
       const data = await onGenerateRoadmap(selectedDomain, selectedSkillLevel)
+      if (!data) {
+        throw new Error('No data received from server')
+      }
       setRoadmapData(data)
-      
+
+      // Save roadmap selection to localStorage for persistence
+      localStorage.setItem('selected_roadmap_domain', selectedDomain)
+      localStorage.setItem('selected_roadmap_skill_level', selectedSkillLevel)
+      localStorage.setItem('selected_roadmap_data', JSON.stringify(data))
+
       // Load any existing progress for this roadmap
       if (user) {
         setTimeout(() => loadSavedProgress(), 100)
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error generating roadmap:', error)
-      toast.error('Failed to generate roadmap')
+      const errorMessage = error?.message || 'Failed to generate roadmap'
+      toast.error(errorMessage)
     } finally {
       setIsGenerating(false)
+    }
+  }
+
+  const handleNewRoadmap = () => {
+    // Clear all roadmap state
+    setSelectedDomain('')
+    setSelectedSkillLevel('')
+    setRoadmapData(null)
+    setCompletedMilestones(new Set())
+    setCompletedSubtasks(new Map())
+
+    // Clear localStorage
+    localStorage.removeItem('selected_roadmap_domain')
+    localStorage.removeItem('selected_roadmap_skill_level')
+    localStorage.removeItem('selected_roadmap_data')
+
+    toast.success('Ready to create a new roadmap!')
+  }
+
+  const toggleSubtask = async (milestoneId: string, subtaskId: string) => {
+    const newSubtasks = new Map(completedSubtasks)
+    const milestoneSubtasks = newSubtasks.get(milestoneId) || new Set()
+
+    if (milestoneSubtasks.has(subtaskId)) {
+      milestoneSubtasks.delete(subtaskId)
+    } else {
+      milestoneSubtasks.add(subtaskId)
+    }
+
+    newSubtasks.set(milestoneId, milestoneSubtasks)
+    setCompletedSubtasks(newSubtasks)
+
+    // Auto-save subtask progress
+    if (user && roadmapData && selectedDomain && selectedSkillLevel) {
+      try {
+        const completedMilestonesArray = Array.from(completedMilestones).map(id => {
+          const milestone = roadmapData.stages
+            .flatMap(s => s.milestones)
+            .find(m => m.id === id)
+          const subtasksForMilestone = newSubtasks.get(id) || new Set()
+          return {
+            milestoneId: id,
+            title: milestone?.title || id,
+            completedAt: new Date().toISOString(),
+            completedSubtasks: Array.from(subtasksForMilestone)
+          }
+        })
+
+        const progressData = {
+          userId: user.uid,
+          domain: selectedDomain,
+          skillLevel: selectedSkillLevel,
+          title: roadmapData.domain,
+          completedMilestones: completedMilestonesArray,
+          roadmapData
+        }
+
+        await apiClient.saveRoadmapProgress(progressData)
+      } catch (error) {
+        console.error('Error saving subtask progress:', error)
+      }
     }
   }
 
@@ -359,23 +480,23 @@ export function Roadmap({ onGenerateRoadmap, prefilledDomain, prefilledSkillLeve
   return (
     <div className="space-y-6">
       {/* Roadmap Generator */}
-      <Card className="p-8 bg-gradient-to-br from-white to-gray-50 border-0 shadow-lg">
+      <Card className="p-8 bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800 border-0 dark:border dark:border-gray-700/50 shadow-lg">
         <div className="flex items-center mb-8">
-          <div className="p-3 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl mr-4 shadow-lg">
+          <div className="p-3 bg-gradient-to-r from-purple-500 to-pink-500 dark:from-purple-600 dark:to-pink-600 rounded-2xl mr-4 shadow-lg">
             <MapPin className="w-8 h-8 text-white" />
           </div>
           <div>
-            <h3 className="text-2xl font-bold text-gray-900 mb-2">Start Your Journey</h3>
-            <p className="text-gray-600 text-lg">Choose your domain and skill level to generate your personalized roadmap</p>
+            <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">Start Your Journey</h3>
+            <p className="text-gray-600 dark:text-gray-300 text-lg">Choose your domain and skill level to generate your personalized roadmap</p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <div>
-            <label className="block text-base font-semibold text-gray-800 mb-3">
+            <label className="block text-base font-semibold text-gray-800 dark:text-gray-200 mb-3">
               🎯 Career Domain
               {prefilledDomain && (
-                <span className="ml-2 text-sm text-green-600 font-normal">
+                <span className="ml-2 text-sm text-green-600 dark:text-green-400 font-normal">
                   ✨ Auto-selected from recommendation
                 </span>
               )}
@@ -390,10 +511,10 @@ export function Roadmap({ onGenerateRoadmap, prefilledDomain, prefilledSkillLeve
           </div>
 
           <div>
-            <label className="block text-base font-semibold text-gray-800 mb-3">
+            <label className="block text-base font-semibold text-gray-800 dark:text-gray-200 mb-3">
               📊 Current Skill Level
               {prefilledSkillLevel && (
-                <span className="ml-2 text-sm text-green-600 font-normal">
+                <span className="ml-2 text-sm text-green-600 dark:text-green-400 font-normal">
                   ✨ Auto-selected from recommendation
                 </span>
               )}
@@ -410,14 +531,14 @@ export function Roadmap({ onGenerateRoadmap, prefilledDomain, prefilledSkillLeve
 
         <div className="space-y-3">
           {prefilledDomain && prefilledSkillLevel && (
-            <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-2xl p-4 mb-4">
+            <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 border border-green-200 dark:border-green-800/30 rounded-2xl p-4 mb-4">
               <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                <div className="w-8 h-8 bg-green-500 dark:bg-green-600 rounded-full flex items-center justify-center">
                   <Target className="w-4 h-4 text-white" />
                 </div>
                 <div>
-                  <p className="text-green-800 font-semibold">🎯 Starting recommended roadmap...</p>
-                  <p className="text-green-600 text-sm">Auto-generating your personalized learning path</p>
+                  <p className="text-green-800 dark:text-green-200 font-semibold">🎯 Starting recommended roadmap...</p>
+                  <p className="text-green-600 dark:text-green-400 text-sm">Auto-generating your personalized learning path</p>
                 </div>
               </div>
             </div>
@@ -442,21 +563,30 @@ export function Roadmap({ onGenerateRoadmap, prefilledDomain, prefilledSkillLeve
           </Button>
           
           {!user && (
-            <div className="text-center p-3 bg-amber-50 border border-amber-200 rounded-lg">
-              <p className="text-sm text-amber-700">
+            <div className="text-center p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/30 rounded-lg">
+              <p className="text-sm text-amber-700 dark:text-amber-300">
                 💡 <strong>Sign in</strong> to save your progress and access your roadmaps from any device!
               </p>
             </div>
           )}
           
           {user && roadmapData && (
-            <Button
-              onClick={saveProgress}
-              variant="outline"
-              className="w-full text-sm py-2 bg-green-50 border-green-300 text-green-700 hover:bg-green-100"
-            >
-              💾 Save Progress (Auto-saved)
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                onClick={saveProgress}
+                variant="outline"
+                className="flex-1 text-sm py-2 bg-green-50 dark:bg-green-950/30 border-green-300 dark:border-green-800/30 text-green-700 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/30"
+              >
+                💾 Save Progress (Auto-saved)
+              </Button>
+              <Button
+                onClick={handleNewRoadmap}
+                variant="outline"
+                className="flex-1 text-sm py-2 bg-blue-50 dark:bg-blue-950/30 border-blue-300 dark:border-blue-800/30 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30"
+              >
+                🆕 Create New Roadmap
+              </Button>
+            </div>
           )}
         </div>
       </Card>
@@ -470,44 +600,44 @@ export function Roadmap({ onGenerateRoadmap, prefilledDomain, prefilledSkillLeve
           className="space-y-6"
         >
           {/* Roadmap Header */}
-          <Card className="p-8 bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 border-0 shadow-xl">
+          <Card className="p-8 bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 dark:from-indigo-950/30 dark:via-purple-950/30 dark:to-pink-950/30 border-0 dark:border dark:border-gray-700/50 shadow-xl">
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h2 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2">
+                <h2 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400 bg-clip-text text-transparent mb-2">
                   🎯 {roadmapData.domain} Roadmap
                 </h2>
-                <p className="text-gray-600 text-lg">Your personalized learning journey awaits!</p>
+                <p className="text-gray-600 dark:text-gray-300 text-lg">Your personalized learning journey awaits!</p>
               </div>
-              <div className="flex items-center space-x-3 bg-white rounded-2xl px-4 py-3 shadow-lg">
-                <Clock className="w-6 h-6 text-purple-500" />
+              <div className="flex items-center space-x-3 bg-white dark:bg-gray-800 rounded-2xl px-4 py-3 shadow-lg border border-transparent dark:border-gray-700">
+                <Clock className="w-6 h-6 text-purple-500 dark:text-purple-400" />
                 <div className="text-right">
-                  <div className="text-sm text-gray-500">Total Time</div>
-                  <div className="font-bold text-purple-600 text-lg">{roadmapData.total_estimated_time}</div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400">Total Time</div>
+                  <div className="font-bold text-purple-600 dark:text-purple-400 text-lg">{roadmapData.total_estimated_time}</div>
                 </div>
               </div>
             </div>
             
             {/* Overall Progress */}
-            <div className="bg-white rounded-2xl p-6 shadow-inner">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-inner border border-transparent dark:border-gray-700">
               <div className="flex justify-between items-center mb-3">
-                <span className="text-lg font-semibold text-gray-700">🚀 Overall Progress</span>
-                <span className="text-lg font-bold text-purple-600">
+                <span className="text-lg font-semibold text-gray-700 dark:text-gray-300">🚀 Overall Progress</span>
+                <span className="text-lg font-bold text-purple-600 dark:text-purple-400">
                   {completedMilestones.size}/{roadmapData.stages.reduce((acc, stage) => acc + stage.milestones.length, 0)} milestones
                 </span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-4">
-                <div 
-                  className="bg-gradient-to-r from-purple-500 to-pink-500 h-4 rounded-full transition-all duration-500 shadow-lg"
-                  style={{ 
-                    width: `${Math.round((completedMilestones.size / roadmapData.stages.reduce((acc, stage) => acc + stage.milestones.length, 0)) * 100)}%` 
+              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4">
+                <div
+                  className="bg-gradient-to-r from-purple-500 to-pink-500 dark:from-purple-400 dark:to-pink-400 h-4 rounded-full transition-all duration-500 shadow-lg"
+                  style={{
+                    width: `${Math.round((completedMilestones.size / roadmapData.stages.reduce((acc, stage) => acc + stage.milestones.length, 0)) * 100)}%`
                   }}
                 />
               </div>
               <div className="text-center mt-2">
-                <span className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                <span className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 dark:from-purple-400 dark:to-pink-400 bg-clip-text text-transparent">
                   {Math.round((completedMilestones.size / roadmapData.stages.reduce((acc, stage) => acc + stage.milestones.length, 0)) * 100)}%
                 </span>
-                <span className="text-gray-500 ml-1">Complete</span>
+                <span className="text-gray-500 dark:text-gray-400 ml-1">Complete</span>
               </div>
             </div>
           </Card>
@@ -538,7 +668,7 @@ export function Roadmap({ onGenerateRoadmap, prefilledDomain, prefilledSkillLeve
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: stageIndex * 0.1 }}
               >
-                <Card className="p-8 border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/80 backdrop-blur-sm hover:shadow-2xl transition-all duration-500">
+                <Card className="p-8 border-0 dark:border dark:border-gray-700/50 shadow-xl bg-gradient-to-br from-white to-gray-50/80 dark:from-gray-900 dark:to-gray-800/80 backdrop-blur-sm hover:shadow-2xl transition-all duration-500">
                   <div className="flex items-center justify-between mb-8">
                     <div className="flex items-center">
                       <div className="relative">
@@ -548,21 +678,21 @@ export function Roadmap({ onGenerateRoadmap, prefilledDomain, prefilledSkillLeve
                         </div>
                       </div>
                       <div className="ml-6">
-                        <h3 className="text-2xl font-bold text-gray-900 mb-2">{stage.category}</h3>
-                        <p className="text-gray-600 text-lg flex items-center">
-                          <span className="w-2 h-2 bg-blue-500 rounded-full mr-2 animate-pulse" />
+                        <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">{stage.category}</h3>
+                        <p className="text-gray-600 dark:text-gray-300 text-lg flex items-center">
+                          <span className="w-2 h-2 bg-blue-500 dark:bg-blue-400 rounded-full mr-2 animate-pulse" />
                           {stage.milestones.length} milestones to master
                         </p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="bg-white rounded-2xl p-4 shadow-lg border border-gray-100">
+                      <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-lg border border-gray-100 dark:border-gray-700">
                         <div className="flex items-center space-x-3 mb-3">
-                          <TrendingUp className="w-5 h-5 text-purple-500" />
-                          <span className="font-bold text-gray-800 text-lg">{progress}% Complete</span>
+                          <TrendingUp className="w-5 h-5 text-purple-500 dark:text-purple-400" />
+                          <span className="font-bold text-gray-800 dark:text-gray-200 text-lg">{progress}% Complete</span>
                         </div>
-                        <div className="w-40 bg-gray-200 rounded-full h-3">
-                          <div 
+                        <div className="w-40 bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+                          <div
                             className={`h-3 rounded-full transition-all duration-700 bg-gradient-to-r ${getCategoryColor(stage.category)} shadow-lg`}
                             style={{ width: `${progress}%` }}
                           />
@@ -587,9 +717,9 @@ export function Roadmap({ onGenerateRoadmap, prefilledDomain, prefilledSkillLeve
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: (stageIndex * 0.1) + (milestoneIndex * 0.05) }}
                           className={`group relative p-6 rounded-2xl border-0 transition-all duration-300 cursor-pointer transform hover:scale-[1.02] ${
-                            isCompleted 
-                              ? 'bg-gradient-to-br from-green-50 to-emerald-100 shadow-lg hover:shadow-xl border-l-4 border-l-green-500' 
-                              : 'bg-gradient-to-br from-gray-50 to-white hover:from-blue-50 hover:to-indigo-100 shadow-md hover:shadow-xl border-l-4 border-l-gray-300 hover:border-l-blue-500'
+                            isCompleted
+                              ? 'bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-950/30 dark:to-emerald-950/30 shadow-lg hover:shadow-xl border-l-4 border-l-green-500 dark:border-l-green-400'
+                              : 'bg-gradient-to-br from-gray-50 to-white dark:from-gray-800 dark:to-gray-900 hover:from-blue-50 hover:to-indigo-100 dark:hover:from-blue-950/30 dark:hover:to-indigo-950/30 shadow-md hover:shadow-xl border-l-4 border-l-gray-300 dark:border-l-gray-600 hover:border-l-blue-500 dark:hover:border-l-blue-400'
                           }`}
                           onClick={() => toggleMilestone(milestone.id)}
                           whileHover={{ scale: 1.02 }}
@@ -623,44 +753,100 @@ export function Roadmap({ onGenerateRoadmap, prefilledDomain, prefilledSkillLeve
                             <div className="flex-1">
                               <div className="flex items-center justify-between mb-3">
                                 <h4 className={`text-xl font-bold transition-colors ${
-                                  isCompleted 
-                                    ? 'text-green-800 line-through opacity-75' 
-                                    : 'text-gray-900 group-hover:text-purple-700'
+                                  isCompleted
+                                    ? 'text-green-800 dark:text-green-200 line-through opacity-75'
+                                    : 'text-gray-900 dark:text-gray-100 group-hover:text-purple-700 dark:group-hover:text-purple-400'
                                 }`}>
                                   {isCompleted ? '✅ ' : '🎯 '}{milestone.title}
                                 </h4>
                                 <div className="flex items-center space-x-2">
-                                  <Badge 
-                                    variant={isCompleted ? "success" : "secondary"} 
+                                  <Badge
+                                    variant={isCompleted ? "success" : "secondary"}
                                     className={`px-3 py-1 text-sm font-semibold ${
-                                      isCompleted 
-                                        ? 'bg-green-100 text-green-800 border border-green-300' 
-                                        : 'bg-purple-100 text-purple-800 border border-purple-300'
+                                      isCompleted
+                                        ? 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300 border border-green-300 dark:border-green-700'
+                                        : 'bg-purple-100 dark:bg-purple-900/40 text-purple-800 dark:text-purple-300 border border-purple-300 dark:border-purple-700'
                                     }`}
                                   >
                                     ⏰ {milestone.estimated_time}
                                   </Badge>
                                   {isCompleted && (
-                                    <div className="bg-green-500 text-white px-2 py-1 rounded-full text-xs font-bold animate-pulse">
+                                    <div className="bg-green-500 dark:bg-green-600 text-white px-2 py-1 rounded-full text-xs font-bold animate-pulse">
                                       DONE!
                                     </div>
                                   )}
                                 </div>
                               </div>
-                              
+
                               <p className={`text-base leading-relaxed mb-4 ${
-                                isCompleted 
-                                  ? 'text-green-700' 
-                                  : 'text-gray-600 group-hover:text-gray-700'
+                                isCompleted
+                                  ? 'text-green-700 dark:text-green-300'
+                                  : 'text-gray-600 dark:text-gray-300 group-hover:text-gray-700 dark:group-hover:text-gray-200'
                               }`}>
                                 {milestone.description}
                               </p>
-                              
+
+                              {/* Subtasks Section */}
+                              {milestone.subtasks && milestone.subtasks.length > 0 && (
+                                <div className="mb-4 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-950/30 dark:to-blue-950/30 p-4 rounded-xl border border-purple-200 dark:border-purple-800/50">
+                                  <div className="flex items-center justify-between mb-3">
+                                    <div className="flex items-center">
+                                      <CheckCircle2 className="w-4 h-4 text-purple-600 dark:text-purple-400 mr-2" />
+                                      <p className="text-sm font-bold text-purple-900 dark:text-purple-200">📝 Sub-Topics to Master</p>
+                                    </div>
+                                    <span className="text-xs font-semibold text-purple-700 dark:text-purple-300 bg-purple-100 dark:bg-purple-900/50 px-2 py-1 rounded-full">
+                                      {(completedSubtasks.get(milestone.id)?.size || 0)}/{milestone.subtasks.length} completed
+                                    </span>
+                                  </div>
+                                  <div className="space-y-2">
+                                    {milestone.subtasks.map((subtask) => {
+                                      const isSubtaskCompleted = completedSubtasks.get(milestone.id)?.has(subtask.id) || false
+                                      return (
+                                        <div
+                                          key={subtask.id}
+                                          onClick={(e) => {
+                                            e.stopPropagation()
+                                            toggleSubtask(milestone.id, subtask.id)
+                                          }}
+                                          className={`flex items-start p-3 rounded-lg cursor-pointer transition-all duration-200 ${
+                                            isSubtaskCompleted
+                                              ? 'bg-green-100 dark:bg-green-900/40 border border-green-300 dark:border-green-700'
+                                              : 'bg-white dark:bg-gray-800/50 border border-purple-200 dark:border-purple-800 hover:bg-purple-50 dark:hover:bg-purple-950/50 hover:border-purple-300 dark:hover:border-purple-700'
+                                          }`}
+                                        >
+                                          <div className={`flex-shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center mr-3 mt-0.5 transition-all ${
+                                            isSubtaskCompleted
+                                              ? 'bg-green-500 dark:bg-green-600 border-green-500 dark:border-green-600'
+                                              : 'border-purple-400 dark:border-purple-600 hover:border-purple-500 dark:hover:border-purple-500'
+                                          }`}>
+                                            {isSubtaskCompleted && (
+                                              <CheckCircle2 className="w-4 h-4 text-white" />
+                                            )}
+                                          </div>
+                                          <div className="flex-1">
+                                            <span className={`text-sm font-medium ${
+                                              isSubtaskCompleted
+                                                ? 'text-green-800 dark:text-green-200 line-through'
+                                                : 'text-gray-800 dark:text-gray-200'
+                                            }`}>
+                                              {subtask.name}
+                                            </span>
+                                            {subtask.optional && (
+                                              <span className="ml-2 text-xs text-gray-500 dark:text-gray-400 italic">(optional)</span>
+                                            )}
+                                          </div>
+                                        </div>
+                                      )
+                                    })}
+                                  </div>
+                                </div>
+                              )}
+
                               {milestone.resources.length > 0 && (
                                 <div className="mb-4">
                                   <div className="flex items-center mb-3">
-                                    <BookOpen className="w-4 h-4 text-blue-500 mr-2" />
-                                    <p className="text-sm font-semibold text-gray-800">📚 Learning Resources:</p>
+                                    <BookOpen className="w-4 h-4 text-blue-500 dark:text-blue-400 mr-2" />
+                                    <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">📚 Learning Resources:</p>
                                   </div>
                                   <div className="flex flex-wrap gap-3">
                                     {milestone.resources.map((resource, idx) => (
@@ -671,12 +857,12 @@ export function Roadmap({ onGenerateRoadmap, prefilledDomain, prefilledSkillLeve
                                         rel="noopener noreferrer"
                                         className="inline-block"
                                       >
-                                        <Badge 
-                                          variant="outline" 
+                                        <Badge
+                                          variant="outline"
                                           className={`px-3 py-2 text-sm font-medium transition-all duration-300 cursor-pointer hover:scale-105 hover:shadow-md flex items-center gap-1 ${
                                             isCompleted
-                                              ? 'bg-green-50 text-green-700 border-green-300 hover:bg-green-100 hover:border-green-400'
-                                              : 'bg-blue-50 text-blue-700 border-blue-300 hover:bg-blue-100 hover:border-blue-400'
+                                              ? 'bg-green-50 dark:bg-green-950/40 text-green-700 dark:text-green-300 border-green-300 dark:border-green-700 hover:bg-green-100 dark:hover:bg-green-950/60 hover:border-green-400 dark:hover:border-green-600'
+                                              : 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border-blue-300 dark:border-blue-700 hover:bg-blue-100 dark:hover:bg-blue-950/60 hover:border-blue-400 dark:hover:border-blue-600'
                                           }`}
                                         >
                                           <ExternalLink className="w-3 h-3" />
@@ -691,8 +877,8 @@ export function Roadmap({ onGenerateRoadmap, prefilledDomain, prefilledSkillLeve
                               {milestone.prerequisites.length > 0 && (
                                 <div>
                                   <div className="flex items-center mb-3">
-                                    <Target className="w-4 h-4 text-orange-500 mr-2" />
-                                    <p className="text-sm font-semibold text-gray-800">🔗 Prerequisites:</p>
+                                    <Target className="w-4 h-4 text-orange-500 dark:text-orange-400 mr-2" />
+                                    <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">🔗 Prerequisites:</p>
                                   </div>
                                   <div className="flex flex-wrap gap-3">
                                     {milestone.prerequisites.map((prereq, idx) => {
@@ -701,13 +887,13 @@ export function Roadmap({ onGenerateRoadmap, prefilledDomain, prefilledSkillLeve
                                         .find(m => m.id === prereq)
                                       const isPrereqCompleted = completedMilestones.has(prereq)
                                       return (
-                                        <Badge 
-                                          key={idx} 
+                                        <Badge
+                                          key={idx}
                                           variant={isPrereqCompleted ? "success" : "secondary"}
                                           className={`px-3 py-2 text-sm font-medium transition-all ${
                                             isPrereqCompleted
-                                              ? 'bg-green-100 text-green-800 border-green-300 shadow-md'
-                                              : 'bg-orange-100 text-orange-800 border-orange-300'
+                                              ? 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300 border-green-300 dark:border-green-700 shadow-md'
+                                              : 'bg-orange-100 dark:bg-orange-900/40 text-orange-800 dark:text-orange-300 border-orange-300 dark:border-orange-700'
                                           }`}
                                         >
                                           {isPrereqCompleted ? '✅ ' : '⏳ '}

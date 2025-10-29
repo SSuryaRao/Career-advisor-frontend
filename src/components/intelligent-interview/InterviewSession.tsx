@@ -200,18 +200,18 @@ export function InterviewSession({ sessionData, userId, onComplete, onCancel }: 
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
       {/* Progress Panel */}
       <div className="lg:col-span-1">
-        <Card className="p-6 bg-white sticky top-24">
+        <Card className="p-6 bg-white dark:bg-gray-800 sticky top-24">
           <div className="text-center mb-6">
             <div className="w-16 h-16 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
               <Sparkles className="w-8 h-8 text-white" />
             </div>
-            <h3 className="text-lg font-bold text-gray-900">Interview Progress</h3>
-            <p className="text-sm text-gray-600 mt-1">{sessionData.domain}</p>
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white">Interview Progress</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{sessionData.domain}</p>
           </div>
 
           <div className="space-y-4">
             <div>
-              <div className="flex justify-between text-sm text-gray-600 mb-2">
+              <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400 mb-2">
                 <span>Question</span>
                 <span>{currentQuestionIndex + 1}/{sessionData.totalQuestions}</span>
               </div>
@@ -221,17 +221,17 @@ export function InterviewSession({ sessionData, userId, onComplete, onCancel }: 
               />
             </div>
 
-            <div className="pt-4 border-t border-gray-200">
+            <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
               <div className="space-y-3">
                 {sessionData.questions.map((q, idx) => (
                   <div
                     key={idx}
                     className={`flex items-center space-x-2 p-2 rounded-lg ${
                       idx === currentQuestionIndex
-                        ? 'bg-indigo-50 border border-indigo-300'
+                        ? 'bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-300 dark:border-indigo-700'
                         : idx < currentQuestionIndex
-                        ? 'bg-green-50 border border-green-300'
-                        : 'bg-gray-50 border border-gray-200'
+                        ? 'bg-green-50 dark:bg-green-900/30 border border-green-300 dark:border-green-700'
+                        : 'bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600'
                     }`}
                   >
                     <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
@@ -239,18 +239,18 @@ export function InterviewSession({ sessionData, userId, onComplete, onCancel }: 
                         ? 'bg-indigo-600 text-white'
                         : idx < currentQuestionIndex
                         ? 'bg-green-600 text-white'
-                        : 'bg-gray-300 text-gray-600'
+                        : 'bg-gray-300 dark:bg-gray-600 text-gray-600 dark:text-gray-300'
                     }`}>
                       {idx < currentQuestionIndex ? <CheckCircle className="w-4 h-4" /> : idx + 1}
                     </div>
-                    <span className="text-xs text-gray-700 truncate">{q.category}</span>
+                    <span className="text-xs text-gray-700 dark:text-gray-300 truncate">{q.category}</span>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="pt-4 border-t border-gray-200">
-              <Badge className="w-full justify-center bg-purple-100 text-purple-800 border-purple-300">
+            <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+              <Badge className="w-full justify-center bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 border-purple-300 dark:border-purple-700">
                 {sessionData.analysisMode === 'advanced' ? 'Advanced' : 'Standard'} Mode
               </Badge>
             </div>
@@ -268,7 +268,7 @@ export function InterviewSession({ sessionData, userId, onComplete, onCancel }: 
 
       {/* Main Interview Area */}
       <div className="lg:col-span-3">
-        <Card className="p-8 bg-white">
+        <Card className="p-8 bg-white dark:bg-gray-800">
           <AnimatePresence mode="wait">
             {!isAnalyzing ? (
               <motion.div
@@ -280,23 +280,23 @@ export function InterviewSession({ sessionData, userId, onComplete, onCancel }: 
                 {/* Question */}
                 <div className="mb-8">
                   <div className="flex items-center justify-between mb-4">
-                    <Badge className="px-3 py-1 bg-indigo-100 text-indigo-800 border-indigo-300">
+                    <Badge className="px-3 py-1 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-300 border-indigo-300 dark:border-indigo-700">
                       Question {currentQuestionIndex + 1} of {sessionData.totalQuestions}
                     </Badge>
-                    <Badge className="px-3 py-1 bg-blue-100 text-blue-800 border-blue-300">
+                    <Badge className="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 border-blue-300 dark:border-blue-700">
                       {currentQuestion.difficulty}
                     </Badge>
                   </div>
 
-                  <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-2xl p-6 border border-indigo-200 mb-2">
-                    <h2 className="text-2xl font-semibold text-gray-900 leading-relaxed">
+                  <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-2xl p-6 border border-indigo-200 dark:border-indigo-800 mb-2">
+                    <h2 className="text-2xl font-semibold text-gray-900 dark:text-white leading-relaxed">
                       {currentQuestion.questionText}
                     </h2>
                   </div>
 
                   <div className="flex flex-wrap gap-2 mt-3">
                     {currentQuestion.keywords.map((keyword, idx) => (
-                      <Badge key={idx} className="bg-gray-100 text-gray-700 border-0 text-xs">
+                      <Badge key={idx} className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-0 text-xs">
                         {keyword}
                       </Badge>
                     ))}

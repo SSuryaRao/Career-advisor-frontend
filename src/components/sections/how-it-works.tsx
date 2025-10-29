@@ -59,14 +59,14 @@ export default function HowItWorks() {
           transition={{ duration: 0.5 }}
           className="text-center mb-16"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-white/10 mb-4">
-            <Sparkles className="w-4 h-4 text-yellow-400" />
-            <span className="text-sm font-medium">Simple 5-Step Process</span>
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-200/50 dark:border-white/10 mb-4">
+            <Sparkles className="w-4 h-4 text-yellow-500 dark:text-yellow-400" />
+            <span className="text-sm font-medium text-gray-800 dark:text-white">Simple 5-Step Process</span>
           </div>
-          <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400">
+          <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400">
             How CareerCraft AI Works
           </h2>
-          <p className="text-xl text-gray-400 max-w-3xl mx-auto">
+          <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
             From profile creation to career success - your personalized journey in just 5 simple steps
           </p>
         </motion.div>
@@ -90,7 +90,7 @@ export default function HowItWorks() {
               >
                 {/* Step Content */}
                 <div className="flex-1 lg:max-w-md">
-                  <Card className="p-8 bg-white/10 backdrop-blur-xl border-white/20 hover:bg-white/15 transition-all duration-300">
+                  <Card className="p-8 bg-white/80 dark:bg-white/10 backdrop-blur-xl border-gray-200 dark:border-white/20 hover:bg-white dark:hover:bg-white/15 transition-all duration-300 shadow-lg">
                     <div className="flex items-center gap-4 mb-6">
                       <div className={`w-16 h-16 bg-gradient-to-r ${step.color} rounded-full flex items-center justify-center`}>
                         <step.icon className="w-8 h-8 text-white" />
@@ -99,15 +99,15 @@ export default function HowItWorks() {
                         {step.step}
                       </div>
                     </div>
-                    
-                    <h3 className="text-2xl font-bold text-white mb-4">{step.title}</h3>
-                    <p className="text-gray-300 mb-6 leading-relaxed">{step.description}</p>
-                    
+
+                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">{step.title}</h3>
+                    <p className="text-gray-700 dark:text-gray-300 mb-6 leading-relaxed">{step.description}</p>
+
                     <div className="space-y-2">
                       {step.features.map((feature, featureIndex) => (
                         <div key={featureIndex} className="flex items-center gap-2">
                           <div className={`w-2 h-2 bg-gradient-to-r ${step.color} rounded-full`} />
-                          <span className="text-gray-400 text-sm">{feature}</span>
+                          <span className="text-gray-600 dark:text-gray-400 text-sm">{feature}</span>
                         </div>
                       ))}
                     </div>
@@ -156,9 +156,9 @@ export default function HowItWorks() {
           transition={{ duration: 0.5, delay: 1 }}
           className="text-center mt-20"
         >
-          <Card className="inline-block p-8 bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10 border border-white/20 backdrop-blur-xl">
-            <h3 className="text-2xl font-bold text-white mb-4">Ready to Start Your Journey?</h3>
-            <p className="text-gray-300 mb-6">Join thousands of students who've transformed their careers with CareerCraft AI</p>
+          <Card className="inline-block p-8 bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10 border border-blue-200 dark:border-white/20 backdrop-blur-xl">
+            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Ready to Start Your Journey?</h3>
+            <p className="text-gray-700 dark:text-gray-300 mb-6">Join thousands of students who've transformed their careers with CareerCraft AI</p>
             <button className="px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-full hover:from-blue-700 hover:to-purple-700 transition-all hover:scale-105 shadow-xl">
               Get Started for Free
             </button>

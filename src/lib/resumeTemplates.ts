@@ -112,20 +112,20 @@ export const resumeTemplates: ResumeTemplate[] = [
     },
     bestFor: ['Software Developer', 'Backend Developer', 'System Engineer']
   },
-  {
-    id: 'sameer-alt',
-    name: 'Diamond Bullets Alt',
-    description: 'Alternative version with diamond bullets and clean sections',
-    pdfPreview: '/templates/Resume_March_2024_WP - Sameer Chauhan.pdf',
-    category: 'professional',
-    design: {
-      primaryColor: '#000000',
-      layout: 'single-column',
-      fontStyle: 'sans-serif',
-      accentStyle: 'minimal'
-    },
-    bestFor: ['Software Developer', 'Backend Developer', 'System Engineer']
-  },
+  // {
+  //   id: 'sameer-alt',
+  //   name: 'Diamond Bullets Alt',
+  //   description: 'Alternative version with diamond bullets and clean sections',
+  //   pdfPreview: '/templates/Resume_March_2024_WP - Sameer Chauhan.pdf',
+  //   category: 'professional',
+  //   design: {
+  //     primaryColor: '#000000',
+  //     layout: 'single-column',
+  //     fontStyle: 'sans-serif',
+  //     accentStyle: 'minimal'
+  //   },
+  //   bestFor: ['Software Developer', 'Backend Developer', 'System Engineer']
+  // },
   {
     id: 'rishabh',
     name: 'Classic Professional',

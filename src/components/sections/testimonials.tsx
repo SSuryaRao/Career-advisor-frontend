@@ -128,14 +128,14 @@ export default function Testimonials() {
           transition={{ duration: 0.5 }}
           className="text-center mb-16"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-white/10 mb-4">
-            <Sparkles className="w-4 h-4 text-yellow-400" />
-            <span className="text-sm font-medium">Success Stories</span>
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-200/50 dark:border-white/10 mb-4">
+            <Sparkles className="w-4 h-4 text-yellow-500 dark:text-yellow-400" />
+            <span className="text-sm font-medium text-gray-800 dark:text-white">Success Stories</span>
           </div>
-          <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400">
+          <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400">
             Transforming Careers, Creating Success
           </h2>
-          <p className="text-xl text-gray-400 max-w-3xl mx-auto">
+          <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
             See how CareerCraft AI has helped thousands of students and professionals achieve their dream careers
           </p>
         </motion.div>
@@ -169,53 +169,53 @@ export default function Testimonials() {
                 }}
                 className="w-full"
               >
-                <Card className="max-w-4xl mx-auto p-8 md:p-12 bg-white/10 backdrop-blur-xl border-white/20">
+                <Card className="max-w-4xl mx-auto p-8 md:p-12 bg-white/90 dark:bg-white/10 backdrop-blur-xl border-gray-200 dark:border-white/20 shadow-xl">
                   <div className="flex flex-col md:flex-row items-center gap-8">
                     {/* Profile Section */}
                     <div className="text-center md:text-left">
                       <div className="w-24 h-24 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-4xl mb-4 mx-auto md:mx-0">
                         {testimonials[currentIndex].image}
                       </div>
-                      <h3 className="text-xl font-bold text-white mb-1">
+                      <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
                         {testimonials[currentIndex].name}
                       </h3>
-                      <p className="text-blue-400 font-medium mb-1">
+                      <p className="text-blue-600 dark:text-blue-400 font-medium mb-1">
                         {testimonials[currentIndex].role}
                       </p>
-                      <p className="text-gray-400 text-sm mb-4">
+                      <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
                         {testimonials[currentIndex].location}
                       </p>
-                      
+
                       {/* Rating */}
                       <div className="flex justify-center md:justify-start gap-1 mb-4">
                         {[...Array(testimonials[currentIndex].rating)].map((_, i) => (
-                          <Star key={i} className="w-4 h-4 text-yellow-400 fill-current" />
+                          <Star key={i} className="w-4 h-4 text-yellow-500 dark:text-yellow-400 fill-current" />
                         ))}
                       </div>
 
                       {/* Achievement Stats */}
                       <div className="space-y-2 text-sm">
-                        <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-3">
-                          <p className="text-green-400 font-medium">Achievement</p>
-                          <p className="text-white">{testimonials[currentIndex].achievement}</p>
+                        <div className="bg-green-500/20 dark:bg-green-500/10 border border-green-500/30 dark:border-green-500/20 rounded-lg p-3">
+                          <p className="text-green-600 dark:text-green-400 font-medium">Achievement</p>
+                          <p className="text-gray-900 dark:text-white">{testimonials[currentIndex].achievement}</p>
                         </div>
-                        <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3">
-                          <p className="text-blue-400 font-medium">Timeline</p>
-                          <p className="text-white">{testimonials[currentIndex].timeframe}</p>
+                        <div className="bg-blue-500/20 dark:bg-blue-500/10 border border-blue-500/30 dark:border-blue-500/20 rounded-lg p-3">
+                          <p className="text-blue-600 dark:text-blue-400 font-medium">Timeline</p>
+                          <p className="text-gray-900 dark:text-white">{testimonials[currentIndex].timeframe}</p>
                         </div>
                       </div>
                     </div>
 
                     {/* Testimonial Content */}
                     <div className="flex-1">
-                      <Quote className="w-12 h-12 text-blue-400 mb-6 opacity-50" />
-                      <p className="text-lg md:text-xl text-gray-300 leading-relaxed mb-6">
+                      <Quote className="w-12 h-12 text-blue-500 dark:text-blue-400 mb-6 opacity-50" />
+                      <p className="text-lg md:text-xl text-gray-700 dark:text-gray-300 leading-relaxed mb-6">
                         {testimonials[currentIndex].text}
                       </p>
-                      <div className="flex items-center gap-4 text-sm text-gray-400">
-                        <span>From: <span className="text-white">{testimonials[currentIndex].beforeRole}</span></span>
-                        <span className="text-blue-400">→</span>
-                        <span>To: <span className="text-white">{testimonials[currentIndex].role}</span></span>
+                      <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+                        <span>From: <span className="text-gray-900 dark:text-white">{testimonials[currentIndex].beforeRole}</span></span>
+                        <span className="text-blue-600 dark:text-blue-400">→</span>
+                        <span>To: <span className="text-gray-900 dark:text-white">{testimonials[currentIndex].role}</span></span>
                       </div>
                     </div>
                   </div>
@@ -227,13 +227,13 @@ export default function Testimonials() {
           {/* Navigation Buttons */}
           <button
             onClick={() => paginate(-1)}
-            className="absolute left-4 top-1/2 transform -translate-y-1/2 w-12 h-12 bg-white/10 hover:bg-white/20 backdrop-blur-xl border border-white/20 rounded-full flex items-center justify-center text-white transition-all hover:scale-110"
+            className="absolute left-4 top-1/2 transform -translate-y-1/2 w-12 h-12 bg-white/80 dark:bg-white/10 hover:bg-white dark:hover:bg-white/20 backdrop-blur-xl border border-gray-200 dark:border-white/20 rounded-full flex items-center justify-center text-gray-900 dark:text-white transition-all hover:scale-110 shadow-lg"
           >
             <ChevronLeft className="w-6 h-6" />
           </button>
           <button
             onClick={() => paginate(1)}
-            className="absolute right-4 top-1/2 transform -translate-y-1/2 w-12 h-12 bg-white/10 hover:bg-white/20 backdrop-blur-xl border border-white/20 rounded-full flex items-center justify-center text-white transition-all hover:scale-110"
+            className="absolute right-4 top-1/2 transform -translate-y-1/2 w-12 h-12 bg-white/80 dark:bg-white/10 hover:bg-white dark:hover:bg-white/20 backdrop-blur-xl border border-gray-200 dark:border-white/20 rounded-full flex items-center justify-center text-gray-900 dark:text-white transition-all hover:scale-110 shadow-lg"
           >
             <ChevronRight className="w-6 h-6" />
           </button>
@@ -250,8 +250,8 @@ export default function Testimonials() {
               }}
               className={`w-3 h-3 rounded-full transition-all ${
                 index === currentIndex
-                  ? 'bg-blue-400 scale-125'
-                  : 'bg-white/30 hover:bg-white/50'
+                  ? 'bg-blue-600 dark:bg-blue-400 scale-125'
+                  : 'bg-gray-300 dark:bg-white/30 hover:bg-gray-400 dark:hover:bg-white/50'
               }`}
             />
           ))}
@@ -267,26 +267,26 @@ export default function Testimonials() {
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: index * 0.2 }}
             >
-              <Card className="p-6 bg-white/5 backdrop-blur-xl border-white/10 hover:bg-white/10 transition-all cursor-pointer">
+              <Card className="p-6 bg-white/70 dark:bg-white/5 backdrop-blur-xl border-gray-200 dark:border-white/10 hover:bg-white dark:hover:bg-white/10 transition-all cursor-pointer shadow-md">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-xl">
                     {testimonial.image}
                   </div>
                   <div>
-                    <h4 className="font-semibold text-white">{testimonial.name}</h4>
-                    <p className="text-sm text-gray-400">{testimonial.role.split(' at ')[0]}</p>
+                    <h4 className="font-semibold text-gray-900 dark:text-white">{testimonial.name}</h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">{testimonial.role.split(' at ')[0]}</p>
                   </div>
                 </div>
-                <p className="text-sm text-gray-300 leading-relaxed mb-3 line-clamp-3">
+                <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed mb-3 line-clamp-3">
                   {testimonial.text}
                 </p>
                 <div className="flex items-center justify-between">
                   <div className="flex gap-1">
                     {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star key={i} className="w-3 h-3 text-yellow-400 fill-current" />
+                      <Star key={i} className="w-3 h-3 text-yellow-500 dark:text-yellow-400 fill-current" />
                     ))}
                   </div>
-                  <span className="text-xs text-gray-500">{testimonial.timeframe}</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-500">{testimonial.timeframe}</span>
                 </div>
               </Card>
             </motion.div>
@@ -308,10 +308,10 @@ export default function Testimonials() {
             { value: '12 months', label: 'Average Timeline' },
           ].map((stat, index) => (
             <div key={index} className="text-center">
-              <div className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400 mb-2">
+              <div className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 mb-2">
                 {stat.value}
               </div>
-              <div className="text-gray-400">{stat.label}</div>
+              <div className="text-gray-600 dark:text-gray-400">{stat.label}</div>
             </div>
           ))}
         </motion.div>

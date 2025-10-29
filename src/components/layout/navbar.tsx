@@ -34,6 +34,7 @@ import { useAuth } from '../auth-provider'
 import { auth } from '@/lib/firebase'
 import { signOut } from 'firebase/auth'
 import toast from 'react-hot-toast'
+import { ThemeToggle } from '@/components/ui/theme-toggle'
 
 const navigation = [
   {
@@ -56,7 +57,7 @@ const navigation = [
     name: 'Solutions',
     href: '/solutions',
     dropdown: [
-      { name: 'For Students', href: '/solutions/students', icon: GraduationCap },
+      // { name: 'For Students', href: '/solutions/students', icon: GraduationCap },
       { name: 'Roadmap', href: '/solutions/roadmap', icon: MapPin },
       { name: 'AI Mock Interview', href: '/mock-interview', icon: MessageSquareText },
     ],
@@ -67,7 +68,7 @@ const navigation = [
 ]
 
 interface NavbarProps {
-  variant?: 'dark' | 'light'
+  variant?: 'dark' | 'light' | 'transparent'
 }
 
 export default function Navbar({ variant = 'dark' }: NavbarProps) {
@@ -75,6 +76,7 @@ export default function Navbar({ variant = 'dark' }: NavbarProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null)
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false)
+  const [isAdmin, setIsAdmin] = useState(false)
   const pathname = usePathname()
   const { user } = useAuth()
 
@@ -95,17 +97,50 @@ export default function Navbar({ variant = 'dark' }: NavbarProps) {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
+  // Fetch user profile to check admin status
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      if (!user) {
+        setIsAdmin(false)
+        return
+      }
+
+      try {
+        const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+        const token = await user.getIdToken()
+
+        const response = await fetch(`${API_BASE_URL}/api/user/profile`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          setIsAdmin(data.data?.isAdmin || false)
+        } else {
+          setIsAdmin(false)
+        }
+      } catch (error) {
+        console.error('Error checking admin status:', error)
+        setIsAdmin(false)
+      }
+    }
+
+    checkAdminStatus()
+  }, [user])
+
   return (
     <nav
       className={cn(
         'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
-        variant === 'light'
+        variant === 'transparent'
           ? isScrolled
-            ? 'bg-white/90 backdrop-blur-xl border-b border-gray-200 shadow-sm'
-            : 'bg-white/80 backdrop-blur-sm border-b border-gray-100'
+            ? 'bg-white/95 dark:bg-black/80 backdrop-blur-xl border-b border-gray-200 dark:border-white/10 shadow-lg'
+            : 'bg-transparent backdrop-blur-md border-b border-white/20 dark:border-white/10'
           : isScrolled
-          ? 'bg-black/80 backdrop-blur-xl border-b border-white/10'
-          : 'bg-transparent'
+          ? 'bg-white/95 dark:bg-black/80 backdrop-blur-xl border-b border-gray-200 dark:border-white/10 shadow-lg'
+          : 'bg-white/90 dark:bg-transparent backdrop-blur-sm border-b border-gray-200/50 dark:border-transparent'
       )}
     >
       <div className="container mx-auto container-padding">
@@ -114,16 +149,15 @@ export default function Navbar({ variant = 'dark' }: NavbarProps) {
           <Link href="/" className="flex items-center space-x-2 group">
             <div className="relative">
               <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg blur-lg opacity-75 group-hover:opacity-100 transition-opacity" />
-              <div className={cn(
-                "relative rounded-lg p-2",
-                variant === 'light' ? 'bg-gradient-to-r from-blue-600 to-purple-600' : 'bg-black'
-              )}>
+              <div className="relative rounded-lg p-2 bg-gradient-to-r from-blue-600 to-purple-600 dark:bg-black">
                 <Sparkles className="w-6 h-6 text-white" />
               </div>
             </div>
             <span className={cn(
               "text-lg sm:text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r",
-              variant === 'light' ? 'from-blue-600 to-purple-600' : 'from-blue-400 to-purple-400'
+              variant === 'transparent' && !isScrolled
+                ? "from-white to-white"
+                : "from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400"
             )}>
               CareerCraft AI
             </span>
@@ -141,10 +175,10 @@ export default function Navbar({ variant = 'dark' }: NavbarProps) {
                 <Link
                   href={item.href}
                   className={cn(
-                    "flex items-center space-x-1 transition-colors",
-                    variant === 'light'
-                      ? 'text-gray-700 hover:text-blue-600'
-                      : 'text-gray-300 hover:text-white'
+                    "flex items-center space-x-1 transition-colors font-medium",
+                    variant === 'transparent' && !isScrolled
+                      ? "text-white hover:text-white/80"
+                      : "text-gray-900 dark:text-gray-200 hover:text-blue-600 dark:hover:text-white"
                   )}
                 >
                   <span>{item.name}</span>
@@ -159,31 +193,17 @@ export default function Navbar({ variant = 'dark' }: NavbarProps) {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
                       transition={{ duration: 0.2 }}
-                      className={cn(
-                        "absolute top-full left-0 mt-2 w-64 backdrop-blur-xl rounded-xl shadow-2xl overflow-hidden",
-                        variant === 'light'
-                          ? 'bg-white border border-gray-200'
-                          : 'bg-gray-900/95 border border-white/10'
-                      )}
+                      className="absolute top-full left-0 mt-2 w-64 backdrop-blur-xl rounded-xl shadow-2xl overflow-hidden bg-white dark:bg-gray-900/95 border border-gray-200 dark:border-white/10"
                     >
                       {item.dropdown.map((subItem) => (
                         <Link
                           key={subItem.name}
                           href={subItem.href}
-                          className={cn(
-                            "flex items-center space-x-3 px-4 py-3 transition-colors",
-                            variant === 'light'
-                              ? 'hover:bg-blue-50'
-                              : 'hover:bg-white/10'
-                          )}
+                          className="flex items-center space-x-3 px-4 py-3 transition-colors hover:bg-blue-50 dark:hover:bg-white/10"
                           onClick={() => setActiveDropdown(null)}
                         >
-                          <subItem.icon className="w-5 h-5 text-blue-400" />
-                          <span className={cn(
-                            variant === 'light'
-                              ? 'text-gray-700 hover:text-blue-600'
-                              : 'text-gray-300 hover:text-white'
-                          )}>
+                          <subItem.icon className="w-5 h-5 text-blue-500 dark:text-blue-400" />
+                          <span className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-white">
                             {subItem.name}
                           </span>
                         </Link>
@@ -197,8 +217,9 @@ export default function Navbar({ variant = 'dark' }: NavbarProps) {
 
           {/* Right Section */}
           <div className="hidden md:flex items-center space-x-4">
+            <ThemeToggle />
             {user ? (
-              <div 
+              <div
                 className="relative"
                 onMouseEnter={() => setProfileDropdownOpen(true)}
                 onMouseLeave={() => setProfileDropdownOpen(false)}
@@ -206,10 +227,10 @@ export default function Navbar({ variant = 'dark' }: NavbarProps) {
                 <Button
                   variant="ghost"
                   className={cn(
-                    "text-sm lg:text-base flex items-center space-x-2",
-                    variant === 'light'
-                      ? 'text-gray-700 hover:text-blue-600'
-                      : 'text-gray-300 hover:text-white'
+                    "text-sm lg:text-base flex items-center space-x-2 font-medium",
+                    variant === 'transparent' && !isScrolled
+                      ? "text-white hover:text-white/80"
+                      : "text-gray-900 dark:text-gray-200 hover:text-blue-600 dark:hover:text-white"
                   )}
                 >
                   <User className="w-4 h-4" />
@@ -225,72 +246,37 @@ export default function Navbar({ variant = 'dark' }: NavbarProps) {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
                       transition={{ duration: 0.2 }}
-                      className={cn(
-                        "absolute top-full right-0 mt-2 w-48 backdrop-blur-xl rounded-xl shadow-2xl overflow-hidden",
-                        variant === 'light'
-                          ? 'bg-white border border-gray-200'
-                          : 'bg-gray-900/95 border border-white/10'
-                      )}
+                      className="absolute top-full right-0 mt-2 w-48 backdrop-blur-xl rounded-xl shadow-2xl overflow-hidden bg-white dark:bg-gray-900/95 border border-gray-200 dark:border-white/10"
                     >
                       <Link
                         href="/profile"
-                        className={cn(
-                          "flex items-center space-x-3 px-4 py-3 transition-colors",
-                          variant === 'light' ? 'hover:bg-blue-50' : 'hover:bg-white/10'
-                        )}
+                        className="flex items-center space-x-3 px-4 py-3 transition-colors hover:bg-blue-50 dark:hover:bg-white/10"
                       >
-                        <User className="w-4 h-4 text-blue-400" />
-                        <span className={cn(
-                          variant === 'light'
-                            ? 'text-gray-700 hover:text-blue-600'
-                            : 'text-gray-300 hover:text-white'
-                        )}>My Profile</span>
+                        <User className="w-4 h-4 text-blue-500 dark:text-blue-400" />
+                        <span className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-white">My Profile</span>
                       </Link>
                       <Link
                         href="/dashboard"
-                        className={cn(
-                          "flex items-center space-x-3 px-4 py-3 transition-colors",
-                          variant === 'light' ? 'hover:bg-blue-50' : 'hover:bg-white/10'
-                        )}
+                        className="flex items-center space-x-3 px-4 py-3 transition-colors hover:bg-blue-50 dark:hover:bg-white/10"
                       >
-                        <Settings className="w-4 h-4 text-blue-400" />
-                        <span className={cn(
-                          variant === 'light'
-                            ? 'text-gray-700 hover:text-blue-600'
-                            : 'text-gray-300 hover:text-white'
-                        )}>Dashboard</span>
+                        <Settings className="w-4 h-4 text-blue-500 dark:text-blue-400" />
+                        <span className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-white">Dashboard</span>
                       </Link>
-                      <Link
-                        href="/admin/insights"
-                        className={cn(
-                          "flex items-center space-x-3 px-4 py-3 transition-colors",
-                          variant === 'light'
-                            ? 'border-t border-gray-100 hover:bg-blue-50'
-                            : 'border-t border-white/5 hover:bg-white/10'
-                        )}
-                      >
-                        <BarChart3 className="w-4 h-4 text-purple-400" />
-                        <span className={cn(
-                          variant === 'light'
-                            ? 'text-gray-700 hover:text-blue-600'
-                            : 'text-gray-300 hover:text-white'
-                        )}>Analytics Insights</span>
-                      </Link>
+                      {isAdmin && (
+                        <Link
+                          href="/admin/insights"
+                          className="flex items-center space-x-3 px-4 py-3 transition-colors border-t border-gray-100 dark:border-white/5 hover:bg-blue-50 dark:hover:bg-white/10"
+                        >
+                          <BarChart3 className="w-4 h-4 text-purple-500 dark:text-purple-400" />
+                          <span className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-white">Analytics Insights</span>
+                        </Link>
+                      )}
                       <button
                         onClick={handleLogout}
-                        className={cn(
-                          "w-full flex items-center space-x-3 px-4 py-3 transition-colors text-left",
-                          variant === 'light'
-                            ? 'border-t border-gray-100 hover:bg-red-50'
-                            : 'border-t border-white/5 hover:bg-white/10'
-                        )}
+                        className="w-full flex items-center space-x-3 px-4 py-3 transition-colors text-left border-t border-gray-100 dark:border-white/5 hover:bg-red-50 dark:hover:bg-white/10"
                       >
-                        <LogOut className="w-4 h-4 text-red-400" />
-                        <span className={cn(
-                          variant === 'light'
-                            ? 'text-gray-700 hover:text-red-600'
-                            : 'text-gray-300 hover:text-white'
-                        )}>Logout</span>
+                        <LogOut className="w-4 h-4 text-red-500 dark:text-red-400" />
+                        <span className="text-gray-700 dark:text-gray-300 hover:text-red-600 dark:hover:text-white">Logout</span>
                       </button>
                     </motion.div>
                   )}
@@ -302,10 +288,10 @@ export default function Navbar({ variant = 'dark' }: NavbarProps) {
                   <Button
                     variant="ghost"
                     className={cn(
-                      "text-sm lg:text-base",
-                      variant === 'light'
-                        ? 'text-gray-700 hover:text-blue-600'
-                        : 'text-gray-300 hover:text-white'
+                      "text-sm lg:text-base font-medium",
+                      variant === 'transparent' && !isScrolled
+                        ? "text-white hover:text-white/80"
+                        : "text-gray-900 dark:text-gray-200 hover:text-blue-600 dark:hover:text-white"
                     )}
                   >
                     <LogIn className="w-4 h-4 mr-2" />
@@ -326,7 +312,9 @@ export default function Navbar({ variant = 'dark' }: NavbarProps) {
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             className={cn(
               "md:hidden",
-              variant === 'light' ? 'text-gray-700' : 'text-white'
+              variant === 'transparent' && !isScrolled
+                ? "text-white"
+                : "text-gray-900 dark:text-white"
             )}
           >
             {isMobileMenuOpen ? (
@@ -346,24 +334,14 @@ export default function Navbar({ variant = 'dark' }: NavbarProps) {
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3 }}
-            className={cn(
-              "md:hidden backdrop-blur-xl",
-              variant === 'light'
-                ? 'bg-white border-t border-gray-200'
-                : 'bg-black/95 border-t border-white/10'
-            )}
+            className="md:hidden backdrop-blur-xl bg-white dark:bg-black/95 border-t border-gray-200 dark:border-white/10"
           >
             <div className="container mx-auto container-padding py-4">
               {navigation.map((item) => (
                 <div key={item.name} className="py-2">
                   <Link
                     href={item.href}
-                    className={cn(
-                      "block transition-colors",
-                      variant === 'light'
-                        ? 'text-gray-700 hover:text-blue-600'
-                        : 'text-gray-300 hover:text-white'
-                    )}
+                    className="block transition-colors text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-white"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     {item.name}
@@ -374,12 +352,7 @@ export default function Navbar({ variant = 'dark' }: NavbarProps) {
                         <Link
                           key={subItem.name}
                           href={subItem.href}
-                          className={cn(
-                            "flex items-center space-x-2 text-sm transition-colors",
-                            variant === 'light'
-                              ? 'text-gray-600 hover:text-blue-600'
-                              : 'text-gray-400 hover:text-white'
-                          )}
+                          className="flex items-center space-x-2 text-sm transition-colors text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-white"
                           onClick={() => setIsMobileMenuOpen(false)}
                         >
                           <subItem.icon className="w-4 h-4" />
@@ -390,10 +363,11 @@ export default function Navbar({ variant = 'dark' }: NavbarProps) {
                   )}
                 </div>
               ))}
-              <div className={cn(
-                "flex flex-col space-y-2 mt-4 pt-4 border-t",
-                variant === 'light' ? 'border-gray-200' : 'border-white/10'
-              )}>
+              <div className="flex flex-col space-y-2 mt-4 pt-4 border-t border-gray-200 dark:border-white/10">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Theme</span>
+                  <ThemeToggle />
+                </div>
                 {user ? (
                   <>
                     <Link href="/profile" passHref>
@@ -408,12 +382,14 @@ export default function Navbar({ variant = 'dark' }: NavbarProps) {
                         Dashboard
                       </Button>
                     </Link>
-                    <Link href="/admin/insights" passHref>
-                      <Button variant="outline" className="w-full flex items-center justify-center bg-purple-500/10 border-purple-500/30 hover:bg-purple-500/20">
-                        <BarChart3 className="w-4 h-4 mr-2" />
-                        Analytics Insights
-                      </Button>
-                    </Link>
+                    {isAdmin && (
+                      <Link href="/admin/insights" passHref>
+                        <Button variant="outline" className="w-full flex items-center justify-center bg-purple-500/10 border-purple-500/30 hover:bg-purple-500/20">
+                          <BarChart3 className="w-4 h-4 mr-2" />
+                          Analytics Insights
+                        </Button>
+                      </Link>
+                    )}
                     <Button
                       onClick={handleLogout}
                       className="w-full bg-red-600 hover:bg-red-700 flex items-center justify-center"

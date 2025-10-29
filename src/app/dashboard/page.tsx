@@ -20,6 +20,7 @@ import Navbar from '@/components/layout/navbar'
 import { RoadmapProgressCard } from '@/components/dashboard/RoadmapProgressCard'
 import { MockInterviewProgressCard } from '@/components/dashboard/MockInterviewProgressCard'
 import { useAuth } from '@/components/auth-provider'
+import QuotaDisplay from '@/components/dashboard/QuotaDisplay'
 
 const COLORS = ['#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981']
 
@@ -125,27 +126,27 @@ export default function DashboardPage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-950 dark:via-gray-900 dark:to-purple-950/20">
         <Navbar />
         <div className="flex items-center justify-center h-screen">
-          <Card className="p-8 text-center max-w-md">
-            <h2 className="text-2xl font-bold mb-4">Welcome to Your Dashboard</h2>
-            <p className="text-gray-600 mb-6">Please sign in to view your personalized career progress</p>
+          <div className="p-8 text-center max-w-md bg-white dark:bg-slate-800 rounded-3xl border-2 border-gray-300 dark:border-slate-600 shadow-xl">
+            <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">Welcome to Your Dashboard</h2>
+            <p className="text-gray-600 dark:text-gray-300 mb-6">Please sign in to view your personalized career progress</p>
             <Button onClick={() => router.push('/login')} className="w-full">
               Sign In
             </Button>
-          </Card>
+          </div>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-950 dark:via-gray-900 dark:to-purple-950/20">
       <Navbar />
 
       {/* Hero Section with Greeting */}
-      <div className="relative overflow-hidden mt-20 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600">
+      <div className="relative overflow-hidden mt-20 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 dark:from-indigo-900 dark:via-purple-900 dark:to-pink-900">
         <div className="absolute inset-0 bg-grid-white/10" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
 
@@ -263,15 +264,15 @@ export default function DashboardPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
             >
-              <Card className="p-6 bg-white/80 backdrop-blur-sm shadow-xl border-0">
+              <div className="p-6 bg-white dark:bg-slate-800 rounded-3xl shadow-xl border-2 border-gray-300 dark:border-slate-600">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center space-x-3">
                     <div className="p-2 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl">
                       <Target className="w-6 h-6 text-white" />
                     </div>
                     <div>
-                      <h3 className="text-xl font-bold text-gray-900">Learning Progress</h3>
-                      <p className="text-sm text-gray-600">Track your journey across all modules</p>
+                      <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">Learning Progress</h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Track your journey across all modules</p>
                     </div>
                   </div>
                   <div className="flex space-x-2">
@@ -294,15 +295,15 @@ export default function DashboardPage() {
                   <div>
                     <div className="flex justify-between items-center mb-2">
                       <div className="flex items-center space-x-2">
-                        <BookOpen className="w-4 h-4 text-green-600" />
-                        <span className="font-medium text-gray-700">Resources</span>
+                        <BookOpen className="w-4 h-4 text-green-600 dark:text-green-400" />
+                        <span className="font-medium text-gray-700 dark:text-gray-200">Resources</span>
                       </div>
-                      <span className="text-lg font-bold text-green-600">
+                      <span className="text-lg font-bold text-green-600 dark:text-green-400">
                         {dashboardSummary?.resources?.percentage || 0}%
                       </span>
                     </div>
-                    <Progress value={dashboardSummary?.resources?.percentage || 0} className="h-3 bg-gray-200" />
-                    <p className="text-xs text-gray-500 mt-1">
+                    <Progress value={dashboardSummary?.resources?.percentage || 0} className="h-3 bg-gray-200 dark:bg-gray-700" />
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                       {dashboardSummary?.resources?.completed || 0} of {dashboardSummary?.resources?.total || 0} completed
                     </p>
                   </div>
@@ -310,15 +311,15 @@ export default function DashboardPage() {
                   <div>
                     <div className="flex justify-between items-center mb-2">
                       <div className="flex items-center space-x-2">
-                        <MapPin className="w-4 h-4 text-purple-600" />
-                        <span className="font-medium text-gray-700">Roadmap Milestones</span>
+                        <MapPin className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                        <span className="font-medium text-gray-700 dark:text-gray-200">Roadmap Milestones</span>
                       </div>
-                      <span className="text-lg font-bold text-purple-600">
+                      <span className="text-lg font-bold text-purple-600 dark:text-purple-400">
                         {dashboardSummary?.roadmaps?.percentage || 0}%
                       </span>
                     </div>
-                    <Progress value={dashboardSummary?.roadmaps?.percentage || 0} className="h-3 bg-gray-200" />
-                    <p className="text-xs text-gray-500 mt-1">
+                    <Progress value={dashboardSummary?.roadmaps?.percentage || 0} className="h-3 bg-gray-200 dark:bg-gray-700" />
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                       {dashboardSummary?.roadmaps?.completedMilestones || 0} of {dashboardSummary?.roadmaps?.totalMilestones || 0} milestones
                     </p>
                   </div>
@@ -326,18 +327,18 @@ export default function DashboardPage() {
                   <div>
                     <div className="flex justify-between items-center mb-2">
                       <div className="flex items-center space-x-2">
-                        <MessageSquare className="w-4 h-4 text-blue-600" />
-                        <span className="font-medium text-gray-700">Mock Interviews</span>
+                        <MessageSquare className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                        <span className="font-medium text-gray-700 dark:text-gray-200">Mock Interviews</span>
                       </div>
-                      <span className="text-lg font-bold text-blue-600">
+                      <span className="text-lg font-bold text-blue-600 dark:text-blue-400">
                         {dashboardSummary?.mockInterviews?.totalInterviews || 0}
                       </span>
                     </div>
                     <Progress
                       value={Math.min((dashboardSummary?.mockInterviews?.totalInterviews || 0) * 10, 100)}
-                      className="h-3 bg-gray-200"
+                      className="h-3 bg-gray-200 dark:bg-gray-700"
                     />
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                       {dashboardSummary?.mockInterviews?.totalInterviews || 0} interviews completed
                     </p>
                   </div>
@@ -345,15 +346,15 @@ export default function DashboardPage() {
                   <div>
                     <div className="flex justify-between items-center mb-2">
                       <div className="flex items-center space-x-2">
-                        <Brain className="w-4 h-4 text-indigo-600" />
-                        <span className="font-medium text-gray-700">Aptitude Tests</span>
+                        <Brain className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                        <span className="font-medium text-gray-700 dark:text-gray-200">Aptitude Tests</span>
                       </div>
-                      <span className="text-lg font-bold text-indigo-600">
+                      <span className="text-lg font-bold text-indigo-600 dark:text-indigo-400">
                         {dashboardSummary?.mockInterviews?.avgAptitudeScore || 0}%
                       </span>
                     </div>
-                    <Progress value={dashboardSummary?.mockInterviews?.avgAptitudeScore || 0} className="h-3 bg-gray-200" />
-                    <p className="text-xs text-gray-500 mt-1">
+                    <Progress value={dashboardSummary?.mockInterviews?.avgAptitudeScore || 0} className="h-3 bg-gray-200 dark:bg-gray-700" />
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                       {dashboardSummary?.mockInterviews?.totalAptitudeTests || 0} tests taken • Avg: {dashboardSummary?.mockInterviews?.avgAptitudeScore || 0}%
                     </p>
                   </div>
@@ -361,7 +362,7 @@ export default function DashboardPage() {
 
                 {/* Weekly Activity Chart */}
                 <div className="mt-6">
-                  <h4 className="text-sm font-semibold text-gray-700 mb-4">Weekly Activity</h4>
+                  <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-4">Weekly Activity</h4>
                   <div className="h-48">
                     <ResponsiveContainer width="100%" height="100%">
                       <AreaChart data={weeklyActivityData}>
@@ -386,7 +387,7 @@ export default function DashboardPage() {
                     </ResponsiveContainer>
                   </div>
                 </div>
-              </Card>
+              </div>
             </motion.div>
 
             {/* Category Distribution */}
@@ -396,14 +397,14 @@ export default function DashboardPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.6 }}
               >
-                <Card className="p-6 bg-white/80 backdrop-blur-sm shadow-xl border-0">
+                <div className="p-6 bg-white dark:bg-slate-800 rounded-3xl shadow-xl border-2 border-gray-300 dark:border-slate-600">
                   <div className="flex items-center space-x-3 mb-6">
                     <div className="p-2 bg-gradient-to-r from-purple-500 to-pink-600 rounded-xl">
                       <BarChart className="w-6 h-6 text-white" />
                     </div>
                     <div>
-                      <h3 className="text-xl font-bold text-gray-900">Learning by Category</h3>
-                      <p className="text-sm text-gray-600">Your focus areas at a glance</p>
+                      <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">Learning by Category</h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Your focus areas at a glance</p>
                     </div>
                   </div>
 
@@ -432,20 +433,20 @@ export default function DashboardPage() {
 
                     <div className="flex flex-col justify-center space-y-3">
                       {categoryData.map((category, index) => (
-                        <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div key={index} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                           <div className="flex items-center space-x-3">
                             <div
                               className="w-4 h-4 rounded-full"
                               style={{ backgroundColor: COLORS[index % COLORS.length] }}
                             />
-                            <span className="font-medium text-gray-900">{category.name}</span>
+                            <span className="font-medium text-gray-900 dark:text-gray-100">{category.name}</span>
                           </div>
-                          <span className="text-lg font-bold text-gray-700">{category.value}</span>
+                          <span className="text-lg font-bold text-gray-700 dark:text-gray-200">{category.value}</span>
                         </div>
                       ))}
                     </div>
                   </div>
-                </Card>
+                </div>
               </motion.div>
             )}
 
@@ -456,14 +457,14 @@ export default function DashboardPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.7 }}
               >
-                <Card className="p-6 bg-white/80 backdrop-blur-sm shadow-xl border-0">
+                <div className="p-6 bg-white dark:bg-slate-800 rounded-3xl shadow-xl border-2 border-gray-300 dark:border-slate-600">
                   <div className="flex items-center space-x-3 mb-6">
                     <div className="p-2 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl">
                       <Brain className="w-6 h-6 text-white" />
                     </div>
                     <div>
-                      <h3 className="text-xl font-bold text-gray-900">Aptitude Test Performance</h3>
-                      <p className="text-sm text-gray-600">Your performance across different test types</p>
+                      <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">Aptitude Test Performance</h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Your performance across different test types</p>
                     </div>
                   </div>
 
@@ -567,8 +568,8 @@ export default function DashboardPage() {
                    !dashboardSummary?.mockInterviews?.performanceByType?.['quantitative-aptitude'] &&
                    !dashboardSummary?.mockInterviews?.performanceByType?.['verbal-ability'] && (
                     <div className="text-center py-8">
-                      <Brain className="w-12 h-12 text-indigo-300 mx-auto mb-3" />
-                      <p className="text-gray-600 mb-4">Start taking aptitude tests to see your performance breakdown</p>
+                      <Brain className="w-12 h-12 text-indigo-300 dark:text-indigo-500 mx-auto mb-3" />
+                      <p className="text-gray-600 dark:text-gray-300 mb-4">Start taking aptitude tests to see your performance breakdown</p>
                       <Button
                         onClick={() => router.push('/mock-interview')}
                         className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white"
@@ -577,7 +578,7 @@ export default function DashboardPage() {
                       </Button>
                     </div>
                   )}
-                </Card>
+                </div>
               </motion.div>
             )}
 
@@ -587,7 +588,7 @@ export default function DashboardPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.8 }}
             >
-              <Card className="p-6 bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-xl border-0">
+              <div className="p-6 bg-gradient-to-br from-indigo-500 to-purple-600 dark:from-indigo-600 dark:to-purple-700 text-white shadow-xl border-2 border-transparent rounded-3xl">
                 <h3 className="text-xl font-bold mb-4 flex items-center">
                   <Zap className="w-6 h-6 mr-2" />
                   Quick Actions
@@ -622,12 +623,21 @@ export default function DashboardPage() {
                     <span className="text-sm">Find Jobs</span>
                   </Button>
                 </div>
-              </Card>
+              </div>
             </motion.div>
           </div>
 
           {/* Right Sidebar (4 cols) */}
           <div className="lg:col-span-4 space-y-6">
+
+            {/* Usage Quota Display */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.4 }}
+            >
+              <QuotaDisplay />
+            </motion.div>
 
             {/* Weekly Goal */}
             <motion.div
@@ -635,7 +645,7 @@ export default function DashboardPage() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.5 }}
             >
-              <Card className="p-6 bg-gradient-to-br from-green-500 to-emerald-600 text-white shadow-xl border-0">
+              <div className="p-6 bg-gradient-to-br from-green-500 to-emerald-600 dark:from-green-600 dark:to-emerald-700 text-white shadow-xl border-2 border-transparent rounded-3xl">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-bold flex items-center">
                     <Target className="w-5 h-5 mr-2" />
@@ -657,7 +667,7 @@ export default function DashboardPage() {
                     : `${(dashboardSummary?.overall?.weeklyGoal?.target || 5) - (dashboardSummary?.overall?.weeklyGoal?.current || 0)} more to reach your goal`
                   }
                 </p>
-              </Card>
+              </div>
             </motion.div>
 
             {/* Roadmap Progress Card */}
@@ -704,13 +714,13 @@ export default function DashboardPage() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.8 }}
               >
-                <Card className="p-6 bg-white/80 backdrop-blur-sm shadow-xl border-0">
+                <div className="p-6 bg-white dark:bg-slate-800 rounded-3xl shadow-xl border-2 border-gray-300 dark:border-slate-600">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-bold flex items-center text-gray-900">
-                      <Trophy className="w-5 h-5 mr-2 text-yellow-500" />
+                    <h3 className="text-lg font-bold flex items-center text-gray-900 dark:text-gray-100">
+                      <Trophy className="w-5 h-5 mr-2 text-yellow-500 dark:text-yellow-400" />
                       Recent Achievements
                     </h3>
-                    <Badge className="bg-yellow-100 text-yellow-700">
+                    <Badge className="bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300">
                       {dashboardSummary.achievements.length}
                     </Badge>
                   </div>
@@ -721,22 +731,22 @@ export default function DashboardPage() {
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: 0.1 * index }}
-                        className="flex items-start p-3 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-xl border border-yellow-200"
+                        className="flex items-start p-3 bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/30 dark:to-orange-900/30 rounded-xl border border-yellow-200 dark:border-yellow-800"
                       >
-                        <div className="w-10 h-10 bg-yellow-500 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                        <div className="w-10 h-10 bg-yellow-500 dark:bg-yellow-600 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
                           <Trophy className="w-5 h-5 text-white" />
                         </div>
                         <div className="flex-1">
-                          <h4 className="font-semibold text-gray-900 text-sm">{achievement.name}</h4>
-                          <p className="text-xs text-gray-600">{achievement.description}</p>
-                          <p className="text-xs text-gray-500 mt-1">
+                          <h4 className="font-semibold text-gray-900 dark:text-gray-100 text-sm">{achievement.name}</h4>
+                          <p className="text-xs text-gray-600 dark:text-gray-300">{achievement.description}</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                             {new Date(achievement.unlockedAt).toLocaleDateString()}
                           </p>
                         </div>
                       </motion.div>
                     ))}
                   </div>
-                </Card>
+                </div>
               </motion.div>
             )}
 
@@ -746,7 +756,7 @@ export default function DashboardPage() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.9 }}
             >
-              <Card className="p-6 bg-gradient-to-br from-pink-500 to-rose-600 text-white shadow-xl border-0 overflow-hidden relative">
+              <div className="p-6 bg-gradient-to-br from-pink-500 to-rose-600 dark:from-pink-600 dark:to-rose-700 text-white shadow-xl border-2 border-transparent rounded-3xl overflow-hidden relative">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16" />
                 <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full -ml-12 -mb-12" />
                 <div className="relative">
@@ -756,7 +766,7 @@ export default function DashboardPage() {
                     You're making great progress. Every step forward counts towards your dream career!
                   </p>
                 </div>
-              </Card>
+              </div>
             </motion.div>
           </div>
         </div>
