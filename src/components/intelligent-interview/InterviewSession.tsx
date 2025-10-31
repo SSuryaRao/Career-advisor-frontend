@@ -45,6 +45,9 @@ export function InterviewSession({ sessionData, userId, onComplete, onCancel }: 
   const {
     isRecording,
     recordingTime,
+    maxRecordingTime,
+    remainingTime,
+    isApproachingLimit,
     audioBlob,
     videoBlob,
     audioUrl,
@@ -56,6 +59,10 @@ export function InterviewSession({ sessionData, userId, onComplete, onCancel }: 
     permissionError
   } = useMediaRecorder({
     recordingType: sessionData.analysisMode === 'advanced' ? 'video' : 'audio',
+    maxRecordingTime: 600, // 10 minutes max (increased from default 5 minutes)
+    onMaxTimeReached: () => {
+      toast.error('Maximum recording time (10 minutes) reached. Recording stopped automatically.')
+    },
     onError: (error) => {
       toast.error(`Recording error: ${error.message}`)
     }
@@ -322,21 +329,38 @@ export function InterviewSession({ sessionData, userId, onComplete, onCancel }: 
                     /* Recording Mode */
                     <div>
                       <div className="flex items-center justify-between mb-4">
-                        <label className="text-lg font-semibold text-gray-900">
+                        <label className="text-lg font-semibold text-gray-900 dark:text-white">
                           Record Your Answer
                         </label>
-                        {isRecording && (
-                          <Badge className="bg-red-100 text-red-700 border-red-300 animate-pulse">
-                            <div className="w-2 h-2 bg-red-600 rounded-full mr-2"></div>
-                            Recording: {formatTime(recordingTime)}
-                          </Badge>
-                        )}
+                        <div className="flex items-center gap-2">
+                          {isRecording && (
+                            <>
+                              <Badge className="bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 border-red-300 dark:border-red-700 animate-pulse">
+                                <div className="w-2 h-2 bg-red-600 rounded-full mr-2"></div>
+                                Recording: {formatTime(recordingTime)}
+                              </Badge>
+                              {isApproachingLimit && (
+                                <Badge className="bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 border-orange-300 dark:border-orange-700 animate-pulse">
+                                  ⏰ {remainingTime}s left
+                                </Badge>
+                              )}
+                            </>
+                          )}
+                        </div>
                       </div>
 
                       {permissionError && (
-                        <div className="bg-red-50 border border-red-300 rounded-lg p-4 mb-4">
-                          <p className="text-sm text-red-700">
+                        <div className="bg-red-50 dark:bg-red-900/20 border border-red-300 dark:border-red-700 rounded-lg p-4 mb-4">
+                          <p className="text-sm text-red-700 dark:text-red-400">
                             Permission Error: {permissionError}. Please allow camera and microphone access.
+                          </p>
+                        </div>
+                      )}
+
+                      {!isRecording && !audioBlob && !videoBlob && (
+                        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-300 dark:border-blue-700 rounded-lg p-4 mb-4">
+                          <p className="text-sm text-blue-700 dark:text-blue-400">
+                            ℹ️ Maximum recording time: {Math.floor(maxRecordingTime / 60)} minutes. Recording will automatically stop when limit is reached.
                           </p>
                         </div>
                       )}

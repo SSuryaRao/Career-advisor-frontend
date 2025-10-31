@@ -2,66 +2,47 @@
 
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { 
-  Sparkles, Mail, Phone, MapPin, Twitter, 
+import {
+  Sparkles, Mail, Phone, MapPin, Twitter,
   Linkedin, Instagram, Youtube, Github,
-  ArrowRight, Heart, Award
+  ArrowRight, Heart
 } from 'lucide-react'
 
 const footerLinks = {
-  product: [
-    { name: 'Features', href: '/features' },
-    { name: 'AI Mentor', href: '/mentor' },
-    { name: 'Career Search', href: '/careers' },
-    { name: 'Skills Analysis', href: '/skills' },
-    { name: 'Interview Prep', href: '/interviews' },
-    { name: 'Dashboard', href: '/dashboard' }
+  features: [
+    { name: 'AI Mentor', href: '/features/ai-mentor' },
+    { name: 'Resume Analyzer', href: '/features/resume-analyzer' },
+    { name: 'Resume Builder', href: '/features/resume-builder' },
+    { name: 'Scholarship Finder', href: '/features/scholarships' }
   ],
   solutions: [
-    { name: 'For Students', href: '/solutions/students' },
-    { name: 'For Parents', href: '/solutions/parents' },
-    { name: 'For Institutions', href: '/solutions/institutions' },
-    { name: 'For Recruiters', href: '/solutions/recruiters' },
-    { name: 'Enterprise', href: '/enterprise' }
+    { name: 'Roadmap', href: '/solutions/roadmap' },
+    { name: 'AI Mock Interview', href: '/mock-interview' }
   ],
-  resources: [
-    { name: 'Blog', href: '/blog' },
-    { name: 'Career Guides', href: '/resources/guides' },
-    { name: 'Webinars', href: '/webinars' },
-    { name: 'Help Center', href: '/help' },
-    { name: 'API Docs', href: '/developers' },
-    { name: 'Success Stories', href: '/success-stories' }
+  quickLinks: [
+    { name: 'Careers', href: '/careers' },
+    { name: 'Resources', href: '/resources' },
+    { name: 'Pricing', href: '/pricing' },
+    { name: 'Dashboard', href: '/dashboard' }
   ],
   company: [
-    { name: 'About Us', href: '/about' },
-    { name: 'Careers', href: '/careers' },
-    { name: 'Press', href: '/press' },
-    { name: 'Partners', href: '/partners' },
-    { name: 'Contact', href: '/contact' }
+    { name: 'About Us', href: '#' },
+    { name: 'Contact', href: '#' }
   ],
   legal: [
     { name: 'Privacy Policy', href: '/privacy' },
-    { name: 'Terms of Service', href: '/terms' },
-    { name: 'Cookie Policy', href: '/cookies' },
-    { name: 'GDPR', href: '/gdpr' },
-    { name: 'Refund Policy', href: '/refunds' }
+    { name: 'Terms of Service', href: '/terms' }
   ]
 }
 
 const socialLinks = [
-  { name: 'Twitter', href: 'https://twitter.com/careercraftai', icon: Twitter },
-  { name: 'LinkedIn', href: 'https://linkedin.com/company/careercraftai', icon: Linkedin },
-  { name: 'Instagram', href: 'https://instagram.com/careercraftai', icon: Instagram },
-  { name: 'YouTube', href: 'https://youtube.com/@careercraftai', icon: Youtube },
-  { name: 'GitHub', href: 'https://github.com/careercraftai', icon: Github }
+  { name: 'Twitter', href: '#', icon: Twitter },
+  { name: 'LinkedIn', href: '#', icon: Linkedin },
+  { name: 'Instagram', href: '#', icon: Instagram },
+  { name: 'YouTube', href: '#', icon: Youtube },
+  { name: 'GitHub', href: '#', icon: Github }
 ]
 
-const awards = [
-  'TechCrunch Startup of the Year',
-  'Google for Education Partner',
-  'Microsoft Education Award',
-  'UNESCO Digital Innovation'
-]
 
 export default function Footer() {
   return (
@@ -134,17 +115,17 @@ export default function Footer() {
 
             {/* Links Sections */}
             <div className="lg:col-span-3">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                {/* Product */}
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8">
+                {/* Features */}
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.5, delay: 0.1 }}
                 >
-                  <h3 className="text-gray-900 dark:text-white font-semibold mb-4">Product</h3>
+                  <h3 className="text-gray-900 dark:text-white font-semibold mb-4">Features</h3>
                   <ul className="space-y-3">
-                    {footerLinks.product.map((link) => (
+                    {footerLinks.features.map((link) => (
                       <li key={link.name}>
                         <Link
                           href={link.href}
@@ -181,16 +162,16 @@ export default function Footer() {
                   </ul>
                 </motion.div>
 
-                {/* Resources */}
+                {/* Quick Links */}
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.5, delay: 0.3 }}
                 >
-                  <h3 className="text-gray-900 dark:text-white font-semibold mb-4">Resources</h3>
+                  <h3 className="text-gray-900 dark:text-white font-semibold mb-4">Quick Links</h3>
                   <ul className="space-y-3">
-                    {footerLinks.resources.map((link) => (
+                    {footerLinks.quickLinks.map((link) => (
                       <li key={link.name}>
                         <Link
                           href={link.href}
@@ -214,6 +195,29 @@ export default function Footer() {
                   <h3 className="text-gray-900 dark:text-white font-semibold mb-4">Company</h3>
                   <ul className="space-y-3">
                     {footerLinks.company.map((link) => (
+                      <li key={link.name}>
+                        <Link
+                          href={link.href}
+                          className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors duration-300 flex items-center group"
+                        >
+                          {link.name}
+                          <ArrowRight className="w-3 h-3 ml-1 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300" />
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </motion.div>
+
+                {/* Legal */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: 0.5 }}
+                >
+                  <h3 className="text-gray-900 dark:text-white font-semibold mb-4">Legal</h3>
+                  <ul className="space-y-3">
+                    {footerLinks.legal.map((link) => (
                       <li key={link.name}>
                         <Link
                           href={link.href}
@@ -256,29 +260,6 @@ export default function Footer() {
             </div>
           </motion.div>
 
-          {/* Awards */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.6 }}
-            className="text-center mb-12"
-          >
-            <div className="flex items-center justify-center mb-4">
-              <Award className="w-6 h-6 text-yellow-500 dark:text-yellow-400 mr-2" />
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Recognition & Awards</h3>
-            </div>
-            <div className="flex flex-wrap justify-center gap-6 text-sm text-gray-600 dark:text-gray-400">
-              {awards.map((award, index) => (
-                <span key={index} className="flex items-center">
-                  {award}
-                  {index < awards.length - 1 && (
-                    <div className="w-1 h-1 bg-gray-400 dark:bg-gray-600 rounded-full ml-6" />
-                  )}
-                </span>
-              ))}
-            </div>
-          </motion.div>
         </div>
 
         {/* Bottom Bar */}

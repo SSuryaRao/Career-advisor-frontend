@@ -35,6 +35,7 @@ import { auth } from '@/lib/firebase'
 import { signOut } from 'firebase/auth'
 import toast from 'react-hot-toast'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
+import { InstallPWAButton } from '@/components/install-pwa-button'
 
 const navigation = [
   {
@@ -137,7 +138,7 @@ export default function Navbar({ variant = 'dark' }: NavbarProps) {
         variant === 'transparent'
           ? isScrolled
             ? 'bg-white/95 dark:bg-black/80 backdrop-blur-xl border-b border-gray-200 dark:border-white/10 shadow-lg'
-            : 'bg-transparent backdrop-blur-md border-b border-white/20 dark:border-white/10'
+            : 'bg-white/70 dark:bg-transparent backdrop-blur-md border-b border-gray-200/50 dark:border-white/10'
           : isScrolled
           ? 'bg-white/95 dark:bg-black/80 backdrop-blur-xl border-b border-gray-200 dark:border-white/10 shadow-lg'
           : 'bg-white/90 dark:bg-transparent backdrop-blur-sm border-b border-gray-200/50 dark:border-transparent'
@@ -156,7 +157,7 @@ export default function Navbar({ variant = 'dark' }: NavbarProps) {
             <span className={cn(
               "text-lg sm:text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r",
               variant === 'transparent' && !isScrolled
-                ? "from-white to-white"
+                ? "from-gray-900 to-gray-900 dark:from-white dark:to-white"
                 : "from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400"
             )}>
               CareerCraft AI
@@ -177,7 +178,7 @@ export default function Navbar({ variant = 'dark' }: NavbarProps) {
                   className={cn(
                     "flex items-center space-x-1 transition-colors font-medium",
                     variant === 'transparent' && !isScrolled
-                      ? "text-white hover:text-white/80"
+                      ? "text-gray-900 dark:text-white hover:text-gray-700 dark:hover:text-white/80"
                       : "text-gray-900 dark:text-gray-200 hover:text-blue-600 dark:hover:text-white"
                   )}
                 >
@@ -217,6 +218,7 @@ export default function Navbar({ variant = 'dark' }: NavbarProps) {
 
           {/* Right Section */}
           <div className="hidden md:flex items-center space-x-4">
+            <InstallPWAButton variant="navbar" />
             <ThemeToggle />
             {user ? (
               <div
@@ -229,7 +231,7 @@ export default function Navbar({ variant = 'dark' }: NavbarProps) {
                   className={cn(
                     "text-sm lg:text-base flex items-center space-x-2 font-medium",
                     variant === 'transparent' && !isScrolled
-                      ? "text-white hover:text-white/80"
+                      ? "text-gray-900 dark:text-white hover:text-gray-700 dark:hover:text-white/80"
                       : "text-gray-900 dark:text-gray-200 hover:text-blue-600 dark:hover:text-white"
                   )}
                 >
@@ -271,6 +273,9 @@ export default function Navbar({ variant = 'dark' }: NavbarProps) {
                           <span className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-white">Analytics Insights</span>
                         </Link>
                       )}
+                      <div className="border-t border-gray-100 dark:border-white/5">
+                        <InstallPWAButton variant="dropdown" />
+                      </div>
                       <button
                         onClick={handleLogout}
                         className="w-full flex items-center space-x-3 px-4 py-3 transition-colors text-left border-t border-gray-100 dark:border-white/5 hover:bg-red-50 dark:hover:bg-white/10"
@@ -290,7 +295,7 @@ export default function Navbar({ variant = 'dark' }: NavbarProps) {
                     className={cn(
                       "text-sm lg:text-base font-medium",
                       variant === 'transparent' && !isScrolled
-                        ? "text-white hover:text-white/80"
+                        ? "text-gray-900 dark:text-white hover:text-gray-700 dark:hover:text-white/80"
                         : "text-gray-900 dark:text-gray-200 hover:text-blue-600 dark:hover:text-white"
                     )}
                   >
@@ -390,6 +395,7 @@ export default function Navbar({ variant = 'dark' }: NavbarProps) {
                         </Button>
                       </Link>
                     )}
+                    <InstallPWAButton variant="mobile" />
                     <Button
                       onClick={handleLogout}
                       className="w-full bg-red-600 hover:bg-red-700 flex items-center justify-center"
@@ -400,6 +406,7 @@ export default function Navbar({ variant = 'dark' }: NavbarProps) {
                   </>
                 ) : (
                   <>
+                    <InstallPWAButton variant="mobile" />
                     <Link href="/login" passHref>
                       <Button variant="outline" className="w-full">
                         Login

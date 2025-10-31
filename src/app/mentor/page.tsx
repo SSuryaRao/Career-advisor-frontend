@@ -1,5 +1,11 @@
 import AIMentor from '@/components/chat/ai-mentor'
+import Navbar from '@/components/layout/navbar'
 
 export default function MentorPage() {
-  return <AIMentor />
+  return (
+    <>
+      <Navbar variant="transparent" />
+      <AIMentor />
+    </>
+  )
 }

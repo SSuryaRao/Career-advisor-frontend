@@ -4,7 +4,9 @@ export type RecordingType = 'audio' | 'video';
 
 export interface UseMediaRecorderProps {
   recordingType?: RecordingType;
+  maxRecordingTime?: number; // Maximum recording time in seconds (default: 300 = 5 minutes)
   onRecordingComplete?: (audioBlob: Blob, videoBlob: Blob | null) => void;
+  onMaxTimeReached?: () => void;
   onError?: (error: Error) => void;
 }
 
@@ -12,6 +14,9 @@ export interface UseMediaRecorderReturn {
   isRecording: boolean;
   isPaused: boolean;
   recordingTime: number;
+  maxRecordingTime: number;
+  remainingTime: number;
+  isApproachingLimit: boolean;
   audioBlob: Blob | null;
   videoBlob: Blob | null;
   audioUrl: string | null;
@@ -27,7 +32,9 @@ export interface UseMediaRecorderReturn {
 
 export const useMediaRecorder = ({
   recordingType = 'audio',
+  maxRecordingTime = 300, // Default: 5 minutes
   onRecordingComplete,
+  onMaxTimeReached,
   onError
 }: UseMediaRecorderProps = {}): UseMediaRecorderReturn => {
   const [isRecording, setIsRecording] = useState(false);
@@ -139,9 +146,25 @@ export const useMediaRecorder = ({
       setIsRecording(true);
       setRecordingTime(0);
 
-      // Start timer
+      // Start timer with max time check
       timerRef.current = setInterval(() => {
-        setRecordingTime(prev => prev + 1);
+        setRecordingTime(prev => {
+          const newTime = prev + 1;
+
+          // Auto-stop when max time reached
+          if (newTime >= maxRecordingTime) {
+            console.log(`Max recording time (${maxRecordingTime}s) reached - auto-stopping`);
+            stopRecording();
+
+            if (onMaxTimeReached) {
+              onMaxTimeReached();
+            }
+
+            return maxRecordingTime;
+          }
+
+          return newTime;
+        });
       }, 1000);
 
     } catch (error) {
@@ -218,10 +241,17 @@ export const useMediaRecorder = ({
     }
   }, [audioUrl, videoUrl]);
 
+  // Calculate derived values
+  const remainingTime = Math.max(0, maxRecordingTime - recordingTime);
+  const isApproachingLimit = remainingTime <= 30 && remainingTime > 0 && isRecording;
+
   return {
     isRecording,
     isPaused,
     recordingTime,
+    maxRecordingTime,
+    remainingTime,
+    isApproachingLimit,
     audioBlob,
     videoBlob,
     audioUrl,

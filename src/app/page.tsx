@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { LazyLoad } from '@/components/ui/lazy-load'
 import Navbar from '@/components/layout/navbar'
 import Hero from '@/components/sections/hero'
 import Features from '@/components/sections/features'
@@ -33,9 +34,12 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-gray-50 to-white dark:from-black dark:via-gray-900 dark:to-black text-gray-900 dark:text-white overflow-x-hidden">
-      {/* Background Effects */}
-      <div className="fixed inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] opacity-50 dark:opacity-100" />
-      <div className="fixed inset-0">
+      {/* Background Effects - Optimized */}
+      <div
+        className="fixed inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] opacity-50 dark:opacity-100"
+        style={{ willChange: 'opacity' }}
+      />
+      <div className="fixed inset-0" style={{ willChange: 'transform' }}>
         <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/10 via-purple-500/10 to-pink-500/10 blur-3xl" />
       </div>
 
@@ -132,7 +136,7 @@ export default function LandingPage() {
             </motion.div>
           </motion.div>
 
-          {/* Floating Elements */}
+          {/* Floating Elements - Optimized */}
           <motion.div
             animate={{
               y: [0, -20, 0],
@@ -142,6 +146,7 @@ export default function LandingPage() {
               repeat: Infinity,
               ease: "easeInOut"
             }}
+            style={{ willChange: 'transform' }}
             className="absolute top-20 left-10 w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full blur-3xl opacity-50"
           />
           <motion.div
@@ -153,28 +158,41 @@ export default function LandingPage() {
               repeat: Infinity,
               ease: "easeInOut"
             }}
+            style={{ willChange: 'transform' }}
             className="absolute bottom-20 right-10 w-32 h-32 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full blur-3xl opacity-50"
           />
         </div>
       </section>
 
       {/* Features Section */}
-      <Features />
+      <LazyLoad showSkeleton>
+        <Features />
+      </LazyLoad>
 
       {/* How It Works */}
-      <HowItWorks />
+      <LazyLoad showSkeleton>
+        <HowItWorks />
+      </LazyLoad>
 
       {/* Testimonials */}
-      <Testimonials />
+      <LazyLoad showSkeleton>
+        <Testimonials />
+      </LazyLoad>
 
       {/* Stats */}
-      <Stats />
+      <LazyLoad showSkeleton>
+        <Stats />
+      </LazyLoad>
 
       {/* CTA Section */}
-      <CTA />
+      <LazyLoad>
+        <CTA />
+      </LazyLoad>
 
       {/* Footer */}
-      <Footer />
+      <LazyLoad>
+        <Footer />
+      </LazyLoad>
     </div>
   )
 }

@@ -41,9 +41,9 @@ const pricingPlans = [
   {
     id: 'student',
     name: 'Starter',
-    price: '₹199',
+    price: '₹399',
     period: '/month',
-    originalPrice: '₹399',
+    originalPrice: '₹799',
     description: 'Best for students serious about career growth',
     popular: true,
     features: [
@@ -51,12 +51,12 @@ const pricingPlans = [
       { name: '15 Resume analysis/month', included: true },
       { name: '25 Mock interviews/month', included: true },
       { name: '5 Intelligent interviews/month', included: true },
+      { name: '1 Video interview (3 min)/month', included: true },
       { name: '3 Personalized learning paths', included: true },
       { name: '5 Custom roadmaps/month', included: true },
       { name: 'Priority email support', included: true },
       { name: 'Advanced career analytics', included: true },
-      { name: '10 Scholarship matches/month', included: true },
-      { name: 'Resume improvement tools', included: true }
+      { name: '10 Scholarship matches/month', included: true }
     ],
     buttonText: 'Start Learning',
     buttonVariant: 'default' as const

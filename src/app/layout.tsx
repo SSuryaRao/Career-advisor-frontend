@@ -7,6 +7,8 @@ import { Analytics } from '@vercel/analytics/react'
 import AuthProvider from '@/components/auth-provider'
 import ChatbotWidget from '@/components/ui/chatbot-widget'
 import GlobalErrorHandler from '@/components/GlobalErrorHandler'
+import { LoadingWrapper } from '@/components/loading-wrapper'
+import { InstallPWAPrompt } from '@/components/install-pwa-prompt'
 
 
 const inter = Inter({ subsets: ['latin'] })
@@ -16,6 +18,15 @@ export const metadata: Metadata = {
   description: 'AI-powered career guidance platform for Indian students. Get personalized career recommendations, skill gap analysis, and mentorship.',
   keywords: 'career guidance, AI career counseling, skill development, Indian students, career planning',
   authors: [{ name: 'CareerCraft AI Team' }],
+  applicationName: 'CareerCraft AI',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'CareerCraft AI',
+  },
+  formatDetection: {
+    telephone: false,
+  },
   openGraph: {
     title: 'CareerCraft AI - Your Personalized Career Navigator',
     description: 'Transform your career journey with AI-powered guidance',
@@ -38,6 +49,16 @@ export const metadata: Metadata = {
     images: ['https://careercraft.ai/twitter-image.png'],
   },
   manifest: '/manifest.json',
+  icons: {
+    icon: [
+      { url: '/icons/icon-192x192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icons/icon-512x512.png', sizes: '512x512', type: 'image/png' },
+    ],
+    apple: [
+      { url: '/icons/icon-152x152.png', sizes: '152x152', type: 'image/png' },
+      { url: '/icons/icon-180x180.png', sizes: '180x180', type: 'image/png' },
+    ],
+  },
 }
 
 export const viewport: Viewport = {
@@ -61,13 +82,19 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         <script src="https://checkout.razorpay.com/v1/checkout.js" defer />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="msapplication-TileColor" content="#8b5cf6" />
+        <meta name="msapplication-tap-highlight" content="no" />
       </head>
       <body className={inter.className}>
         <Providers>
           <AuthProvider>
-            {children}
+            <LoadingWrapper>
+              {children}
+            </LoadingWrapper>
             <ChatbotWidget />
             <GlobalErrorHandler />
+            <InstallPWAPrompt />
             <Toaster
               position="bottom-left"
               toastOptions={{

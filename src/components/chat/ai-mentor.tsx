@@ -110,14 +110,14 @@ function MentorDropdown({
   return (
     <>
       {/* Backdrop */}
-      <div 
-        className="fixed inset-0 z-[999998]" 
+      <div
+        className="fixed inset-0 z-[999998]"
         onClick={onClose}
       />
-      
+
       {/* Dropdown */}
-      <div 
-        className="fixed top-20 right-6 w-80 bg-slate-800 border border-white/10 rounded-xl shadow-2xl z-[999999]"
+      <div
+        className="fixed top-20 right-6 w-80 bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/10 rounded-xl shadow-2xl z-[999999]"
       >
         {mentorPersonas.map((mentor) => (
           <button
@@ -126,15 +126,15 @@ function MentorDropdown({
               onSelectMentor(mentor)
               onClose()
             }}
-            className={`w-full text-left p-4 hover:bg-white/10 border-b border-white/5 last:border-b-0 transition-colors first:rounded-t-xl last:rounded-b-xl ${
-              selectedMentor.id === mentor.id ? 'bg-violet-600/20' : ''
+            className={`w-full text-left p-4 hover:bg-blue-50 dark:hover:bg-white/10 border-b border-gray-200 dark:border-white/5 last:border-b-0 transition-colors first:rounded-t-xl last:rounded-b-xl ${
+              selectedMentor.id === mentor.id ? 'bg-blue-100 dark:bg-violet-600/20' : ''
             }`}
           >
             <div className="flex items-center space-x-3">
               <div className="text-2xl">{mentor.avatar}</div>
               <div>
-                <div className="font-medium text-white">{mentor.name}</div>
-                <div className="text-sm text-gray-400">{mentor.description}</div>
+                <div className="font-medium text-gray-900 dark:text-white">{mentor.name}</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">{mentor.description}</div>
               </div>
             </div>
           </button>
@@ -325,35 +325,35 @@ export default function AIMentor() {
 
   return (
     <>
-      <div className="flex flex-col h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      <div className="flex flex-col h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-900 dark:via-purple-900 dark:to-slate-900 pt-16 sm:pt-18 md:pt-20">
         {/* Header */}
-        <div className="bg-black/20 backdrop-blur-xl border-b border-white/10">
+        <div className="bg-white/80 dark:bg-black/20 backdrop-blur-xl border-b border-gray-200 dark:border-white/10 shadow-sm">
           <div className="max-w-6xl mx-auto px-6 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
                 <div className="relative">
-                  <div className="w-16 h-16 bg-gradient-to-br from-violet-500 to-purple-600 rounded-2xl flex items-center justify-center text-2xl shadow-xl ring-4 ring-white/20">
+                  <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 dark:from-violet-500 dark:to-purple-600 rounded-2xl flex items-center justify-center text-2xl shadow-xl ring-4 ring-blue-200/50 dark:ring-white/20">
                     {selectedMentor.avatar}
                   </div>
-                  <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-slate-900 animate-pulse"></div>
+                  <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white dark:border-slate-900 animate-pulse"></div>
                 </div>
                 <div>
-                  <h1 className="text-xl font-bold text-white">{selectedMentor.name}</h1>
-                  <p className="text-sm flex items-center text-gray-300">
+                  <h1 className="text-xl font-bold text-gray-900 dark:text-white">{selectedMentor.name}</h1>
+                  <p className="text-sm flex items-center text-gray-600 dark:text-gray-300">
                     <span className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></span>
                     {selectedMentor.specialty} • Online
                   </p>
-                  <p className="text-xs text-violet-400 font-medium mt-1">{selectedMentor.personality}</p>
+                  <p className="text-xs text-blue-600 dark:text-violet-400 font-medium mt-1">{selectedMentor.personality}</p>
                 </div>
               </div>
               
               <div className="flex items-center space-x-3">
                 {/* Mentor Selector Button */}
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   size="sm"
                   onClick={() => setMentorDropdownOpen(true)}
-                  className="bg-white/10 hover:bg-white/20 border-white/20 text-white shadow-lg transition-all duration-300 rounded-xl"
+                  className="bg-white hover:bg-blue-50 dark:bg-white/10 dark:hover:bg-white/20 border-blue-200 dark:border-white/20 text-gray-700 dark:text-white shadow-lg transition-all duration-300 rounded-xl"
                 >
                   <Bot className="w-4 h-4 mr-2" />
                   Switch Mentor
@@ -365,7 +365,7 @@ export default function AIMentor() {
         </div>
 
         {/* Quick Actions */}
-        <div className="bg-black/10 backdrop-blur-sm border-b border-white/5 px-6 py-4">
+        <div className="bg-white/60 dark:bg-black/10 backdrop-blur-sm border-b border-gray-200 dark:border-white/5 px-6 py-4">
           <div className="max-w-6xl mx-auto">
             <div className="flex flex-wrap gap-2">
               {quickActions.map((action, index) => (
@@ -375,7 +375,7 @@ export default function AIMentor() {
                   size="sm"
                   onClick={() => handleQuickAction(action.text)}
                   disabled={isTyping}
-                  className="text-xs rounded-full bg-white/5 hover:bg-white/10 border-white/20 text-white/90 hover:text-white transition-all duration-300 font-medium"
+                  className="text-xs rounded-full bg-white hover:bg-blue-50 dark:bg-white/5 dark:hover:bg-white/10 border-blue-200 dark:border-white/20 text-gray-700 hover:text-blue-700 dark:text-white/90 dark:hover:text-white transition-all duration-300 font-medium"
                 >
                   <action.icon className="w-3 h-3 mr-2" />
                   {action.text}
@@ -429,64 +429,76 @@ export default function AIMentor() {
                   <div className="flex items-start space-x-3 mb-2">
                     {/* Avatar for Assistant */}
                     {message.type === 'assistant' && (
-                      <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl flex items-center justify-center text-lg shadow-lg flex-shrink-0">
+                      <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 dark:from-violet-500 dark:to-purple-600 rounded-xl flex items-center justify-center text-lg shadow-lg flex-shrink-0">
                         {selectedMentor.avatar}
                       </div>
                     )}
-                    
+
                     {/* Message Content */}
                     <div
                       className={`px-5 py-4 rounded-2xl shadow-xl max-w-full ${
                         message.type === 'user'
-                          ? 'bg-gradient-to-r from-violet-600 to-purple-600 text-white ml-auto'
-                          : 'bg-white/10 backdrop-blur-lg border border-white/10 text-white'
+                          ? 'bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-violet-600 dark:to-purple-600 text-white ml-auto'
+                          : 'bg-white dark:bg-white/10 dark:backdrop-blur-lg border border-gray-200 dark:border-white/10 text-gray-900 dark:text-white'
                       }`}
                     >
-                      <div className="text-sm leading-relaxed prose prose-invert prose-sm max-w-none prose-p:my-2 prose-ul:my-2 prose-ol:my-2 prose-li:my-1 prose-headings:mb-2 prose-headings:mt-3 prose-strong:text-white prose-strong:font-semibold">
+                      <div className={`text-sm leading-relaxed prose prose-sm max-w-none prose-p:my-2 prose-ul:my-2 prose-ol:my-2 prose-li:my-1 prose-headings:mb-2 prose-headings:mt-3 prose-strong:font-semibold ${
+                        message.type === 'user'
+                          ? 'prose-invert prose-strong:text-white'
+                          : 'dark:prose-invert prose-strong:text-white dark:prose-strong:text-white prose-strong:text-gray-900'
+                      }`}>
                         <ReactMarkdown>{message.content}</ReactMarkdown>
                       </div>
-                      
+
                       {/* Message Actions */}
-                      <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/10">
+                      <div className={`flex items-center justify-between mt-3 pt-3 border-t ${
+                        message.type === 'user'
+                          ? 'border-white/10'
+                          : 'border-gray-200 dark:border-white/10'
+                      }`}>
                         <div className="flex items-center space-x-1">
                           {message.type === 'assistant' && (
                             <>
                               <button
                                 onClick={() => copyMessage(message.content, message.id)}
-                                className="p-1.5 rounded-lg hover:bg-white/10 transition-colors text-white/60 hover:text-white"
+                                className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 transition-colors text-gray-500 hover:text-gray-700 dark:text-white/60 dark:hover:text-white"
                               >
                                 {copiedMessageId === message.id ? (
-                                  <Check className="w-3.5 h-3.5 text-green-400" />
+                                  <Check className="w-3.5 h-3.5 text-green-600 dark:text-green-400" />
                                 ) : (
                                   <Copy className="w-3.5 h-3.5" />
                                 )}
                               </button>
                               <button
                                 onClick={() => handleSpeakMessage(message.content)}
-                                className="p-1.5 rounded-lg hover:bg-white/10 transition-colors text-white/60 hover:text-white"
+                                className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 transition-colors text-gray-500 hover:text-gray-700 dark:text-white/60 dark:hover:text-white"
                               >
                                 {isSpeaking ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
                               </button>
-                              <button className="p-1.5 rounded-lg hover:bg-white/10 transition-colors text-white/60 hover:text-white">
+                              <button className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 transition-colors text-gray-500 hover:text-gray-700 dark:text-white/60 dark:hover:text-white">
                                 <ThumbsUp className="w-3.5 h-3.5" />
                               </button>
-                              <button className="p-1.5 rounded-lg hover:bg-white/10 transition-colors text-white/60 hover:text-white">
+                              <button className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 transition-colors text-gray-500 hover:text-gray-700 dark:text-white/60 dark:hover:text-white">
                                 <ThumbsDown className="w-3.5 h-3.5" />
                               </button>
                             </>
                           )}
                         </div>
                         {mounted && (
-                          <span className={`text-xs ${message.type === 'user' ? 'text-white/70' : 'text-white/50'}`}>
+                          <span className={`text-xs ${
+                            message.type === 'user'
+                              ? 'text-white/70'
+                              : 'text-gray-500 dark:text-white/50'
+                          }`}>
                             {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </span>
                         )}
                       </div>
                     </div>
-                    
+
                     {/* Avatar for User */}
                     {message.type === 'user' && (
-                      <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center order-2 shadow-lg flex-shrink-0">
+                      <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 dark:from-emerald-500 dark:to-teal-600 rounded-xl flex items-center justify-center order-2 shadow-lg flex-shrink-0">
                         <User className="w-5 h-5 text-white" />
                       </div>
                     )}
@@ -502,7 +514,7 @@ export default function AIMentor() {
                           size="sm"
                           onClick={() => handleQuickAction(suggestion)}
                           disabled={isTyping}
-                          className="text-xs rounded-full bg-violet-600/20 hover:bg-violet-600/30 border-violet-500/30 text-violet-300 hover:text-white transition-all duration-300"
+                          className="text-xs rounded-full bg-blue-100 hover:bg-blue-200 dark:bg-violet-600/20 dark:hover:bg-violet-600/30 border-blue-300 dark:border-violet-500/30 text-blue-700 hover:text-blue-900 dark:text-violet-300 dark:hover:text-white transition-all duration-300"
                         >
                           <Sparkles className="w-3 h-3 mr-2" />
                           {suggestion}
@@ -523,17 +535,17 @@ export default function AIMentor() {
                   exit={{ opacity: 0, y: -20 }}
                   className="flex items-start space-x-3"
                 >
-                  <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl flex items-center justify-center text-lg shadow-lg">
+                  <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 dark:from-violet-500 dark:to-purple-600 rounded-xl flex items-center justify-center text-lg shadow-lg">
                     {selectedMentor.avatar}
                   </div>
-                  <div className="bg-white/10 backdrop-blur-lg border border-white/10 px-5 py-4 rounded-2xl shadow-xl">
+                  <div className="bg-white dark:bg-white/10 dark:backdrop-blur-lg border border-gray-200 dark:border-white/10 px-5 py-4 rounded-2xl shadow-xl">
                     <div className="flex items-center space-x-2">
                       <div className="flex space-x-1">
-                        <div className="w-2 h-2 bg-violet-400 rounded-full animate-bounce" />
-                        <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '75ms' }} />
-                        <div className="w-2 h-2 bg-pink-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                        <div className="w-2 h-2 bg-blue-500 dark:bg-violet-400 rounded-full animate-bounce" />
+                        <div className="w-2 h-2 bg-indigo-500 dark:bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '75ms' }} />
+                        <div className="w-2 h-2 bg-blue-600 dark:bg-pink-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
                       </div>
-                      <span className="text-xs text-gray-300 font-medium">AI is thinking...</span>
+                      <span className="text-xs text-gray-600 dark:text-gray-300 font-medium">AI is thinking...</span>
                     </div>
                   </div>
                 </motion.div>
@@ -545,7 +557,7 @@ export default function AIMentor() {
         </div>
 
         {/* Input Section */}
-        <div className="bg-black/20 backdrop-blur-xl border-t border-white/10">
+        <div className="bg-white/90 dark:bg-black/20 backdrop-blur-xl border-t border-gray-200 dark:border-white/10 shadow-lg">
           <div className="max-w-4xl mx-auto px-6 py-5">
             <div className="flex items-end space-x-4">
               <div className="flex-1 relative">
@@ -555,7 +567,7 @@ export default function AIMentor() {
                   onChange={(e) => setInputMessage(e.target.value)}
                   onKeyPress={handleKeyPress}
                   placeholder="Ask me anything about your career..."
-                  className="pr-12 py-4 text-white placeholder-gray-400 text-sm rounded-2xl border-white/20 bg-white/10 backdrop-blur-lg focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 shadow-xl resize-none min-h-[56px] max-h-32"
+                  className="pr-12 py-4 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 text-sm rounded-2xl border-gray-300 dark:border-white/20 bg-white dark:bg-white/10 dark:backdrop-blur-lg focus:border-blue-500 dark:focus:border-violet-500 focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-violet-500/20 shadow-xl resize-none min-h-[56px] max-h-32"
                   rows={1}
                   disabled={isTyping}
                 />
@@ -565,18 +577,18 @@ export default function AIMentor() {
                   onClick={handleVoiceToggle}
                   disabled={isTyping}
                   className={`absolute right-3 bottom-3 h-8 w-8 p-0 rounded-xl ${
-                    isRecording 
-                      ? 'text-red-400 bg-red-500/20 hover:bg-red-500/30' 
-                      : 'text-gray-400 hover:text-white hover:bg-white/10'
+                    isRecording
+                      ? 'text-red-400 bg-red-500/20 hover:bg-red-500/30'
+                      : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10'
                   }`}
                 >
                   {isRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
                 </Button>
               </div>
-              <Button 
-                onClick={handleSendMessage} 
+              <Button
+                onClick={handleSendMessage}
                 disabled={!inputMessage.trim() || isTyping}
-                className="h-[56px] px-6 rounded-2xl bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="h-[56px] px-6 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-violet-600 dark:to-purple-600 hover:from-blue-700 hover:to-indigo-700 dark:hover:from-violet-700 dark:hover:to-purple-700 text-white shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isTyping ? (
                   <Loader2 className="w-5 h-5 animate-spin" />
@@ -586,10 +598,10 @@ export default function AIMentor() {
               </Button>
             </div>
             <div className="flex items-center justify-between mt-4">
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-gray-600 dark:text-gray-400">
                 AI responses are personalized based on your profile, skills, and career goals.
               </p>
-              <div className="flex items-center space-x-2 text-xs text-violet-400 font-medium">
+              <div className="flex items-center space-x-2 text-xs text-blue-600 dark:text-violet-400 font-medium">
                 <span>Powered by Vertex AI</span>
                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
               </div>
